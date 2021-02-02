@@ -7,7 +7,7 @@ import unittest
 from unittest import mock
 
 from beangulp import cache
-from beancount.utils import file_type
+from beangulp import file_type
 
 
 class TestFileMemo(unittest.TestCase):

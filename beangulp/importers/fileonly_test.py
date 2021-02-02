@@ -5,7 +5,7 @@ import unittest
 
 from beangulp.importers import fileonly
 from beangulp import cache
-from beancount.utils import file_type
+from beangulp import file_type
 from beancount.utils import test_utils
 
 

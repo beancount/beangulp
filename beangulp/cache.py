@@ -11,7 +11,7 @@ from os import path
 
 import chardet
 
-from beancount.utils import file_type
+from beangulp import file_type
 from beancount.utils import defdict
 
 
