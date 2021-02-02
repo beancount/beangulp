@@ -29,8 +29,8 @@ py_test(
     deps = [
         ":fileonly",
         "//beancount/ingest:cache",
-        "//beancount/utils:file_type",
-        "//beancount/utils:test_utils",
+        "//beangulp:file_type",
+        "//beangulp:test_utils",
     ],
 )
 
@@ -43,7 +43,7 @@ py_library(
         "//beancount/core:number",
         "//beancount/ingest/importers/mixins:filing",
         "//beancount/ingest/importers/mixins:identifier",
-        "//beancount/utils:date_utils",
+        "//beangulp:date_utils",
     ],
 )
 
@@ -54,7 +54,7 @@ py_test(
         ":csv",
         "//beancount/ingest:cache",
         "//beancount/parser:cmptest",
-        "//beancount/utils:test_utils",
+        "//beangulp:test_utils",
     ],
 )
 

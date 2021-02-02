@@ -27,8 +27,8 @@ py_library(
         "cache.py",
     ],
     deps = [
-        "//beancount/utils:file_type",
-        "//beancount/utils:defdict",
+        "//beangulp:file_type",
+        "//beangulp:defdict",
     ],
 )
 
@@ -39,7 +39,7 @@ py_test(
     ],
     deps = [
         ":cache",
-        "//beancount/utils:file_type",
+        "//beangulp:file_type",
     ],
 )
 
@@ -51,7 +51,7 @@ py_library(
     deps = [
         "//beancount/ingest:importer",
         "//beancount/ingest:cache",
-        "//beancount/utils:test_utils",
+        "//beangulp:test_utils",
         "//beancount/parser:version",
         "//beancount/ingest:identify",
         "//beancount/ingest:extract",
@@ -66,7 +66,7 @@ py_test(
     ],
     deps = [
         ":scripts_utils",
-        "//beancount/utils:test_utils",
+        "//beangulp:test_utils",
         "//beancount/ingest:extract",
     ],
 )
@@ -130,8 +130,8 @@ py_test(
     deps = [
         ":extract",
         "//examples/ingest:office",
-        "//beancount/utils:test_utils",
-        "//beancount/utils:misc_utils",
+        "//beangulp:test_utils",
+        "//beangulp:misc_utils",
         "//beancount/parser:parser",
         "//beancount:loader",
         "//beancount/ingest:importer",
@@ -147,7 +147,7 @@ py_library(
     deps = [
         ":identify",
         "//beancount/core:account",
-        "//beancount/utils:misc_utils",
+        "//beangulp:misc_utils",
         "//beancount/ingest:cache",
     ],
 )
@@ -165,8 +165,8 @@ py_test(
         ":file",
         ":scripts_utils",
         "//examples/ingest:office",
-        "//beancount/utils:test_utils",
-        "//beancount/utils:file_utils",
+        "//beangulp:test_utils",
+        "//beangulp:file_utils",
     ],
 )
 
@@ -177,7 +177,7 @@ py_library(
     ],
     deps = [
         ":cache",
-        "//beancount/utils:file_utils",
+        "//beangulp:file_utils",
     ],
 )
 
@@ -193,7 +193,7 @@ py_test(
     deps = [
         ":identify",
         "//examples/ingest:office",
-        "//beancount/utils:test_utils",
+        "//beangulp:test_utils",
         "//beancount/ingest:importer",
         "//beancount/ingest:scripts_utils",
     ],
@@ -207,8 +207,8 @@ py_library(
     deps = [
         "//beancount/ingest:importer",
         "//beancount/parser:printer",
-        "//beancount/utils:test_utils",
-        "//beancount/utils:misc_utils",
+        "//beangulp:test_utils",
+        "//beangulp:misc_utils",
         "//beancount/ingest:extract",
         "//beancount/ingest:cache",
     ],
@@ -233,7 +233,7 @@ py_test(
     ],
     deps = [
         ":regression",
-        "//beancount/utils:test_utils",
+        "//beangulp:test_utils",
         "//beancount/parser:parser",
         "//beancount/ingest:importer",
     ],
