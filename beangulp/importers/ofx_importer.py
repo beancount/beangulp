@@ -30,7 +30,7 @@ import bs4
 from beancount.core.number import D
 from beancount.core import amount
 from beancount.core import data
-from beancount.ingest import importer
+from beangulp import importer
 
 
 class BalanceType(enum.Enum):

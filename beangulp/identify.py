@@ -12,7 +12,7 @@ import sys
 from os import path
 
 from beancount.utils import file_utils
-from beancount.ingest import cache
+from beangulp import cache
 
 
 # The format for the section titles in the extracted output.

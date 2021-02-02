@@ -12,7 +12,7 @@ __author__ = "Martin Blais <blais@furius.ca>"
 from os import path
 
 from beancount.core import account
-from beancount.ingest import importer
+from beangulp import importer
 
 
 class FilingMixin(importer.ImporterProtocol):

@@ -3,8 +3,8 @@ __license__ = "GNU GPLv2"
 
 import unittest
 
-from beancount.ingest import importer
-from beancount.ingest.importers import config
+from beangulp import importer
+from beangulp.importers import config
 
 
 class SimpleTestImporter(config.ConfigImporterMixin,

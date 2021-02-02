@@ -17,7 +17,7 @@ import dateutil.parser
 from beancount.core import data
 from beancount.core.amount import Amount
 from beancount.core.number import ZERO, D
-from beancount.ingest.importers.mixins import filing, identifier
+from beangulp.importers.mixins import filing, identifier
 from beancount.utils.date_utils import parse_date_liberally
 
 

@@ -15,8 +15,8 @@ from os import path
 
 from beancount.utils import test_utils
 from beancount.parser import parser
-from beancount.ingest import importer
-from beancount.ingest import regression
+from beangulp import importer
+from beangulp import regression
 
 
 def suppress_deprecation(fun):
@@ -36,7 +36,7 @@ class _DummyImporter(importer.ImporterProtocol):
 class TestImporterTests(test_utils.TestTempdirMixin, unittest.TestCase):
 
     @suppress_deprecation
-    @mock.patch('beancount.ingest.extract.extract_from_file')
+    @mock.patch('beangulp.extract.extract_from_file')
     def test_test_expect_extract(self, extract_mock):
         importer = _DummyImporter()
 

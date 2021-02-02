@@ -18,8 +18,8 @@ import re
 
 from beancount.core import account
 from beancount.utils import misc_utils
-from beancount.ingest import identify
-from beancount.ingest import cache
+from beangulp import identify
+from beangulp import cache
 
 
 def file_one_file(filename, importers, destination, idify=False, logfile=None):

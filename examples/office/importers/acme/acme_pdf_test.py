@@ -6,7 +6,7 @@ from os import path
 import unittest
 import pytest
 
-from beancount.ingest import regression_pytest as regtest
+from beangulp import regression_pytest as regtest
 from . import acme_pdf
 
 

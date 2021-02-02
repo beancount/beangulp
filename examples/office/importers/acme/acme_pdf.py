@@ -17,7 +17,7 @@ import subprocess
 
 from dateutil.parser import parse as parse_datetime
 
-from beancount.ingest import importer
+from beangulp import importer
 
 
 def is_pdfminer_installed():

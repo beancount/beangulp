@@ -11,4 +11,4 @@ __license__ = "GNU GPLv2"
 # Register our test helper for rewriting. This has to be done in the parent
 # package because it has to run before the first time the module is imported.
 import pytest
-pytest.register_assert_rewrite('beancount.ingest.regression_pytest')
+pytest.register_assert_rewrite('beangulp.regression_pytest')

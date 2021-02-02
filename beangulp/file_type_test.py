@@ -5,7 +5,7 @@ import os
 from os import path
 import unittest
 
-from beancount.utils import file_type
+from beangulp import file_type
 
 
 class TestFileType(unittest.TestCase):

@@ -5,7 +5,7 @@ existing downloaded files, running the various importer interface methods on it,
 and comparing the output to an expected text file. (Expected test files can be
 auto-generated using the --generate option). You use it like this:
 
-  from beancount.ingest import regression_pytest
+  from beangulp import regression_pytest
   ...
   import mymodule
   ...
@@ -26,7 +26,7 @@ auto-generated using the --generate option). You use it like this:
 Also, to add the --generate option to 'pytest', you must create a conftest.py
 somewhere in one of the roots above your importers with this module as a plugin:
 
-  pytest_plugins = "beancount.ingest.regression_pytest"
+  pytest_plugins = "beangulp.regression_pytest"
 
 See beancount/example/ingest for a full working example.
 
@@ -47,8 +47,8 @@ import re
 import io
 import pytest
 
-from beancount.ingest import cache
-from beancount.ingest import extract
+from beangulp import cache
+from beangulp import extract
 from beancount.parser import printer
 
 

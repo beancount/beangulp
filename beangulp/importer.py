@@ -8,7 +8,7 @@ order to identify, extract and file the downloaded files.
 Each of the methods accept a cache.FileMemo object which has a 'name' attribute
 with the filename to process, but which also provides a place to cache
 conversions. Use its convert() method whenever possible to avoid carrying out
-the same conversion multiple times. See beancount.ingest.cache for more details.
+the same conversion multiple times. See beangulp.cache for more details.
 
 Synopsis:
 

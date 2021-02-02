@@ -7,9 +7,9 @@ import os
 import sys
 
 from beancount.parser import version
-from beancount.ingest import identify
-from beancount.ingest import extract
-from beancount.ingest import file
+from beangulp import identify
+from beangulp import extract
+from beangulp import file
 
 
 DESCRIPTION = ("Identify, extract or file away data downloaded from "
@@ -22,7 +22,7 @@ def ingest(importers_list, hooks=None):
     Put a call to this function at the end of your importer configuration to
     make your import script; this should be its main function, like this:
 
-      from beancount.ingest.scripts_utils import ingest
+      from beangulp.scripts_utils import ingest
       my_importers = [ ... ]
       ingest(my_importers)
 

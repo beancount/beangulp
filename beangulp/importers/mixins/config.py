@@ -2,7 +2,7 @@
 """
 __author__ = "Martin Blais <blais@furius.ca>"
 
-from beancount.ingest import importer
+from beangulp import importer
 
 
 def validate_config(config, schema, importer):

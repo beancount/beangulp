@@ -8,9 +8,9 @@ import textwrap
 import unittest
 
 from beancount.utils import test_utils
-from beancount.ingest.importer import ImporterProtocol
-from beancount.ingest import identify
-from beancount.ingest.test_utils import TestScriptsBase, TestExamplesBase
+from beangulp.importer import ImporterProtocol
+from beangulp import identify
+from beangulp.test_utils import TestScriptsBase, TestExamplesBase
 
 
 class _TestImporter(ImporterProtocol):
@@ -110,7 +110,7 @@ class TestIdentifyExamples(TestExamplesBase, TestScriptsBase):
 
         self.assertRegex(output, 'Downloads/ofxdownload.ofx')
         self.assertRegex(output,
-                         'Importer:.*beancount.ingest.importers.ofx_importer.Importer')
+                         'Importer:.*beangulp.importers.ofx_importer.Importer')
         self.assertRegex(output, 'Account:.*Liabilities:US:CreditCard')
 
 
