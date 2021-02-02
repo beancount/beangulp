@@ -13,8 +13,8 @@ import warnings
 
 from beancount.utils import test_utils
 from beancount.utils import file_utils
-from beancount.ingest import file
-from beancount.ingest.test_utils import TestScriptsBase, TestExamplesBase
+from beangulp import file
+from beangulp.test_utils import TestScriptsBase, TestExamplesBase
 
 
 class TestScriptFile(TestScriptsBase, test_utils.TestCase):

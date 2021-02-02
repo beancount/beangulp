@@ -6,8 +6,8 @@ import collections
 import itertools
 import re
 
-from beancount.ingest import cache
-from beancount.ingest import importer
+from beangulp import cache
+from beangulp import importer
 
 
 _PARTS = {'mime', 'filename', 'content'}

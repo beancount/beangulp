@@ -14,9 +14,9 @@ import textwrap
 
 from beancount.core import data
 from beancount.parser import printer
-from beancount.ingest import similar
-from beancount.ingest import identify
-from beancount.ingest import cache
+from beangulp import similar
+from beangulp import identify
+from beangulp import cache
 from beancount import loader
 
 

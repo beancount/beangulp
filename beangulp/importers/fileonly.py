@@ -5,8 +5,8 @@ Sometimes you just want to save and accumulate data
 __copyright__ = "Copyright (C) 2016  Martin Blais"
 __license__ = "GNU GPLv2"
 
-from beancount.ingest.importers.mixins import filing
-from beancount.ingest.importers.mixins import identifier
+from beangulp.importers.mixins import filing
+from beangulp.importers.mixins import identifier
 
 
 class Importer(filing.FilingMixin, identifier.IdentifyMixin):

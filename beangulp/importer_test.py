@@ -3,8 +3,8 @@ __license__ = "GNU GPLv2"
 
 import unittest
 
-from beancount.ingest import importer
-from beancount.ingest import cache
+from beangulp import importer
+from beangulp import cache
 
 
 class TestImporterProtocol(unittest.TestCase):

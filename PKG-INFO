@@ -1,0 +1,7 @@
+Description: Importers Framework for Beancount
+Official-Homepage: https://github.com/beancount/beangulp
+Author: Martin Blais
+Author-Email: blais@furius.ca
+Bugs-Reporting: mailto:blais@furius.ca
+Download-Snapshots: https://github.com/beancount/beangulp
+License: GNU GPLv2 only

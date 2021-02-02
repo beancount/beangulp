@@ -3,7 +3,7 @@
 
 Instead of running the bean-identify, bean-extract and bean-file tools, you can
 instead write a single Python script and call
-beancount.ingest.scripts_utils.ingest(). Calling this function invokes a script
+beangulp.scripts_utils.ingest(). Calling this function invokes a script
 runner that accepts one of three subcommands: identify, extract or file,
 corresponding to the bean-identify, bean-extract and bean-file programs.
 
@@ -29,9 +29,9 @@ from importers.utrade import utrade_csv
 from importers.acme import acme_pdf
 
 from beancount.core import data
-from beancount.ingest import scripts_utils
-from beancount.ingest import extract
-from beancount.ingest.importers import ofx_importer
+from beangulp import scripts_utils
+from beangulp import extract
+from beangulp.importers import ofx_importer
 
 
 # Setting this variable provides a list of importer instances.

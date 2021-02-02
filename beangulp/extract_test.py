@@ -15,10 +15,10 @@ from beancount.utils import test_utils
 from beancount.utils import misc_utils
 from beancount.parser import parser
 from beancount import loader
-from beancount.ingest import extract
-from beancount.ingest import importer
-from beancount.ingest import scripts_utils
-from beancount.ingest.test_utils import TestScriptsBase, TestExamplesBase
+from beangulp import extract
+from beangulp import importer
+from beangulp import scripts_utils
+from beangulp.test_utils import TestScriptsBase, TestExamplesBase
 
 class TestScriptExtractFromFile(test_utils.TestCase):
 

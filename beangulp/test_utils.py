@@ -7,10 +7,11 @@ import unittest
 
 from os import path
 
-from beancount.ingest import importer
-from beancount.ingest import cache
 from beancount.utils import test_utils
-from beancount.ingest import scripts_utils
+
+from beangulp import importer
+from beangulp import cache
+from beangulp import scripts_utils
 
 
 class _TestFileImporter(importer.ImporterProtocol):
@@ -102,13 +103,13 @@ class TestExamplesBase(test_utils.TestTempdirMixin, unittest.TestCase):
         super().setUp()
 
         self.example_dir = path.join(
-            test_utils.find_repository_root(__file__), 'examples', 'ingest')
+            test_utils.find_repository_root(__file__), 'examples')
 
         # Add examples dir to the Python path to import importers.
         sys.path.insert(0, path.join(self.example_dir, 'office'))
 
         # pylint: disable=import-outside-toplevel
-        from beancount.ingest.importers import ofx_importer
+        from beangulp.importers import ofx_importer
         from importers.utrade import utrade_csv
         from importers.acme import acme_pdf
 

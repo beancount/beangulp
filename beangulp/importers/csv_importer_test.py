@@ -6,8 +6,8 @@ import unittest
 from pprint import pformat
 
 from beancount.core import data
-from beancount.ingest import cache
-from beancount.ingest.importers import csv_importer as csvimp
+from beangulp import cache
+from beangulp.importers import csv_importer as csvimp
 from beancount.parser import cmptest
 from beancount.utils import test_utils
 

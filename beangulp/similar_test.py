@@ -9,7 +9,7 @@ from beancount.core import data
 from beancount.parser import cmptest
 from beancount.parser import parser
 from beancount import loader
-from beancount.ingest import similar
+from beangulp import similar
 
 
 class TestDups(cmptest.TestCase):

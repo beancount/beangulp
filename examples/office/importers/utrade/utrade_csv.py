@@ -17,7 +17,7 @@ from beancount.core import data
 from beancount.core import account
 from beancount.core import amount
 from beancount.core import position
-from beancount.ingest import importer
+from beangulp import importer
 
 
 class Importer(importer.ImporterProtocol):
