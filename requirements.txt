@@ -1,4 +1,5 @@
 git+https://github.com/beancount/beancount#egg=beancount
 chardet
 beautifulsoup4
+lxml
 python-magic>=0.4.12; sys_platform != 'win32'
