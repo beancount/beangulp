@@ -2,7 +2,7 @@ on:
   - push
   - pull_request
 jobs:
-  test:
+  lint:
     runs-on: ubuntu-20.04
     strategy:
       fail-fast: false
