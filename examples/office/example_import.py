@@ -53,7 +53,7 @@ CONFIG = [
 
 
 # Override the header on extracted text (if desired).
-extract.HEADER = ';; -*- mode: org; mode: beancount; coding: utf-8; -*-\n'
+extract.HEADER = ';; -*- mode: beancount; coding: utf-8; -*-\n'
 
 
 def clean_up_descriptions(extracted_entries):
@@ -94,4 +94,4 @@ def process_extracted_entries(extracted_entries_list, ledger_entries):
             for filename, entries in extracted_entries_list]
 
 # Invoke the script.
-scripts_utils.ingest(CONFIG, filter_funcs=[process_extracted_entries])
+scripts_utils.ingest(CONFIG, hooks=[process_extracted_entries])
