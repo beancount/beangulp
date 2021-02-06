@@ -3,10 +3,10 @@ __license__ = "GNU GPLv2"
 
 import unittest
 
+from beancount.utils import test_utils
 from beangulp.importers import fileonly
 from beangulp import cache
 from beangulp import file_type
-from beancount.utils import test_utils
 
 
 class TestFileOnly(unittest.TestCase):
