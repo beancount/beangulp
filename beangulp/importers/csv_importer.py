@@ -9,6 +9,7 @@ import csv
 import datetime
 import enum
 import io
+
 from inspect import signature
 from typing import Callable, Dict, Optional, Union
 
@@ -17,8 +18,8 @@ import dateutil.parser
 from beancount.core import data
 from beancount.core.amount import Amount
 from beancount.core.number import ZERO, D
-from beangulp.importers.mixins import filing, identifier
 from beancount.utils.date_utils import parse_date_liberally
+from beangulp.importers.mixins import filing, identifier
 
 
 class Col(enum.Enum):
@@ -351,8 +352,7 @@ class Importer(identifier.IdentifyMixin, filing.FilingMixin):
         params = signature(self.categorizer).parameters
         if len(params) < 2:
             return self.categorizer(txn)
-        else:
-            return self.categorizer(txn, row)
+        return self.categorizer(txn, row)
 
     def parse_amount(self, string):
         """The method used to create Decimal instances. You can override this."""

@@ -44,6 +44,5 @@ class FilingMixin(importer.ImporterProtocol):
         supername = super().file_name(file)
         if not self.prefix:
             return supername
-        else:
-            return '.'.join(filter(None, [self.prefix,
-                                          supername or path.basename(file.name)]))
+        return '.'.join(filter(None, [self.prefix,
+                                      supername or path.basename(file.name)]))

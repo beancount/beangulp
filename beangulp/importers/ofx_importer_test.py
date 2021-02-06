@@ -8,9 +8,9 @@ import unittest
 import bs4
 
 from beancount.core.number import D
-from beangulp.importers import ofx_importer as ofximp
 from beancount.parser import parser
 from beancount.parser import cmptest
+from beangulp.importers import ofx_importer as ofximp
 
 
 def clean_xml(string):
