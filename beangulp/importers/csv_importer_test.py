@@ -3,13 +3,14 @@ __license__ = "GNU GPLv2"
 
 import textwrap
 import unittest
-from pprint import pformat
 
+from pprint import pformat
 from beancount.core import data
-from beangulp import cache
-from beangulp.importers import csv_importer as csvimp
 from beancount.parser import cmptest
 from beancount.utils import test_utils
+from beangulp import cache
+from beangulp.importers import csv_importer as csvimp
+
 
 Col = csvimp.Col
 
@@ -226,7 +227,6 @@ class TestCSVImporter(cmptest.TestCase):
 
     @test_utils.docfile
     def test_zero_balance_produces_assertion(self, filename):
-        # pylint: disable=line-too-long
         """\
           Details,Posting Date,"Description",Amount,Type,Balance,Check or Slip #,
           DEBIT,3/18/2016,"Payment to Chafe card ending in 1234 03/18",-2680.89,ACCT_XFER,0,,

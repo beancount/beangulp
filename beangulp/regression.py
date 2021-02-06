@@ -22,14 +22,15 @@ import os
 import re
 import sys
 import unittest
+
 from os import path
 
-from beangulp.importer import ImporterProtocol
 from beancount.parser import printer
 from beancount.utils import test_utils
 from beancount.utils.misc_utils import deprecated
 from beangulp import extract
 from beangulp import cache
+from beangulp.importer import ImporterProtocol
 
 
 class ToolNotInstalled(OSError):

@@ -58,12 +58,11 @@ def guess_file_type(filename):
         if regexp.match(filename):
             return mimetype
 
-    # Try out libmagic, if it is installed.
-    if magic:
-        filetype = magic.from_file(filename, mime=True)
-        if isinstance(filetype, bytes):
-            filetype = filetype.decode('utf8')
-        return filetype
-    else:
-        raise ValueError(("Could not identify the type of file '{}'; "
-                          "try installing python-magic").format(filename))
+    if not magic:
+        ValueError(("Could not identify the type of file '{}'; "
+                    "try installing python-magic").format(filename))
+
+    filetype = magic.from_file(filename, mime=True)
+    if isinstance(filetype, bytes):
+        filetype = filetype.decode('utf8')
+    return filetype

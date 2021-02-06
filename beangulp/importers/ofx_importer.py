@@ -22,8 +22,9 @@ import datetime
 import enum
 import itertools
 import re
-from xml.sax import saxutils
+
 from os import path
+from xml.sax import saxutils
 
 import bs4
 
@@ -151,8 +152,7 @@ def parse_ofx_time(date_str):
     """
     if len(date_str) < 14:
         return datetime.datetime.strptime(date_str[:8], '%Y%m%d')
-    else:
-        return datetime.datetime.strptime(date_str[:14], '%Y%m%d%H%M%S')
+    return datetime.datetime.strptime(date_str[:14], '%Y%m%d%H%M%S')
 
 
 def find_acctids(contents):
