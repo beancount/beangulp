@@ -85,15 +85,3 @@ def identify(importers_list, files_or_directories):
             logfile.write('Importer:    {}\n'.format(importer.name() if importer else '-'))
             logfile.write('Account:     {}\n'.format(importer.file_account(file)))
             logfile.write('\n')
-
-
-DESCRIPTION = "Identify files for import"
-
-
-def add_arguments(parser):
-    """Add arguments for the identify command."""
-
-
-def run(_, __, importers_list, files_or_directories, hooks=None):
-    """Run the subcommand."""
-    return identify(importers_list, files_or_directories)

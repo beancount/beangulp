@@ -13,6 +13,7 @@ import warnings
 
 from beancount.utils import test_utils
 from beancount.utils import file_utils
+
 from beangulp import file
 from beangulp.test_utils import TestScriptsBase, TestExamplesBase
 
@@ -24,15 +25,6 @@ class TestScriptFile(TestScriptsBase, test_utils.TestCase):
         self.downloads = path.join(self.tempdir, 'Downloads')
         self.documents = path.join(self.tempdir, 'Documents')
         os.mkdir(self.documents)
-
-    def test_file_main__output_dir_does_not_exist(self):
-        with test_utils.capture('stdout', 'stderr') as (stdout, stderr):
-            with self.assertRaises(SystemExit):
-                test_utils.run_with_args(
-                    self.ingest,
-                    ['-d', self.tempdir, 'file',
-                     '--output', path.join(self.documents, "Bogus")],
-                    file.__file__)
 
     def test_move_xdev_file(self):
         file.move_xdev_file(
@@ -316,12 +308,8 @@ class TestScriptFile(TestScriptsBase, test_utils.TestCase):
         self.assertEqual(args[2], exc)
 
     def test_file(self):
-        with test_utils.capture('stdout', 'stderr') as (stdout, stderr):
-            test_utils.run_with_args(
-                self.ingest,
-                ['-d', path.join(self.tempdir, 'Downloads'),
-                 'file', '--output', self.documents],
-                file.__file__)
+        downloads = path.join(self.tempdir, 'Downloads')
+        result= self.ingest('file', downloads, '-o', self.documents)
         expected_res = [
             path.join(self.documents, x)
             for x in [r'Liabilities/CreditCard/\d\d\d\d-\d\d-\d\d\.bank\.csv',
@@ -339,14 +327,9 @@ class TestFileExamples(TestExamplesBase, TestScriptsBase):
             'ignore', module='html5lib', category=DeprecationWarning,
             message='Using or importing the ABCs from')
 
-        with test_utils.capture('stdout', 'stderr') as (_, stderr):
-            result = test_utils.run_with_args(
-                self.ingest,
-                ['-d', path.join(self.tempdir, 'Downloads'),
-                 'file', '--output={}'.format(self.tempdir)],
-                file.__file__)
-        self.assertEqual(0, result)
-        self.assertEqual("", stderr.getvalue())
+        downloads = path.join(self.tempdir, 'Downloads')
+        result = self.ingest('file', downloads, '-o', self.tempdir)
+        self.assertEqual(result.exit_code, 0)
 
         filed_files = []
         for root, dirs, files in os.walk(self.tempdir):

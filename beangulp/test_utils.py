@@ -1,17 +1,14 @@
-import functools
 import os
 import re
 import stat
 import sys
 import unittest
-
-from os import path
+import click.testing
 
 from beancount.utils import test_utils
-
+from beangulp import Ingest
 from beangulp import importer
 from beangulp import cache
-from beangulp import scripts_utils
 
 
 class _TestFileImporter(importer.ImporterProtocol):
@@ -68,6 +65,11 @@ Some random text file.
 
 class TestScriptsBase(test_utils.TestTempdirMixin, unittest.TestCase):
 
+    def ingest(self, *args):
+        runner = click.testing.CliRunner()
+        result = runner.invoke(self.main, args)
+        return result
+
     # Example input files.
     FILES = {
         'Downloads/ofxdownload.ofx': OFX_FILE,
@@ -79,8 +81,8 @@ class TestScriptsBase(test_utils.TestTempdirMixin, unittest.TestCase):
         super().setUp()
 
         for filename, contents in self.FILES.items():
-            absname = path.join(self.tempdir, filename)
-            os.makedirs(path.dirname(absname), exist_ok=True)
+            absname = os.path.join(self.tempdir, filename)
+            os.makedirs(os.path.dirname(absname), exist_ok=True)
             with open(absname, 'w') as file:
                 file.write(contents)
             if filename.endswith('.py') or filename.endswith('.sh'):
@@ -94,19 +96,24 @@ class TestScriptsBase(test_utils.TestTempdirMixin, unittest.TestCase):
                 'mybank-credit-csv', 'Liabilities:CreditCard',
                 'text/csv', '.*DATE,TRANSACTION ID,DESCRIPTION,QUANTITY,SYMBOL'),
         ]
-        self.ingest = functools.partial(scripts_utils.ingest, importers)
+        self.main = Ingest(importers).main
 
 
 class TestExamplesBase(test_utils.TestTempdirMixin, unittest.TestCase):
 
+    def ingest(self, *args):
+        runner = click.testing.CliRunner()
+        result = runner.invoke(self.main, args)
+        return result
+
     def setUp(self):
         super().setUp()
 
-        self.example_dir = path.join(
+        self.example_dir = os.path.join(
             test_utils.find_repository_root(__file__), 'examples')
 
         # Add examples dir to the Python path to import importers.
-        sys.path.insert(0, path.join(self.example_dir, 'office'))
+        sys.path.insert(0, os.path.join(self.example_dir, 'office'))
 
         # pylint: disable=import-outside-toplevel
         from beangulp.importers import ofx_importer
@@ -128,7 +135,7 @@ class TestExamplesBase(test_utils.TestTempdirMixin, unittest.TestCase):
 
             acme_pdf.Importer("Assets:US:AcmeBank"),
         ]
-        self.ingest = functools.partial(scripts_utils.ingest, importers)
+        self.main = Ingest(importers).main
 
     def tearDown(self):
         # Restore the Python path
