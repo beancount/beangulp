@@ -83,26 +83,20 @@ class TestScriptIdentify(TestScriptsBase):
 
             """).strip()
 
-        with test_utils.capture('stdout', 'stderr') as (stdout, stderr):
-            test_utils.run_with_args(
-                self.ingest, ['-d', path.join(self.tempdir, 'Downloads'), 'identify'],
-                identify.__file__)
-        output = stdout.getvalue().strip()
+        downloads = path.join(self.tempdir, 'Downloads')
+        result = self.ingest('identify', downloads)
+        output = result.stdout
         self.assertTrue(re.match(regexp, output))
 
 
 class TestIdentifyExamples(TestExamplesBase, TestScriptsBase):
 
     def test_identify_examples(self):
-        with test_utils.capture('stdout', 'stderr') as (stdout, stderr):
-            result = test_utils.run_with_args(
-                self.ingest, ['-d', path.join(self.example_dir, 'Downloads'), 'identify'],
-                identify.__file__)
+        downloads = path.join(self.example_dir, 'Downloads')
+        result = self.ingest('identify', downloads)
 
-        self.assertEqual(0, result)
-        output = stdout.getvalue()
-        errors = stderr.getvalue()
-        self.assertTrue(not errors or re.search('ERROR.*pdf2txt', errors))
+        self.assertEqual(result.exit_code, 0)
+        output = result.stdout
 
         self.assertRegex(output, 'Downloads/UTrade20160215.csv')
         self.assertRegex(output, 'Importer:.*importers.utrade.utrade_csv.Importer')
