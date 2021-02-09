@@ -66,7 +66,6 @@ def _file(ctx, src, destination, dry_run, overwrite):
     # root where the import script is located. Providing this default
     # seems better than using a required option.
     if destination is None:
-        # pylint: disable=import-outside-toplevel
         import __main__
         destination = os.path.dirname(os.path.abspath(__main__.__file__))
 
