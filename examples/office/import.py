@@ -1,41 +1,14 @@
 #!/usr/bin/env python3
-"""Alternative import configuration as Python script.
 
-Instead of running the bean-identify, bean-extract and bean-file tools, you can
-instead write a single Python script and call
-beangulp.scripts_utils.ingest(). Calling this function invokes a script
-runner that accepts one of three subcommands: identify, extract or file,
-corresponding to the bean-identify, bean-extract and bean-file programs.
+import beangulp
 
-Calling the runner yourself from Python also allows you to provide filter
-functions, or "hooks" to post-process the list of extracted entities. We've put
-an example below that doesn't do much, but you could do various things, e.g.
-make your own heuristic to detect duplicate entries, merge entries from multiple
-files, reorder the entries in your favorite order, clean up your payee names,
-add some metadata, etc. These hooks run on the final output and independently of
-the importers.
-
-Note that this script is otherwise identical to the "example.import" file in
-this directory.
-"""
-
-# Insert our custom importers path here.
-# (In practice you might just change your PYTHONPATH environment.)
-import sys
-from os import path
-sys.path.insert(0, path.join(path.dirname(__file__)))
-
+from beancount.core import data
+from beangulp.importers import ofx_importer
 from importers.utrade import utrade_csv
 from importers.acme import acme_pdf
 
-from beancount.core import data
-from beangulp import scripts_utils
-from beangulp import extract
-from beangulp.importers import ofx_importer
 
-
-# Setting this variable provides a list of importer instances.
-CONFIG = [
+importers = [
     utrade_csv.Importer("USD",
                         "Assets:US:UTrade",
                         "Assets:US:UTrade:Cash",
@@ -50,10 +23,6 @@ CONFIG = [
 
     acme_pdf.Importer("Assets:US:AcmeBank"),
 ]
-
-
-# Override the header on extracted text (if desired).
-extract.HEADER = ';; -*- mode: beancount; coding: utf-8; -*-\n'
 
 
 def clean_up_descriptions(extracted_entries):
@@ -93,5 +62,7 @@ def process_extracted_entries(extracted_entries_list, ledger_entries):
     return [(filename, clean_up_descriptions(entries))
             for filename, entries in extracted_entries_list]
 
-# Invoke the script.
-scripts_utils.ingest(CONFIG, hooks=[process_extracted_entries])
+
+if __name__ == '__main__':
+    ingest = beangulp.Ingest(importers, hooks=[process_extracted_entries])
+    ingest()
