@@ -17,7 +17,9 @@ from beancount.core import data
 from beancount.core import account
 from beancount.core import amount
 from beancount.core import position
+
 from beangulp import importer
+from beangulp.testing import main
 
 
 class Importer(importer.ImporterProtocol):
@@ -165,3 +167,15 @@ class Importer(importer.ImporterProtocol):
                              None, None))
 
         return entries
+
+
+if __name__ == '__main__':
+    importer = Importer(
+        "USD",
+        "Assets:US:UTrade",
+        "Assets:US:UTrade:Cash",
+        "Income:US:UTrade:{}:Dividend",
+        "Income:US:UTrade:{}:Gains",
+        "Expenses:Financial:Fees",
+        "Assets:US:BofA:Checking")
+    main(importer)
