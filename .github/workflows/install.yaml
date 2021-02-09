@@ -1,3 +1,4 @@
+name: install
 on:
   - push
   - pull_request
