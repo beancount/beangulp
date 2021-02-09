@@ -18,23 +18,7 @@ import subprocess
 from dateutil.parser import parse as parse_datetime
 
 from beangulp import importer
-
-
-def is_pdfminer_installed():
-    """Return true if the external PDFMiner2 tool installed."""
-    try:
-        returncode = subprocess.call(['pdf2txt.py', '-h'],
-                                     stdout=subprocess.PIPE,
-                                     stderr=subprocess.PIPE)
-    except (FileNotFoundError, PermissionError):
-        try:
-            returncode = subprocess.call(['pdf2txt', '-h'],
-                                         stdout=subprocess.PIPE,
-                                         stderr=subprocess.PIPE)
-        except (FileNotFoundError, PermissionError):
-            return False
-    else:
-        return returncode == 0
+from beangulp.testing import main
 
 
 def pdf_to_text(filename):
@@ -45,18 +29,9 @@ def pdf_to_text(filename):
     Returns:
       A string, the text contents of the filename.
     """
-    try:
-        pipe = subprocess.Popen(['pdf2txt.py', filename],
-                                stdout=subprocess.PIPE,
-                                stderr=subprocess.PIPE)
-    except (FileNotFoundError, PermissionError):
-        pipe = subprocess.Popen(['pdf2txt', filename],
-                                stdout=subprocess.PIPE,
-                                stderr=subprocess.PIPE)
-    stdout, stderr = pipe.communicate()
-    if stderr:
-        raise ValueError(stderr.decode())
-    return stdout.decode()
+    r = subprocess.run(['pdftotext', filename, '-'],
+                       stdout=subprocess.PIPE, check=True)
+    return r.stdout.decode()
 
 
 class Importer(importer.ImporterProtocol):
@@ -88,3 +63,8 @@ class Importer(importer.ImporterProtocol):
         match = re.search('Date: ([^\n]*)', text)
         if match:
             return parse_datetime(match.group(1)).date()
+
+
+if __name__ == '__main__':
+    importer = Importer("Assets:US:AcmeBank")
+    main(importer)
