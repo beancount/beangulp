@@ -115,7 +115,6 @@ class TestExamplesBase(test_utils.TestTempdirMixin, unittest.TestCase):
         # Add examples dir to the Python path to import importers.
         sys.path.insert(0, os.path.join(self.example_dir, 'office'))
 
-        # pylint: disable=import-outside-toplevel
         from beangulp.importers import ofx_importer
         from importers.utrade import utrade_csv
         from importers.acme import acme_pdf

@@ -6,6 +6,7 @@ disable=
   duplicate-code,
   fixme,
   import-error,
+  import-outside-toplevel,
   inconsistent-return-statements,
   invalid-name,
   invalid-unary-operand-type,
