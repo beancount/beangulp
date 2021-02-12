@@ -140,6 +140,13 @@ def _test(ctx, documents, expected, generate, verbose, quiet, exitfirst):
                 write_expected_file(path, account, date, name, entries)
                 log('  OK', fg='green')
                 continue
+            if not os.path.exists(path):
+                # the importer has positively identified a document
+                # for which there is no expecred output file.
+                failures += 1
+                log('  ERROR', fg='red')
+                log('  ExpectedOutputFileNotFound')
+                continue
             diff = compare_expected(path, account, date, name, entries)
             if not diff:
                 log('  PASSED', fg='green')
@@ -152,7 +159,7 @@ def _test(ctx, documents, expected, generate, verbose, quiet, exitfirst):
                 sys.stdout.write(os.linesep)
 
         elif os.path.exists(path):
-            # the importer has not identified a document it should have
+            # the importer has not identified a document it should have.
             failures += 1
             log('  ERROR', fg='red')
             log('  DocumentNotIdentified')
