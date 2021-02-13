@@ -59,14 +59,14 @@ class TestScriptFile(TestScriptsBase, test_utils.TestCase):
     def test_file__ambiguous_accounts(self, move_mock, error_mock):
         imp1 = mock.MagicMock()
         imp1.identify = mock.MagicMock(return_value=True)
-        imp1.file_account = mock.MagicMock(return_value='Assets:Account1')
-        imp1.file_date = mock.MagicMock(return_value=datetime.date.today())
-        imp1.file_name = mock.MagicMock(return_value='filename_account1')
+        imp1.account = mock.MagicMock(return_value='Assets:Account1')
+        imp1.date = mock.MagicMock(return_value=datetime.date.today())
+        imp1.filename = mock.MagicMock(return_value='filename_account1')
         imp2 = mock.MagicMock()
         imp2.identify = mock.MagicMock(return_value=True)
-        imp2.file_account = mock.MagicMock(return_value='Assets:Account2')
-        imp2.file_date = mock.MagicMock(return_value=datetime.date.today())
-        imp2.file_name = mock.MagicMock(return_value='filename_account2')
+        imp2.account = mock.MagicMock(return_value='Assets:Account2')
+        imp2.date = mock.MagicMock(return_value=datetime.date.today())
+        imp2.filename = mock.MagicMock(return_value='filename_account2')
         file.file([imp1, imp2], self.downloads, self.documents)
         self.assertEqual(0, move_mock.call_count)
         self.assertEqual(3, error_mock.call_count)
@@ -79,13 +79,13 @@ class TestScriptFile(TestScriptsBase, test_utils.TestCase):
         account = 'Assets:Account1'
         imp1 = mock.MagicMock()
         imp1.identify = mock.MagicMock(return_value=True)
-        imp1.file_account = mock.MagicMock(return_value=account)
-        imp1.file_date = mock.MagicMock(return_value=None)
-        imp1.file_name = mock.MagicMock(return_value=None)
+        imp1.account = mock.MagicMock(return_value=account)
+        imp1.date = mock.MagicMock(return_value=None)
+        imp1.filename = mock.MagicMock(return_value=None)
         imp2 = mock.MagicMock()
         imp2.identify = mock.MagicMock(return_value=True)
-        imp2.file_account = mock.MagicMock(return_value=account)
-        imp2.file_name = mock.MagicMock(return_value=None)
+        imp2.account = mock.MagicMock(return_value=account)
+        imp2.filename = mock.MagicMock(return_value=None)
         file.file([imp1, imp2], self.downloads, self.documents, mkdirs=True)
         self.assertEqual(3, move_mock.call_count)
         self.assertEqual(0, error_mock.call_count)
@@ -95,13 +95,13 @@ class TestScriptFile(TestScriptsBase, test_utils.TestCase):
     def test_file__date_uses_mtime(self, move_mock, error_mock):
         imp = mock.MagicMock()
         imp.identify = mock.MagicMock(return_value=True)
-        imp.file_account = mock.MagicMock(return_value='Assets:Account1')
-        imp.file_date = mock.MagicMock(return_value=None)
-        imp.file_name = mock.MagicMock(return_value=None)
+        imp.account = mock.MagicMock(return_value='Assets:Account1')
+        imp.date = mock.MagicMock(return_value=None)
+        imp.filename = mock.MagicMock(return_value=None)
         file.file([imp], path.join(self.downloads, 'ofxdownload.ofx'), self.documents,
                   mkdirs=True)
         self.assertEqual(1, move_mock.call_count)
-        self.assertEqual(1, imp.file_date.call_count)
+        self.assertEqual(1, imp.date.call_count)
         dest_filename = path.basename(move_mock.mock_calls[0][1][1])
         self.assertEqual(
             '{0:%Y-%m-%d}.ofxdownload.ofx'.format(datetime.date.today()),
@@ -113,28 +113,28 @@ class TestScriptFile(TestScriptsBase, test_utils.TestCase):
         date = datetime.date(2015, 2, 3)
         imp = mock.MagicMock()
         imp.identify = mock.MagicMock(return_value=True)
-        imp.file_account = mock.MagicMock(return_value='Assets:Account1')
-        imp.file_date = mock.MagicMock(return_value=date)
-        imp.file_name = mock.MagicMock(return_value=None)
+        imp.account = mock.MagicMock(return_value='Assets:Account1')
+        imp.date = mock.MagicMock(return_value=date)
+        imp.filename = mock.MagicMock(return_value=None)
         file.file([imp], path.join(self.downloads, 'ofxdownload.ofx'), self.documents,
                   mkdirs=True)
         self.assertEqual(1, move_mock.call_count)
-        self.assertEqual(1, imp.file_date.call_count)
+        self.assertEqual(1, imp.date.call_count)
         dest_filename = path.basename(move_mock.mock_calls[0][1][1])
         self.assertRegex(dest_filename, r'{}\.ofxdownload\.ofx'.format(date))
 
     @mock.patch.object(logging, 'error')
     @mock.patch.object(file, 'move_xdev_file')
-    def test_file__file_name(self, move_mock, error_mock):
+    def test_file__filename(self, move_mock, error_mock):
         imp = mock.MagicMock()
         imp.identify = mock.MagicMock(return_value=True)
-        imp.file_account = mock.MagicMock(return_value='Assets:Account1')
-        imp.file_date = mock.MagicMock(return_value=None)
-        imp.file_name = mock.MagicMock(return_value='final.ofx')
+        imp.account = mock.MagicMock(return_value='Assets:Account1')
+        imp.date = mock.MagicMock(return_value=None)
+        imp.filename = mock.MagicMock(return_value='final.ofx')
         file.file([imp], path.join(self.downloads, 'ofxdownload.ofx'), self.documents,
                   mkdirs=True)
         self.assertEqual(1, move_mock.call_count)
-        self.assertEqual(1, imp.file_date.call_count)
+        self.assertEqual(1, imp.date.call_count)
         dest_filename = path.basename(move_mock.mock_calls[0][1][1])
         self.assertRegex(dest_filename, r'\d\d\d\d-\d\d-\d\d\.final\.ofx')
 
@@ -146,12 +146,12 @@ class TestScriptFile(TestScriptsBase, test_utils.TestCase):
             pass
         imp = mock.MagicMock()
         imp.identify = mock.MagicMock(return_value=True)
-        imp.file_account = mock.MagicMock(return_value='Assets:Account1')
-        imp.file_date = mock.MagicMock(return_value=None)
-        imp.file_name = mock.MagicMock(return_value=None)
+        imp.account = mock.MagicMock(return_value='Assets:Account1')
+        imp.date = mock.MagicMock(return_value=None)
+        imp.filename = mock.MagicMock(return_value=None)
         file.file([imp], filename, self.documents, mkdirs=True, idify=True)
         self.assertEqual(1, move_mock.call_count)
-        self.assertEqual(1, imp.file_date.call_count)
+        self.assertEqual(1, imp.date.call_count)
         dest_filename = path.basename(move_mock.mock_calls[0][1][1])
         self.assertEqual(
             '{0:%Y-%m-%d}.Some_thing-To_remember.OFX'.format(datetime.date.today()),
@@ -162,9 +162,9 @@ class TestScriptFile(TestScriptsBase, test_utils.TestCase):
     def test_file__dest_dir_does_not_exist(self, move_mock, error_mock):
         imp = mock.MagicMock()
         imp.identify = mock.MagicMock(return_value=True)
-        imp.file_account = mock.MagicMock(return_value='Assets:Account1')
-        imp.file_date = mock.MagicMock(return_value=None)
-        imp.file_name = mock.MagicMock(return_value=None)
+        imp.account = mock.MagicMock(return_value='Assets:Account1')
+        imp.date = mock.MagicMock(return_value=None)
+        imp.filename = mock.MagicMock(return_value=None)
         file.file([imp], self.downloads, self.documents)
         self.assertEqual(0, move_mock.call_count)
         self.assertEqual(3, error_mock.call_count)
@@ -189,9 +189,9 @@ class TestScriptFile(TestScriptsBase, test_utils.TestCase):
             pass
         imp = mock.MagicMock()
         imp.identify = mock.MagicMock(return_value=True)
-        imp.file_account = mock.MagicMock(return_value='Assets:Account1')
-        imp.file_date = mock.MagicMock(return_value=date)
-        imp.file_name = mock.MagicMock(return_value=None)
+        imp.account = mock.MagicMock(return_value='Assets:Account1')
+        imp.date = mock.MagicMock(return_value=date)
+        imp.filename = mock.MagicMock(return_value=None)
         file.file([imp], path.join(self.downloads, 'ofxdownload.ofx'), self.documents)
         self.assertEqual(0, move_mock.call_count)
         self.assertEqual(1, error_mock.call_count)
@@ -222,9 +222,9 @@ class TestScriptFile(TestScriptsBase, test_utils.TestCase):
         date = datetime.date(2015, 1, 2)
         imp = mock.MagicMock()
         imp.identify = mock.MagicMock(return_value=True)
-        imp.file_account = mock.MagicMock(return_value='Assets:Account1')
-        imp.file_date = mock.MagicMock(return_value=date)
-        imp.file_name = mock.MagicMock(return_value='mybank')
+        imp.account = mock.MagicMock(return_value='Assets:Account1')
+        imp.date = mock.MagicMock(return_value=date)
+        imp.filename = mock.MagicMock(return_value='mybank')
         file.file([imp], [file1, file2], self.documents)
         self.assertEqual(0, move_mock.call_count)
         self.assertEqual(1, error_mock.call_count)
@@ -235,8 +235,8 @@ class TestScriptFile(TestScriptsBase, test_utils.TestCase):
         error_mock.reset_mock()
 
         # Test the case where the importer generates two distinct filenames via
-        # file_name() while we're at it.
-        imp.file_name = mock.MagicMock(side_effect=['bank1', 'bank2'])
+        # filename() while we're at it.
+        imp.filename = mock.MagicMock(side_effect=['bank1', 'bank2'])
         file.file([imp], [file1, file2], self.documents)
         self.assertEqual(2, move_mock.call_count)
         self.assertEqual(0, error_mock.call_count)
@@ -246,20 +246,20 @@ class TestScriptFile(TestScriptsBase, test_utils.TestCase):
     def test_file__dry_run(self, move_mock, error_mock):
         imp = mock.MagicMock()
         imp.identify = mock.MagicMock(return_value=True)
-        imp.file_account = mock.MagicMock(return_value='Assets:Account1')
-        imp.file_date = mock.MagicMock(return_value=None)
-        imp.file_name = mock.MagicMock(return_value=None)
+        imp.account = mock.MagicMock(return_value='Assets:Account1')
+        imp.date = mock.MagicMock(return_value=None)
+        imp.filename = mock.MagicMock(return_value=None)
         file.file([imp], self.downloads, self.documents, mkdirs=True, dry_run=True)
         self.assertEqual(0, error_mock.call_count)
         self.assertEqual(0, move_mock.call_count)
 
     @mock.patch.object(logging, 'error')
-    def test_file__file_account_raises_exception(self, error_mock):
+    def test_file__account_raises_exception(self, error_mock):
         imp = mock.MagicMock()
         imp.identify = mock.MagicMock(return_value=True)
         exc = ValueError("Unexpected error!")
-        imp.file_account = mock.MagicMock(side_effect=exc)
-        imp.name = mock.MagicMock(return_value="SomeImporter")
+        imp.account = mock.MagicMock(side_effect=exc)
+        imp.name = "SomeImporter"
         file.file_one_file(path.join(self.downloads, 'ofxdownload.ofx'), [imp],
                            self.documents)
 
@@ -274,14 +274,14 @@ class TestScriptFile(TestScriptsBase, test_utils.TestCase):
         self.assertRegex(args[0], 'No account provided by importers')
 
     @mock.patch.object(logging, 'error')
-    def test_file__file_date_raises_exception(self, error_mock):
+    def test_file__date_raises_exception(self, error_mock):
         imp = mock.MagicMock()
         imp.identify = mock.MagicMock(return_value=True)
         exc = ValueError("Unexpected error!")
-        imp.file_date = mock.MagicMock(side_effect=exc)
-        imp.file_name = mock.MagicMock(side_effect='ofxdownload.ofx')
-        imp.file_account = mock.MagicMock(side_effect='dir')
-        imp.name = mock.MagicMock(return_value="SomeImporter")
+        imp.date = mock.MagicMock(side_effect=exc)
+        imp.filename = mock.MagicMock(side_effect='ofxdownload.ofx')
+        imp.account = mock.MagicMock(side_effect='dir')
+        imp.name = "SomeImporter"
         file.file_one_file(path.join(self.downloads, 'ofxdownload.ofx'), [imp],
                            self.documents)
         self.assertEqual(1, error_mock.call_count)
@@ -291,14 +291,14 @@ class TestScriptFile(TestScriptsBase, test_utils.TestCase):
         self.assertEqual(args[2], exc)
 
     @mock.patch.object(logging, 'error')
-    def test_file__file_name_raises_exception(self, error_mock):
+    def test_file__filename_raises_exception(self, error_mock):
         imp = mock.MagicMock()
         imp.identify = mock.MagicMock(return_value=True)
         exc = ValueError("Unexpected error!")
-        imp.file_date = mock.MagicMock(return_value=None)
-        imp.file_name = mock.MagicMock(side_effect=exc)
-        imp.file_account = mock.MagicMock(side_effect='dir')
-        imp.name = mock.MagicMock(return_value="SomeImporter")
+        imp.date = mock.MagicMock(return_value=None)
+        imp.filename = mock.MagicMock(side_effect=exc)
+        imp.account = mock.MagicMock(side_effect='dir')
+        imp.name = "SomeImporter"
         file.file_one_file(path.join(self.downloads, 'ofxdownload.ofx'), [imp],
                            self.documents)
         self.assertEqual(1, error_mock.call_count)
@@ -309,7 +309,8 @@ class TestScriptFile(TestScriptsBase, test_utils.TestCase):
 
     def test_file(self):
         downloads = path.join(self.tempdir, 'Downloads')
-        result= self.ingest('file', downloads, '-o', self.documents)
+        result = self.ingest('file', downloads, '-o', self.documents)
+        self.assertEqual(result.exit_code, 0)
         expected_res = [
             path.join(self.documents, x)
             for x in [r'Liabilities/CreditCard/\d\d\d\d-\d\d-\d\d\.bank\.csv',

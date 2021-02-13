@@ -17,6 +17,7 @@ from beangulp import extract
 from beangulp import file
 from beangulp import identify
 from beangulp import importer
+from beangulp.importer import Importer
 
 
 @click.command('extract')
@@ -85,9 +86,17 @@ def _identify(ctx, src):
     return ctx.identify(src)
 
 
+def _importer(imp):
+    if isinstance(imp, Importer):
+        return imp
+    if isinstance(imp, importer.ImporterProtocol):
+        return importer.Adapter(imp)
+    raise TypeError(f'expected bengulp.Importer not {type(imp):}')
+
+
 class Ingest:
     def __init__(self, importers, hooks=None):
-        self.importers = importers
+        self.importers = [_importer(imp) for imp in importers]
         self.hooks = hooks
 
         @click.group()

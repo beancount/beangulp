@@ -1,7 +1,7 @@
 """Implementation of testing and generate functionality."""
 
 from os import path
-from typing import Callable, Iterator, List, Optional, Tuple
+from typing import Callable, Iterator, List, Optional, Tuple, Union
 import datetime
 import difflib
 import hashlib
@@ -17,8 +17,7 @@ from beancount.core import data
 from beancount.core.data import Account
 
 import beangulp
-from beangulp.importer import ImporterProtocol
-from beangulp import cache
+from beangulp.importer import Importer, ImporterProtocol
 from beangulp import extract
 
 
@@ -99,16 +98,16 @@ def compare_expected(filepath: str, *data) -> List[str]:
     return list(diff)
 
 
-def run_importer(importer: ImporterProtocol,
-                 cfile: cache._FileMemo) -> Tuple[Account,
-                                                  Optional[datetime.date],
-                                                  Optional[str],
-                                                  data.Entries]:
+def run_importer(importer: Importer,
+                 document: str) -> Tuple[Account,
+                                         Optional[datetime.date],
+                                         Optional[str],
+                                         data.Entries]:
     """Run the various importer methods on the given cached file."""
-    account = importer.file_account(cfile)
-    date = importer.file_date(cfile)
-    name = importer.file_name(cfile)
-    entries = extract.extract_from_file(cfile.name, importer, None, None)
+    account = importer.account(document)
+    date = importer.date(document)
+    name = importer.filename(document)
+    entries = extract.extract_from_file(document, importer, None, None)
     return account, date, name, entries
 
 
@@ -205,14 +204,10 @@ def run_test(ctx,
         if expected:
             expected_filename = path.join(expected, path.basename(expected_filename))
 
-        # Use the in-memory cache.
-        # TODO(blais): This will get replaced by an on-disk cache.
-        cached_file = cache.get_file(path.abspath(doc))
-
         # Run the importer's identify() method.
-        if importer.identify(cached_file):
-            account, date, name, entries = run_importer(importer, cached_file)
-            log(f'  {cached_file.name}', 1)
+        if importer.identify(doc):
+            account, date, name, entries = run_importer(importer, doc)
+            log(f'  {expected_filename}', 1)
             if account and date and name:
                 # TODO(blais): Figure out how to produce a log entry when some
                 # of these are None.
@@ -222,7 +217,7 @@ def run_test(ctx,
                 log('  OK', fg='green')
                 continue
             if not path.exists(expected_filename):
-                # the importer has positively identified a document
+                # The importer has positively identified a document
                 # for which there is no expecred output file.
                 failures += 1
                 log('  ERROR', fg='red')
@@ -247,7 +242,7 @@ def run_test(ctx,
             log('  DocumentNotIdentified')
 
         else:
-            # ignore files that are not positively identified by the
+            # Ignore files that are not positively identified by the
             # importer and for which there is no expected output file.
             log('  IGNORED')
 
@@ -258,7 +253,7 @@ def run_test(ctx,
         sys.exit(1)
 
 
-def wrap(importer: ImporterProtocol) -> Callable[[], None]:
+def wrap(importer: Union[Importer, ImporterProtocol]) -> Callable[[], None]:
     """Wrap a single importer for ingestion."""
     main = beangulp.Ingest([importer]).main
     main.help = importer.__doc__
@@ -267,7 +262,7 @@ def wrap(importer: ImporterProtocol) -> Callable[[], None]:
     return main
 
 
-def main(importer: ImporterProtocol):
+def main(importer: Union[Importer, ImporterProtocol]):
     """Call main program on a single importer. This is the main entry point."""
     main = wrap(importer)
     main()

@@ -28,11 +28,14 @@ all importers.
 __copyright__ = "Copyright (C) 2016  Martin Blais"
 __license__ = "GNU GPLv2"
 
+import inspect
+
 from datetime import date
 from typing import Optional
 
 from beancount.core import flags
 from beancount.core import data
+from beangulp import cache
 
 
 class ImporterProtocol:
@@ -85,7 +88,6 @@ class ImporterProtocol:
           extracted from the file.
         """
 
-    # TODO(blais): Rename to 'account'.
     def file_account(self, file) -> data.Account:
         """Return an account associated with the given file.
 
@@ -102,7 +104,6 @@ class ImporterProtocol:
           The name of the account that corresponds to this importer.
         """
 
-    # TODO(blais): Rename to 'filename'.
     def file_name(self, file) -> Optional[str]:
         """A filter that optionally renames a file before filing.
 
@@ -117,7 +118,6 @@ class ImporterProtocol:
           The tidied up, new filename to store it as.
         """
 
-    # TODO(blais): Rename to 'date'.
     def file_date(self, file) -> Optional[date]:
         """Attempt to obtain a date that corresponds to the given file.
 
@@ -128,3 +128,55 @@ class ImporterProtocol:
           (If no date is returned, the file creation time is used. This is the
           default.)
         """
+
+
+class Importer:
+
+    @property
+    def name(self) -> str:
+        return f'{self.__class__.__module__}.{self.__class__.__name__}'
+
+    def identify(self, path: str) -> bool:
+        return False
+
+    def extract(self, path: str, existing: data.Entries = None) -> data.Entries:
+        raise NotImplementedError
+
+    # file() support interface
+
+    def account(self, path: str) -> data.Account:
+        raise NotImplementedError
+
+    def date(self, path: str) -> Optional[date]:
+        raise NotImplementedError
+
+    def filename(self, path: str) -> Optional[str]:
+        raise NotImplementedError
+
+
+class Adapter(Importer):
+    def __init__(self, importer):
+        assert isinstance(importer, ImporterProtocol)
+        self.importer = importer
+
+    @property
+    def name(self):
+        return self.importer.name()
+
+    def identify(self, path):
+        return self.importer.identify(cache.get_file(path))
+
+    def extract(self, path, existing=None):
+        # Support calling without the second parameter.
+        if len(inspect.signature(self.importer.extract).parameters) > 2:
+            return self.importer.extract(cache.get_file(path), existing)
+        return self.importer.extract(cache.get_file(path))
+
+    def account(self, path):
+        return self.importer.file_account(cache.get_file(path))
+
+    def date(self, path):
+        return self.importer.file_date(cache.get_file(path))
+
+    def filename(self, path):
+        return self.importer.file_name(cache.get_file(path))

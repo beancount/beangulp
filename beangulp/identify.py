@@ -12,7 +12,6 @@ import sys
 from os import path
 
 from beancount.utils import file_utils
-from beangulp import cache
 
 
 # The format for the section titles in the extracted output.
@@ -56,16 +55,15 @@ def find_imports(importer_config, files_or_directories, logfile=None):
 
         # For each of the sources the user has declared, identify which
         # match the text.
-        file = cache.get_file(filename)
         matching_importers = []
         for importer in importer_config:
             try:
-                matched = importer.identify(file)
+                matched = importer.identify(filename)
                 if matched:
                     matching_importers.append(importer)
             except Exception as exc:
                 logging.exception("Importer %s.identify() raised an unexpected error: %s",
-                                  importer.name(), exc)
+                                  importer.name, exc)
 
         yield (filename, matching_importers)
 
@@ -80,8 +78,7 @@ def identify(importers_list, files_or_directories):
     logfile = sys.stdout
     for filename, importers in find_imports(importers_list, files_or_directories,
                                             logfile=logfile):
-        file = cache.get_file(filename)
         for importer in importers:
-            logfile.write('Importer:    {}\n'.format(importer.name() if importer else '-'))
-            logfile.write('Account:     {}\n'.format(importer.file_account(file)))
+            logfile.write('Importer:    {}\n'.format(importer.name if importer else '-'))
+            logfile.write('Account:     {}\n'.format(importer.account(filename)))
             logfile.write('\n')

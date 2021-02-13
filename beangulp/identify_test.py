@@ -8,18 +8,19 @@ import textwrap
 import unittest
 
 from beancount.utils import test_utils
-from beangulp.importer import ImporterProtocol
+from beangulp import Importer
 from beangulp import identify
 from beangulp.test_utils import TestScriptsBase, TestExamplesBase
 
 
-class _TestImporter(ImporterProtocol):
+class _TestImporter(Importer):
+    # pylint: disable=abstract-method
 
     def __init__(self, filename):
         self.filename = filename
 
-    def identify(self, file):
-        return file.name == self.filename
+    def identify(self, path):
+        return path == self.filename
 
 
 class TestScriptIdentifyFunctions(test_utils.TestTempdirMixin, unittest.TestCase):

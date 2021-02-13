@@ -15,7 +15,6 @@ from beancount.core import data
 from beancount.parser import printer
 from beangulp import similar
 from beangulp import identify
-from beangulp import cache
 
 
 # The format for the header in the extracted output.
@@ -53,7 +52,6 @@ def extract_from_file(filename, importer,
       Exception: If there is an error in the importer's extract() method.
     """
     # Extract the entries.
-    file = cache.get_file(filename)
 
     # Note: Let the exception through on purpose. This makes developing
     # importers much easier by rendering the details of the exceptions.
@@ -62,7 +60,7 @@ def extract_from_file(filename, importer,
     kwargs = {}
     if 'existing_entries' in inspect.signature(importer.extract).parameters:
         kwargs['existing_entries'] = existing_entries
-    new_entries = importer.extract(file, **kwargs)
+    new_entries = importer.extract(filename, **kwargs)
     if not new_entries:
         return []
 
@@ -186,7 +184,7 @@ def extract(importer_config,
                 new_entries_list.append((filename, new_entries))
             except Exception as exc:
                 logging.exception("Importer %s.extract() raised an unexpected error: %s",
-                                  importer.name(), exc)
+                                  importer.name, exc)
                 continue
 
     # Find potential duplicate entries in the result sets, either against the

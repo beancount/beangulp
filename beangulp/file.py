@@ -12,7 +12,6 @@ import re
 from beancount.core import account
 from beancount.utils import misc_utils
 from beangulp import identify
-from beangulp import cache
 
 
 def file_one_file(filename, importers, destination, idify=False, logfile=None):
@@ -31,26 +30,22 @@ def file_one_file(filename, importers, destination, idify=False, logfile=None):
     Returns:
       The full new destination filename on success, and None if there was an error.
     """
-    # Create an object to cache all the conversions between the importers
-    # and phases and what-not.
-    file = cache.get_file(filename)
-
     # Get the account corresponding to the file.
     file_accounts = []
     for index, importer in enumerate(importers):
         try:
-            account_ = importer.file_account(file)
+            account_ = importer.account(filename)
         except Exception as exc:
             account_ = None
-            logging.exception("Importer %s.file_account() raised an unexpected error: %s",
-                              importer.name(), exc)
+            logging.exception("Importer %s.account() raised an unexpected error: %s",
+                              importer.name, exc)
         if account_ is not None:
             file_accounts.append(account_)
 
     file_accounts_set = set(file_accounts)
     if not file_accounts_set:
         logging.error("No account provided by importers: {}".format(
-            ", ".join(imp.name() for imp in importers)))
+            ", ".join(imp.name for imp in importers)))
         return None
 
     if len(file_accounts_set) > 1:
@@ -73,10 +68,10 @@ def file_one_file(filename, importers, destination, idify=False, logfile=None):
     # contents of the file itself (e.g. scraping some text from the PDF
     # contents, or grabbing the last line of a CSV file).
     try:
-        date = importer.file_date(file)
+        date = importer.date(filename)
     except Exception as exc:
-        logging.exception("Importer %s.file_date() raised an unexpected error: %s",
-                          importer.name(), exc)
+        logging.exception("Importer %s.date() raised an unexpected error: %s",
+                          importer.name, exc)
         date = None
     if date is None:
         # Fallback on the last modified time of the file.
@@ -88,24 +83,24 @@ def file_one_file(filename, importers, destination, idify=False, logfile=None):
     # Apply filename renaming, if implemented.
     # Otherwise clean up the filename.
     try:
-        clean_filename = importer.file_name(file)
+        clean_filename = importer.filename(filename)
 
         # Warn the importer implementor if a name is returned and it's an
         # absolute filename.
         if clean_filename and (path.isabs(clean_filename) or os.sep in clean_filename):
-            logging.error(("The importer '%s' file_name() method should return a relative "
+            logging.error(("The importer '%s' filename() method should return a relative "
                            "filename; the filename '%s' is absolute or contains path "
                            "separators"),
-                          importer.name(), clean_filename)
+                          importer.name, clean_filename)
     except Exception as exc:
-        logging.exception("Importer %s.file_name() raised an unexpected error: %s",
-                          importer.name(), exc)
+        logging.exception("Importer %s.filename() raised an unexpected error: %s",
+                          importer.name, exc)
         clean_filename = None
     if clean_filename is None:
         # If no filename has been provided, use the basename.
-        clean_filename = path.basename(file.name)
+        clean_filename = path.basename(filename)
     elif re.match(r'\d\d\d\d-\d\d-\d\d', clean_filename):
-        logging.error("The importer '%s' file_name() method should not date the "
+        logging.error("The importer '%s' filename() method should not date the "
                       "returned filename. Implement file_date() instead.")
 
     # We need a simple filename; remove the directory part if there is one.
@@ -125,7 +120,7 @@ def file_one_file(filename, importers, destination, idify=False, logfile=None):
 
     # Print the filename and which modules matched.
     if logfile is not None:
-        logfile.write('Importer:    {}\n'.format(importer.name() if importer else '-'))
+        logfile.write('Importer:    {}\n'.format(importer.name if importer else '-'))
         logfile.write('Account:     {}\n'.format(file_account))
         logfile.write('Date:        {} (from {})\n'.format(date, date_source))
         logfile.write('Destination: {}\n'.format(new_fullname))
