@@ -1,13 +1,10 @@
 __copyright__ = "Copyright (C) 2016-2017  Martin Blais"
 __license__ = "GNU GPLv2"
 
-import inspect
 import textwrap
 
 from beancount.core import data
 from beancount.parser import printer
-
-from beangulp import cache
 from beangulp import similar
 
 
@@ -34,15 +31,9 @@ def extract_from_file(importer, filename, existing_entries):
     Returns:
       The list of imported entries.
     """
-    file = cache.get_file(filename)
-
-    # Support calling without the existing entries.
-    kwargs = {}
-    if 'existing_entries' in inspect.signature(importer.extract).parameters:
-        kwargs['existing_entries'] = existing_entries
-    entries = importer.extract(file, **kwargs)
-    if entries is None:
-        entries = []
+    entries = importer.extract(filename, existing_entries)
+    if not entries:
+        return []
 
     # Make sure the newly imported entries are sorted; don't trust the importer.
     entries.sort(key=data.entry_sortkey)

@@ -1,7 +1,7 @@
 """Implementation of testing and generate functionality."""
 
 from os import path
-from typing import Callable, List, Optional, TextIO, Tuple
+from typing import Callable, List, Optional, TextIO, Tuple, Union
 import datetime
 import difflib
 import io
@@ -15,8 +15,7 @@ from beancount.parser import printer
 from beancount.core import data
 
 import beangulp
-from beangulp.importer import ImporterProtocol
-from beangulp import cache
+from beangulp.importer import Importer, ImporterProtocol
 from beangulp import extract
 from beangulp import utils
 
@@ -65,16 +64,16 @@ def compare_expected(filepath: str, *data) -> List[str]:
     return list(diff)
 
 
-def run_importer(importer: ImporterProtocol,
-                 cfile: cache._FileMemo) -> Tuple[data.Account,
-                                                  Optional[datetime.date],
-                                                  Optional[str],
-                                                  data.Entries]:
+def run_importer(importer: Importer,
+                 document: str) -> Tuple[data.Account,
+                                         Optional[datetime.date],
+                                         Optional[str],
+                                         data.Entries]:
     """Run the various importer methods on the given cached file."""
-    account = importer.file_account(cfile)
-    date = importer.file_date(cfile)
-    name = importer.file_name(cfile)
-    entries = extract.extract_from_file(importer, cfile.name, None)
+    account = importer.account(document)
+    date = importer.date(document)
+    name = importer.filename(document)
+    entries = extract.extract_from_file(importer, document, [])
     return account, date, name, entries
 
 
@@ -189,13 +188,9 @@ def _run(ctx,
         if expected:
             expected_filename = path.join(expected, path.basename(expected_filename))
 
-        # Use the in-memory cache.
-        # TODO(blais): This will get replaced by an on-disk cache.
-        cached_file = cache.get_file(path.abspath(doc))
-
         # Run the importer's identify() method.
-        if importer.identify(cached_file):
-            account, date, name, entries = run_importer(importer, cached_file)
+        if importer.identify(doc):
+            account, date, name, entries = run_importer(importer, doc)
             log(f'  {expected_filename}', 1)
             if account is None:
                 failures += 1
@@ -254,7 +249,7 @@ def _run(ctx,
         sys.exit(1)
 
 
-def wrap(importer: ImporterProtocol) -> Callable[[], None]:
+def wrap(importer: Union[Importer, ImporterProtocol]) -> Callable[[], None]:
     """Wrap a single importer for ingestion."""
     main = beangulp.Ingest([importer]).main
     main.help = importer.__doc__
@@ -263,7 +258,7 @@ def wrap(importer: ImporterProtocol) -> Callable[[], None]:
     return main
 
 
-def main(importer: ImporterProtocol):
+def main(importer: Union[Importer, ImporterProtocol]):
     """Call main program on a single importer. This is the main entry point."""
     if not sys.warnoptions:
         # Even if DeprecationWarnings are ignored by default print

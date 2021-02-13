@@ -21,8 +21,8 @@ from beangulp import cache
 from beangulp import exceptions
 from beangulp import extract
 from beangulp import identify
-from beangulp import importer
 from beangulp import utils
+from beangulp.importer import Importer, ImporterProtocol, Adapter
 
 
 def _walk(file_or_dirs, log):
@@ -217,10 +217,10 @@ def _identify(ctx, src, failfast, verbose):
             log(' ...', nl=False)
 
             # When verbose output is requested, get the associated account.
-            account = importer.file_account(cache.get_file(filename)) if verbose else None
+            account = importer.account(filename) if verbose else None
 
             log(' OK', fg='green')
-            log(f'  {importer.name():}')
+            log(f'  {importer.name:}')
             log(f'  {account:}', 1)
 
         if failfast and errors:
@@ -230,9 +230,22 @@ def _identify(ctx, src, failfast, verbose):
         sys.exit(1)
 
 
+def _importer(importer):
+    """Check that the passed instance implements the Importer interface.
+
+    Wrap ImporterProtocol instances with Adapter as needed.
+
+    """
+    if isinstance(importer, Importer):
+        return importer
+    if isinstance(importer, ImporterProtocol):
+        return Adapter(importer)
+    raise TypeError(f'expected bengulp.Importer not {type(importer):}')
+
+
 class Ingest:
     def __init__(self, importers, hooks=None):
-        self.importers = importers
+        self.importers = [_importer(i) for i in importers]
         self.hooks = hooks
 
         @click.group()
