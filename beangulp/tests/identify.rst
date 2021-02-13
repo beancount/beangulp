@@ -12,8 +12,8 @@ An importer to create error conditions:
 
   >>> class ErrorImporter(Importer):
   ...
-  ...     def identify(self, f):
-  ...         name = path.basename(f.name)
+  ...     def identify(self, filepath):
+  ...         name = path.basename(filepath)
   ...         # An exception raised from importer code.
   ...         if name == 'error.txt':
   ...             raise ValueError(name)

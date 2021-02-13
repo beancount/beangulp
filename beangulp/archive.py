@@ -6,7 +6,6 @@ import re
 import shutil
 
 from beancount.utils import misc_utils
-from beangulp import cache
 from beangulp import utils
 from beangulp.exceptions import Error
 
@@ -31,12 +30,10 @@ def filepath(importer, filepath: str) -> str:
       contain a date.
 
     """
-    file = cache.get_file(filepath)
-
     # Get the account corresponding to the file.
-    account = importer.file_account(file)
-    filename = importer.file_name(file) or os.path.basename(file.name)
-    date = importer.file_date(file) or utils.getmdate(file.name)
+    account = importer.account(filepath)
+    filename = importer.filename(filepath) or os.path.basename(filepath)
+    date = importer.date(filepath) or utils.getmdate(filepath)
 
     # The returned filename cannot contain the file path separator character.
     if os.sep in filename:

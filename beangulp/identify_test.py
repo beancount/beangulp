@@ -22,10 +22,10 @@ class TestIdentify(unittest.TestCase):
         self.assertIsNone(importer)
 
         importer = identify.identify(importers, path.abspath('test.pdf'))
-        self.assertEqual(importer.name(), 'A')
+        self.assertEqual(importer.name, 'A')
 
         importer = identify.identify(importers, path.abspath('test.csv'))
-        self.assertEqual(importer.name(), 'B')
+        self.assertEqual(importer.name, 'B')
 
     def test_identify_collision(self):
         importers = [

@@ -12,13 +12,13 @@ An importer to create error conditions:
 
   >>> class ErrorImporter(Importer):
   ...
-  ...     def identify(self, f):
-  ...         name = path.basename(f.name)
+  ...     def identify(self, filepath):
+  ...         name = path.basename(filepath)
   ...         if name == 'error.foo':
   ...             return True
   ...         return False
   ...
-  ...     def file_name(self, f):
+  ...     def filename(self, filepath):
   ...         return 'bbb.csv'
 
 Test harness:

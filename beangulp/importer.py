@@ -1,130 +1,184 @@
-"""Importer protocol.
+"""Importer protocol definition."""
 
-All importers must comply with this interface and implement at least some of its
-methods. A configuration consists in a simple list of such importer instances.
-The importer processes run through the importers, calling some of its methods in
-order to identify, extract and file the downloaded files.
-
-Each of the methods accept a cache.FileMemo object which has a 'name' attribute
-with the filename to process, but which also provides a place to cache
-conversions. Use its convert() method whenever possible to avoid carrying out
-the same conversion multiple times. See beangulp.cache for more details.
-
-Synopsis:
-
- name(): Return a unique identifier for the importer instance.
- identify(): Return true if the identifier is able to process the file.
- extract(): Extract directives from a file's contents and return of list of entries.
- file_account(): Return an account name associated with the given file for this importer.
- file_date(): Return a date associated with the downloaded file (e.g., the statement date).
- file_name(): Return a cleaned up filename for storage (optional).
-
-Just to be clear: Although this importer will not raise NotImplementedError
-exceptions (it returns default values for each method), you NEED to derive from
-it in order to do anything meaningful. Simply instantiating this importer will
-not match not provide any useful information. It just defines the protocol for
-all importers.
-"""
 __copyright__ = "Copyright (C) 2016  Martin Blais"
 __license__ = "GNU GPLv2"
+
+import abc
+import inspect
 
 from datetime import date
 from typing import Optional
 
 from beancount.core import flags
 from beancount.core import data
+from beangulp import cache
+
+
+class Importer(abc.ABC):
+    """Interface that all source importers need to comply with.
+
+    The interface is defined as an abstract base class implementing
+    base behavior for all importers. Importer implementations need to
+    provide at least the identify() and account() methods.
+
+    """
+
+    @property
+    def name(self) -> str:
+        """Unique id for the importer.
+
+        The name is used to identify the importer in the command line
+        interface. Conventionally this is a dotted string containing
+        the module and name of the class, however a specific format is
+        not enforced.
+
+        """
+        return f'{self.__class__.__module__}.{self.__class__.__name__}'
+
+    @abc.abstractmethod
+    def identify(self, filepath: str) -> bool:
+        """Return True if this importer matches the given file.
+
+        Args:
+          filepath: Filesystem path to the document to be mathed.
+
+        Returns:
+          True if this importer can handle this file.
+
+        """
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def account(self, filepath: str) -> data.Account:
+        """Return the account associated with the given file.
+
+        The account is used to determine the archival folder for the
+        document. While the interface allows returning different
+        accounts for different documents, normally the returned
+        account is a just a function of the importer instance.
+
+        Args:
+          filepath: Filesystem path to the document being imported.
+
+        Returns:
+          An account name.
+
+        """
+        raise NotImplementedError
+
+    def date(self, filepath: str) -> Optional[date]:
+        """Return the archival date the given file.
+
+        The date is used by the archive command to form the archival
+        filename of the document. If this method returns None, the
+        date corresponding to the file document modification time is
+        used.
+
+        Args:
+          filepath: Filesystem path to the document being imported.
+
+        Returns:
+          A date object or None.
+
+        """
+        return None
+
+    def filename(self, filepath: str) -> Optional[str]:
+        """Return the archival filename for the given file.
+
+        Tidy filenames or rename documents when archiving them. This
+        method should return a valid filename or None. In the latter
+        case, the file path basename is used unmodified.
+
+        Args:
+          filepath: Filesystem path to the document being imported.
+
+        Returns:
+          The document filename to use for archiving.
+
+        """
+        return None
+
+    def extract(self, filepath: str, existing: data.Entries) -> data.Entries:
+        """Extract transactions and other directives from a document.
+
+        The list of existing entries can be used to flag some of the
+        returned transactions as known duplicates, marking them
+        setting the "__duplicate__" metadata entry to True, or to aid
+        in the processing of the document being imported.
+
+        Args:
+          filepath: Filesystem path to the document being imported.
+          existing: List of existing directives.
+
+        Returns:
+          A list of imported directives extracted from the document.
+
+        """
+        return []
 
 
 class ImporterProtocol:
-    "Interface that all source importers need to comply with."
+    """Old importers interface, superseded by the Importer ABC.
+
+    The main difference is that the methods of this class accept a
+    cache._FileMemo instance instead than the filesystem path to the
+    imported document.
+
+    """
 
     # A flag to use on new transaction. Override this flag in derived classes if
     # you prefer to create your imported transactions with a different flag.
     FLAG = flags.FLAG_OKAY
 
     def name(self):
-        """Return a unique id/name for this importer.
-
-        Returns:
-          A string which uniquely identifies this importer.
-        """
+        """See Importer class name property."""
         cls = self.__class__
         return '{}.{}'.format(cls.__module__, cls.__name__)
 
     __str__ = name
 
     def identify(self, file) -> bool:
-        """Return true if this importer matches the given file.
+        """See Importer class identify() method."""
 
-        Args:
-          file: A cache.FileMemo instance.
-        Returns:
-          A boolean, true if this importer can handle this file.
-        """
+    def file_account(self, file) -> data.Account:
+        """See Importer class account() method."""
+
+    def file_date(self, file) -> Optional[date]:
+        """See Importer class date() method."""
+
+    def file_name(self, file) -> Optional[str]:
+        """See Importer class filename() method."""
 
     def extract(self, file, existing_entries: data.Entries = None) -> data.Entries:
-        """Extract transactions from a file.
+        """See Importer class extract() method."""
 
-        If the importer would like to flag a returned transaction as a known
-        duplicate, it may opt to set the special flag "__duplicate__" to True,
-        and the transaction should be treated as a duplicate by the extraction
-        code. This is a way to let the importer use particular information about
-        previously imported transactions in order to flag them as duplicates.
-        For example, if an importer has a way to get a persistent unique id for
-        each of the imported transactions. (See this discussion for context:
-        https://groups.google.com/d/msg/beancount/0iV-ipBJb8g/-uk4wsH2AgAJ)
 
-        Args:
-          file: A cache.FileMemo instance.
-          existing_entries: An optional list of existing directives loaded from
-            the ledger which is intended to contain the extracted entries. This
-            is only provided if the user provides them via a flag in the
-            extractor program.
-        Returns:
-          A list of new, imported directives (usually mostly Transactions)
-          extracted from the file.
-        """
+class Adapter(Importer):
+    """Adapter from ImporterProtocol to Importer ABC interface."""
 
-    # TODO(blais): Rename to 'account'.
-    def file_account(self, file) -> data.Account:
-        """Return an account associated with the given file.
+    def __init__(self, importer):
+        assert isinstance(importer, ImporterProtocol)
+        self.importer = importer
 
-        Note: If you don't implement this method you won't be able to move the
-        files into its preservation hierarchy; the bean-file command won't
-        work.
+    @property
+    def name(self):
+        return self.importer.name()
 
-        Also, normally the returned account is not a function of the input
-        file--just of the importer--but it is provided anyhow.
+    def identify(self, filepath):
+        return self.importer.identify(cache.get_file(filepath))
 
-        Args:
-          file: A cache.FileMemo instance.
-        Returns:
-          The name of the account that corresponds to this importer.
-        """
+    def account(self, filepath):
+        return self.importer.file_account(cache.get_file(filepath))
 
-    # TODO(blais): Rename to 'filename'.
-    def file_name(self, file) -> Optional[str]:
-        """A filter that optionally renames a file before filing.
+    def date(self, filepath):
+        return self.importer.file_date(cache.get_file(filepath))
 
-        This is used to make tidy filenames for filed/stored document files. If
-        you don't implement this and return None, the same filename is used.
-        Note that if you return a filename, a simple, RELATIVE filename must be
-        returned, not an absolute filename.
+    def filename(self, filepath):
+        return self.importer.file_name(cache.get_file(filepath))
 
-        Args:
-          file: A cache.FileMemo instance.
-        Returns:
-          The tidied up, new filename to store it as.
-        """
-
-    # TODO(blais): Rename to 'date'.
-    def file_date(self, file) -> Optional[date]:
-        """Attempt to obtain a date that corresponds to the given file.
-
-        Args:
-          file: A cache.FileMemo instance.
-        Returns:
-          A date object, if successful, or None if a date could not be extracted.
-          (If no date is returned, the file creation time is used. This is the
-          default.)
-        """
+    def extract(self, filepath, existing):
+        p = inspect.signature(self.importer.extract).parameters
+        if len(p) > 1:
+            return self.importer.extract(cache.get_file(filepath), existing)
+        return self.importer.extract(cache.get_file(filepath))

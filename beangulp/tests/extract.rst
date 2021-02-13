@@ -12,14 +12,8 @@ An importer to create error conditions:
 
   >>> class ErrorImporter(Importer):
   ...
-  ...     def extract(self, f):
-  ...         name = path.basename(f.name)
-  ...         if name == 'error.foo':
-  ...             return True
-  ...         return False
-  ...
-  ...     def extract(self, f):
-  ...         name = path.basename(f.name)
+  ...     def extract(self, filepath, existing):
+  ...         name = path.basename(filepath)
   ...         raise ValueError(name)
 
 Test harness:
