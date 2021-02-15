@@ -5,18 +5,20 @@ to automate your Beancount ledger update. See
 http://furius.ca/beancount/doc/beangulp for a fuller documentation and
 discussion of these files.
 
+## Example Files Organization - Sophisticated
+
 There are five directories demonstrated here:
 
 * `ledger`: This is a directory, typically a repository under source control,
   containing your Beancount ledger file(s) (e.g., `ledger.beancount`) and import
   configuration ('ledger.import'), which is a Python file.
 
-* `documents`: This is directory which contains your past imported files.
+* `documents`: This is a directory containing your past imported files.
   Beangulps' filing command is able to automatically date and rename the files
   there after you've finished updating your Beancount ledger.
 
-* `importers`: This is directory, typically a repository under source control,
-  which contains your custom importers implementations. Note that in the most
+* `importers`: This is a directory, typically a repository under source control,
+  containing your custom importers implementations. Note that in the most
   general case this does not include examples of your downloaded files nor any
   personal account-specific information (e.g. account ids), because you may want
   to share your importers with others.
@@ -35,7 +37,43 @@ There are five directories demonstrated here:
   fetch from your bank(s).
 
 
+## Example Files Organization - Simpler
+
 Note that you could further simplify and merge some of these together for your
-convenience. This example shows that in the most general case you could store
-all of these things separately. In fact, the first four directories could all be
-stored to a single repository, if you want to keep really simple.
+convenience. The example above shows that in the most general case you could
+store all of these things separately. In fact, the first four directories could
+all be stored to a single repository, if you wanted to keep things really
+simple. We recommend you start that way, especially if all the information is
+overwhelming.
+
+Here's an example for how you could start with all your files in one directory:
+
+    ledger/
+    ├── ledger.beancount
+    ├── ledger.import
+    ├── importers
+    │   ├── runtests.sh
+    │   ├── acme
+    │   │   ├── acmebank1.pdf
+    │   │   ├── acmebank1.pdf.beancount
+    │   │   └── acme.py
+    │   └── utrade
+    │       ├── UTrade20140713.csv
+    │       ├── UTrade20140713.csv.beancount
+    │       ├── UTrade20150225.csv
+    │       ├── UTrade20150225.csv.beancount
+    │       ├── UTrade20150720.csv
+    │       ├── UTrade20150720.csv.beancount
+    │       └── utrade.py
+    └── documents
+        ├── Assets
+        │   └── US
+        │       ├── AcmeBank
+        │       └── UTrade
+        │           └── ...
+        ├── Expenses
+        ├── Income
+        └── Liabilities
+            └── US
+                └── CreditCard
+                    └── ...
