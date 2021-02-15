@@ -75,7 +75,7 @@ The test harness should report this file as ignored and report success::
 
 and no expected output file should be generated for it::
 
-  >>> r = main('test', documents, '--generate')
+  >>> r = main('generate', documents)
   >>> r.exit_code
   0
   >>> print(r.output)
@@ -98,7 +98,7 @@ test error::
 
 Generate the expected output file::
 
-  >>> r = main('test', documents, '--generate')
+  >>> r = main('generate', documents)
   >>> r.exit_code
   0
   >>> print(r.output)

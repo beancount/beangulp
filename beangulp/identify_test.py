@@ -99,7 +99,7 @@ class TestIdentifyExamples(TestExamplesBase, TestScriptsBase):
         output = result.stdout
 
         self.assertRegex(output, 'Downloads/UTrade20160215.csv')
-        self.assertRegex(output, 'Importer:.*importers.utrade.utrade_csv.Importer')
+        self.assertRegex(output, 'Importer:.*importers.utrade.Importer')
         self.assertRegex(output, 'Account:.*Assets:US:UTrade')
 
         self.assertRegex(output, 'Downloads/ofxdownload.ofx')
