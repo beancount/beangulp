@@ -28,7 +28,11 @@ all importers.
 __copyright__ = "Copyright (C) 2016  Martin Blais"
 __license__ = "GNU GPLv2"
 
+from datetime import date
+from typing import Optional
+
 from beancount.core import flags
+from beancount.core import data
 
 
 class ImporterProtocol:
@@ -49,7 +53,7 @@ class ImporterProtocol:
 
     __str__ = name
 
-    def identify(self, file):
+    def identify(self, file) -> bool:
         """Return true if this importer matches the given file.
 
         Args:
@@ -58,7 +62,7 @@ class ImporterProtocol:
           A boolean, true if this importer can handle this file.
         """
 
-    def extract(self, file, existing_entries=None):
+    def extract(self, file, existing_entries: data.Entries = None) -> data.Entries:
         """Extract transactions from a file.
 
         If the importer would like to flag a returned transaction as a known
@@ -81,7 +85,8 @@ class ImporterProtocol:
           extracted from the file.
         """
 
-    def file_account(self, file):
+    # TODO(blais): Rename to 'account'.
+    def file_account(self, file) -> data.Account:
         """Return an account associated with the given file.
 
         Note: If you don't implement this method you won't be able to move the
@@ -97,7 +102,8 @@ class ImporterProtocol:
           The name of the account that corresponds to this importer.
         """
 
-    def file_name(self, file):
+    # TODO(blais): Rename to 'filename'.
+    def file_name(self, file) -> Optional[str]:
         """A filter that optionally renames a file before filing.
 
         This is used to make tidy filenames for filed/stored document files. If
@@ -111,7 +117,8 @@ class ImporterProtocol:
           The tidied up, new filename to store it as.
         """
 
-    def file_date(self, file):
+    # TODO(blais): Rename to 'date'.
+    def file_date(self, file) -> Optional[date]:
         """Attempt to obtain a date that corresponds to the given file.
 
         Args:
