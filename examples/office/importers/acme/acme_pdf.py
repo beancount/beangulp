@@ -18,17 +18,13 @@ import subprocess
 from dateutil.parser import parse as parse_datetime
 
 from beangulp import importer
+from beangulp.cache import cache
 from beangulp.testing import main
 
 
+@cache
 def pdf_to_text(filename):
-    """Convert a PDF file to a text equivalent.
-
-    Args:
-      filename: A string path, the filename to convert.
-    Returns:
-      A string, the text contents of the filename.
-    """
+    """Convert a PDF document to a text equivalent."""
     r = subprocess.run(['pdftotext', filename, '-'],
                        stdout=subprocess.PIPE, check=True)
     return r.stdout.decode()
