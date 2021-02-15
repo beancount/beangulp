@@ -364,7 +364,7 @@ class TestExtractExamples(TestExamplesBase):
 
     def test_extract_examples(self):
         downloads = path.join(self.example_dir, 'Downloads')
-        existing = path.join(self.example_dir, 'office', 'example.beancount')
+        existing = path.join(self.example_dir, 'ledger', 'ledger.beancount')
         result = self.ingest('extract', downloads, '--existing', existing)
         self.assertEqual(0, result.exit_code)
         output = result.stdout

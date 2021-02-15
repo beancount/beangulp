@@ -113,26 +113,26 @@ class TestExamplesBase(test_utils.TestTempdirMixin, unittest.TestCase):
             test_utils.find_repository_root(__file__), 'examples')
 
         # Add examples dir to the Python path to import importers.
-        sys.path.insert(0, os.path.join(self.example_dir, 'office'))
+        sys.path.insert(0, self.example_dir)
 
         from beangulp.importers import ofx_importer
-        from importers.utrade import utrade_csv
-        from importers.acme import acme_pdf
+        from importers import utrade
+        from importers import acme
 
         importers = [
-            utrade_csv.Importer("USD",
-                                "Assets:US:UTrade",
-                                "Assets:US:UTrade:Cash",
-                                "Income:US:UTrade:{}:Dividend",
-                                "Income:US:UTrade:{}:Gains",
-                                "Expenses:Financial:Fees",
-                                "Assets:US:BofA:Checking"),
+            utrade.Importer("USD",
+                            "Assets:US:UTrade",
+                            "Assets:US:UTrade:Cash",
+                            "Income:US:UTrade:{}:Dividend",
+                            "Income:US:UTrade:{}:Gains",
+                            "Expenses:Financial:Fees",
+                            "Assets:US:BofA:Checking"),
 
             ofx_importer.Importer("379700001111222",
                                   "Liabilities:US:CreditCard",
                                   "bofa"),
 
-            acme_pdf.Importer("Assets:US:AcmeBank"),
+            acme.Importer("Assets:US:AcmeBank"),
         ]
         self.main = Ingest(importers).main
 
