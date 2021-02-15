@@ -112,6 +112,23 @@ Now the test should succeed::
   >>> print(r.output)
   * .../test.csv  PASSED
 
+Overwriting the expected output file is an error::
+
+  >>> r = main('generate', documents)
+  >>> r.exit_code
+  1
+  >>> print(r.output)
+  * .../test.csv  ERROR
+  FileExistsError: .../test.csv.beancount
+
+unless the --force options is specified::
+
+  >>> r = main('generate', documents, '--force')
+  >>> r.exit_code
+  0
+  >>> print(r.output)
+  * .../test.csv  OK
+
 Put back a file that should be ignored and verify that it is::
 
   >>> with open(path.join(documents, 'test.txt'), 'w') as f:
