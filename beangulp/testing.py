@@ -85,11 +85,8 @@ def compare_expected(filepath: str, *data) -> List[str]:
         buffer.seek(0)
         lines_imported = buffer.readlines()
 
-    try:
-        with open(filepath, 'r') as infile:
-            lines_expected = infile.readlines()
-    except FileNotFoundError:
-        lines_expected = []
+    with open(filepath, 'r') as infile:
+        lines_expected = infile.readlines()
 
     diff = difflib.unified_diff(lines_expected, lines_imported,
                                 tofile='expected.beancount',
@@ -261,24 +258,24 @@ def _run(ctx,
                     continue
                 log('  OK', fg='green')
                 continue
-            if not path.exists(expected_filename):
-                # the importer has positively identified a document
+            try:
+                diff = compare_expected(expected_filename, account, date, name, entries)
+            except FileNotFoundError:
+                # The importer has positively identified a document
                 # for which there is no expecred output file.
                 failures += 1
                 log('  ERROR', fg='red')
                 log('  ExpectedOutputFileNotFound')
                 continue
-            diff = compare_expected(expected_filename, account, date, name, entries)
-            if not diff:
-                log('  PASSED', fg='green')
-                continue
-
-            # Test failure. Log an error.
-            failures += 1
-            log('  ERROR', fg='red')
-            if verbosity >= 0:
-                sys.stdout.writelines(diff)
-                sys.stdout.write(os.linesep)
+            if diff:
+                # Test failure. Log an error.
+                failures += 1
+                log('  ERROR', fg='red')
+                if verbosity >= 0:
+                    sys.stdout.writelines(diff)
+                    sys.stdout.write(os.linesep)
+                    continue
+            log('  PASSED', fg='green')
 
         elif path.exists(expected_filename):
             # The importer has not identified a document it should have.
