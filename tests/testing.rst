@@ -11,17 +11,19 @@ Setup::
 
 The importer being tested::
 
-  >>> class Importer(beangulp.importer.ImporterProtocol):
-  ...     def identify(self, f):
-  ...         return f.name.endswith('.csv')
+  >>> class Importer(beangulp.Importer):
+  ...     name = 'Test'
   ...
-  ...     def file_date(self, f):
+  ...     def identify(self, f):
+  ...         return f.endswith('.csv')
+  ...
+  ...     def date(self, f):
   ...         return date(1970, 1, 1)
   ...
-  ...     def file_account(self, f):
+  ...     def account(self, f):
   ...         return 'Assets::Examples'
   ...
-  ...     def file_name(self, f):
+  ...     def filename(self, f):
   ...         return 'example.csv'
   ...
   ...     def extract(self, f, *args):
