@@ -24,6 +24,12 @@ from beangulp import file_type
 # NOTE: See get_file() at the end of this file to create instances of FileMemo.
 
 
+# Default location of cache directories.
+CACHEDIR = (path.expandvars('%LOCALAPPDATA%\\Beangulp')
+            if sys.platform == 'win32'
+            else path.expanduser('~/.cache/beangulp'))
+
+
 # Maximum number of bytes to read in order to detect the encoding of a file.
 HEAD_DETECT_MAX_BYTES = 128 * 1024
 
@@ -138,49 +144,46 @@ def get_file(filename):
         "Path should be absolute in order to guarantee a single call.")
     return _CACHE[filename]
 
+
 _CACHE = defdict.DefaultDictWithKey(_FileMemo)
 
 
-CACHEDIR = (path.expandvars('%LOCALAPPDATA%\\Beangulp')
-            if sys.platform == 'win32'
-            else path.expanduser('~/.cache/beangulp'))
-
-
 def cache(func=None, *, key=None):
+    """Memoize the result of calling the given function to a disk pickle."""
+
     def decorator(func):
         @functools.wraps(func)
         def wrapper(filename, *args, cache=None, **kwargs):
-            # compute cache filename
+            # Compute the cache filename.
             input_key = key(filename) if key else filename
             name = sha1(pickle.dumps((input_key, args, kwargs))).hexdigest() + '.pickle'
             cache_fname = path.join(CACHEDIR, name)
 
+            # We inspect the modified time of the input file and the cache.
             input_mtime = os.stat(filename).st_mtime_ns
-
             cache_mtime = 0
             with suppress(FileNotFoundError):
                 cache_mtime = os.stat(cache_fname).st_mtime_ns
 
             if cache is None:
-                # read from cache when a key function has been suplied
-                # and the cache file exists or when the filename has
-                # been used to compute the cache key and the cache
-                # entry modification time is equal or later the input
-                # file modification time.
+                # Read from cache when a key function has been supplied and the
+                # cache file exists or when the filename has been used to
+                # compute the cache key and the cache entry modification time is
+                # equal or later the input file modification time.
                 cache = cache_mtime != 0 if key else cache_mtime >= input_mtime
 
             if cache:
                 with open(cache_fname, 'rb') as f:
                     return pickle.load(f)
 
+            # Invoke the potentially expensive function.
             ret = func(filename, *args, **kwargs)
 
-            # ignore errors due to the CACHEDIR not being present
+            # Ignore errors due to the CACHEDIR not being present.
             with suppress(FileNotFoundError):
-                # to populate the cache atomically write the cache
-                # entry in a temporary file and move it to the right
-                # place with the complete content and the right
-                # modification time.
+                # To populate the cache atomically write the cache entry in a
+                # temporary file and move it to the right place with the
+                # complete content and the right modification time.
                 cache_temp = cache_fname + '~'
                 with open(cache_temp, 'wb') as f:
                     pickle.dump(ret, f)
