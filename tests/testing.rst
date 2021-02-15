@@ -59,21 +59,19 @@ Create a documents directory::
   >>> temp = mkdtemp()
   >>> documents = path.join(temp, 'documents')
   >>> mkdir(documents)
-  >>> expected = path.join(temp, 'expected')
-  >>> mkdir(expected)
 
 Poulate it with a file that should be ignored::
 
   >>> with open(path.join(documents, 'test.txt'), 'w') as f:
   ...     _ = f.write('TEST')
 
-The test harness should report this file as ingnored and report success::
+The test harness should report this file as ignored and report success::
 
   >>> r = main('test', documents)
   >>> r.exit_code
   0
   >>> print(r.output)
-  ∙ .../test.txt  IGNORED
+  * .../test.txt  IGNORED
 
 and no expected output file should be generated for it::
 
@@ -81,7 +79,7 @@ and no expected output file should be generated for it::
   >>> r.exit_code
   0
   >>> print(r.output)
-  ∙ .../test.txt  IGNORED
+  * .../test.txt  IGNORED
 
   >>> unlink(path.join(documents, 'test.txt'))
 
@@ -95,48 +93,48 @@ test error::
   >>> r.exit_code
   1
   >>> print(r.output)
-  ∙ .../test.csv  ERROR
+  * .../test.csv  ERROR
   ExpectedOutputFileNotFound
 
 Generate the expected output file::
 
-  >>> r = main('test', documents, '--generate', '--expected', expected)
+  >>> r = main('test', documents, '--generate')
   >>> r.exit_code
   0
   >>> print(r.output)
-  ∙ .../test.csv  OK
+  * .../test.csv  OK
 
-Now the test should succed::
+Now the test should succeed::
 
-  >>> r = main('test', documents, '--expected', expected)
+  >>> r = main('test', documents)
   >>> r.exit_code
   0
   >>> print(r.output)
-  ∙ .../test.csv  PASSED
+  * .../test.csv  PASSED
 
 Put back a file that should be ignored and verify that it is::
 
   >>> with open(path.join(documents, 'test.txt'), 'w') as f:
   ...     _ = f.write('IGNORED')
-  >>> r = main('test', documents, '--expected', expected)
+  >>> r = main('test', documents)
   >>> r.exit_code
   0
   >>> print(r.output)
-  ∙ .../test.csv  PASSED
-  ∙ .../test.txt  IGNORED
+  * .../test.csv  PASSED
+  * .../test.txt  IGNORED
 
   >>> unlink(path.join(documents, 'test.txt'))
 
 Altering the expected output file should result in a test error::
 
-  >>> filename = sha1(b'TEST').hexdigest() + '.beancount'
-  >>> with open(path.join(expected, filename), 'a') as f:
+  >>> filename = path.join(documents, 'test.csv.beancount')
+  >>> with open(filename, 'a') as f:
   ...     _ = f.write('FAIL')
-  >>> r = main('test', documents, '--expected', expected)
+  >>> r = main('test', documents)
   >>> r.exit_code
   1
   >>> print(r.output)
-  ∙ .../test.csv  ERROR
+  * .../test.csv  ERROR
   --- imported.beancount
   +++ expected.beancount
   @@ -1,4 +1,3 @@
@@ -149,11 +147,12 @@ When the importer does not positively identify a document that should,
 a test error is reported::
 
   >>> rename(path.join(documents, 'test.csv'), path.join(documents, 'test.foo'))
-  >>> r = main('test', documents, '--expected', expected)
+  >>> rename(path.join(documents, 'test.csv.beancount'), path.join(documents, 'test.foo.beancount'))
+  >>> r = main('test', documents)
   >>> r.exit_code
   1
   >>> print(r.output)
-  ∙ .../test.foo  ERROR
+  * .../test.foo  ERROR
   DocumentNotIdentified
 
 Cleanup::
