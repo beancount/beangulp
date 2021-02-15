@@ -70,9 +70,10 @@ def write_expected(outfile: str,
     printer.print_entries(entries, file=outfile)
 
 
-def write_expected_file(filepath: str, *data):
+def write_expected_file(filepath: str, *data, force: bool = False):
     """Writes out the expected file."""
-    with open(filepath, 'w') as expfile:
+    mode = 'w' if force else 'x'
+    with open(filepath, mode) as expfile:
         write_expected(expfile, *data)
 
 
@@ -161,7 +162,7 @@ def _test(ctx,
     output file exists must be positively identify by the importer.
 
     """
-    return _run(ctx, documents, expected, verbose, quiet, generate=False, exitfirst=exitfirst)
+    return _run(ctx, documents, expected, verbose, quiet, exitfirst=exitfirst)
 
 
 @click.command('generate')
@@ -174,12 +175,15 @@ def _test(ctx,
               help="Enable verbose output.")
 @click.option('--quiet', '-q', count=True,
               help="Suppress all output.")
+@click.option('--force', '-f', is_flag=True,
+              help='Alow to overwrite existing files.')
 @click.pass_obj
 def _generate(ctx,
               documents: List[str],
               expected: str,
               verbose: int,
-              quiet: int):
+              quiet: int,
+              force: bool):
     """Generate expected files for tests.
 
     Run the importer on all DOCUMENTS and save the import results in
@@ -197,7 +201,7 @@ def _generate(ctx,
     ".beancount".
 
     """
-    return _run(ctx, documents, expected, verbose, quiet, generate=True, exitfirst=False)
+    return _run(ctx, documents, expected, verbose, quiet, generate=True, force=force)
 
 
 def _run(ctx,
@@ -205,8 +209,9 @@ def _run(ctx,
          expected: str,
          verbose: int,
          quiet: int,
-         generate: bool,
-         exitfirst: bool):
+         generate: bool = False,
+         exitfirst: bool = False,
+         force: bool = False):
     """Do it."""
 
     assert len(ctx.importers) == 1
@@ -245,7 +250,14 @@ def _run(ctx,
                 date or modification_date(doc),
                 name or path.basename(doc)), 1)
             if generate:
-                write_expected_file(expected_filename, account, date, name, entries)
+                try:
+                    write_expected_file(expected_filename, account, date, name, entries,
+                        force=force)
+                except FileExistsError as ex:
+                    failures += 1
+                    log('  ERROR', fg='red')
+                    log('  FileExistsError: {}'.format(ex.filename))
+                    continue
                 log('  OK', fg='green')
                 continue
             if not path.exists(expected_filename):
