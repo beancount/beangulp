@@ -114,9 +114,10 @@ def run_importer(importer: ImporterProtocol,
 
 def logger(verbosity: int):
     """Convenient logging method factory."""
+    color = False if os.getenv('TERM', '') in ('', 'dumb') else None
     def log(msg, level=0, **kwargs):
         if level <= verbosity:
-            click.secho(msg, **kwargs)
+            click.secho(msg, color=color, **kwargs)
     return log
 
 
