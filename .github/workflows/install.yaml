@@ -20,5 +20,6 @@ jobs:
       - run: python setup.py install
       - run: python examples/ledger/ledger.import --help
       # Run the example importers tests
-      - run: python examples/importers/utrade.py test examples/importers_tests/utrade --verbose
       - run: python examples/importers/acme.py test examples/importers_tests/acme --verbose
+      - run: python examples/importers/csvbank.py test examples/importers_tests/csvbank --verbose
+      - run: python examples/importers/utrade.py test examples/importers_tests/utrade --verbose
