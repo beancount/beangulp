@@ -7,7 +7,7 @@ sys.path.insert(0, importers_path)
 
 from beancount.core import data
 import beangulp
-from beangulp.importers import ofx_importer
+from beangulp.importers import ofx
 
 # Import custom importers.
 import utrade
@@ -23,9 +23,9 @@ importers = [
                     "Expenses:Financial:Fees",
                     "Assets:US:BofA:Checking"),
 
-    ofx_importer.Importer("379700001111222",
-                          "Liabilities:US:CreditCard",
-                          "bofa"),
+    ofx.Importer("379700001111222",
+                 "Liabilities:US:CreditCard",
+                 "bofa"),
 
     acme.Importer("Assets:US:AcmeBank"),
 ]
