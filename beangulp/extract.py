@@ -166,6 +166,9 @@ def extract(importer_config,
       hooks: An optional list of hook functions to apply to the list of extract
         (filename, entries) pairs, in order. If not specified, find_duplicate_entries()
         is used, automatically.
+
+    Returns:
+        A list of (filename, entries) tuples after hooks have run.
     """
     allow_none_for_tags_and_links = (
         options_map and options_map["allow_deprecated_none_for_tags_and_links"])
@@ -210,3 +213,5 @@ def extract(importer_config,
         if not ascending:
             new_entries.reverse()
         print_extracted_entries(new_entries, output)
+
+    return new_entries_list
