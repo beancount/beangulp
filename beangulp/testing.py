@@ -9,6 +9,7 @@ import io
 import os
 import re
 import sys
+import warnings
 
 import click
 
@@ -306,5 +307,10 @@ def wrap(importer: ImporterProtocol) -> Callable[[], None]:
 
 def main(importer: ImporterProtocol):
     """Call main program on a single importer. This is the main entry point."""
+    if not sys.warnoptions:
+        # Even if DeprecationWarnings are ignored by default print
+        # them anyway unless other warnings settings are specified by
+        # the -W Python command line flag.
+        warnings.simplefilter('default')
     main = wrap(importer)
     main()
