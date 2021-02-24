@@ -33,3 +33,5 @@ disable=
   redefined-outer-name,
   unused-argument,
   unused-variable,
+  unused-wildcard-import,
+  wildcard-import,
