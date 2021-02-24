@@ -1,42 +1,25 @@
-"""Code that can guess a MIME type for a filename.
+"""Code that guesses a MIME type for a filename.
 
-This attempts to identify the mime-type of a file suing
+This attempts to identify the mime-type of a file using the built-in
+mimetypes library, augmented with MIME types commonly used in
+financial downloads.  If this does not produce any match it falls back
+to MIME type sniffing using ``python-magic``, if available.
 
-1. The built-in mimetypes library, then
-2. python-magic (if available), and finally
-3. some custom mappers for datatypes used in financial downloads, such as
-   Quicken files.
+This module is deprecated. Please use ``beancount.mimetypes`` instead.
 
 """
 __copyright__ = "Copyright (C) 2016  Martin Blais"
 __license__ = "GNU GPLv2"
 
-import re
 import warnings
-import mimetypes
+from beangulp import mimetypes
 
-# Try to import python-magic. This is not strictly necessary--if you don't use
-# any of the special file types you might be able to get away without it, but
-# some file types may not be detected..
+
+# python-magic is an optional dependency.
 try:
     import magic
-    # If 'filemagic' is installed, ignore it. We require the 'python-magic'
-    # wrapper.
-    if not hasattr(magic, 'from_file'):
-        warnings.warn("You have installed 'filemagic' instead of 'python-magic'; "
-                      "disabling.")
-        magic = None # pylint: disable=invalid-name
 except (ImportError, OSError):
     magic = None
-
-
-# A mapping of regular expression to MIME types.
-EXTRA_FILE_TYPES = [
-    (re.compile(regexp, re.I), filetype)
-    for regexp, filetype in (
-        (r'.*\.qbo$', 'application/vnd.intu.qbo'),
-        (r'.*\.(qfx|ofx)$', 'application/x-ofx'),
-    )]
 
 
 def guess_file_type(filename):
@@ -48,21 +31,17 @@ def guess_file_type(filename):
       A suitable mimetype string, or None if we could not guess.
     """
 
-    # Try the standard mimetypes association.
-    filetype, _ = mimetypes.guess_type(filename, False)
+    warnings.warn('beangulp.file_type.guess_file_type() is deprecated. '
+                  'Use the beangulp.mimetypes module instead.',
+                  DeprecationWarning, stacklevel=2)
+
+    filetype, encoding = mimetypes.guess_type(filename, strict=False)
     if filetype:
         return filetype
 
-    # Try out some extra types that only we know about.
-    for regexp, mimetype in EXTRA_FILE_TYPES:
-        if regexp.match(filename):
-            return mimetype
+    if magic:
+        filetype = magic.from_file(filename, mime=True)
+        if isinstance(filetype, bytes):
+            filetype = filetype.decode('utf8')
 
-    if not magic:
-        ValueError(("Could not identify the type of file '{}'; "
-                    "try installing python-magic").format(filename))
-
-    filetype = magic.from_file(filename, mime=True)
-    if isinstance(filetype, bytes):
-        filetype = filetype.decode('utf8')
     return filetype
