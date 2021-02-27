@@ -186,23 +186,23 @@ class Importer(identifier.IdentifyMixin, filing.FilingMixin):
             self.skip_lines,
         )
         if Col.DATE in iconfig:
-            reader = iter(csv.reader(open(file.name, encoding=self.encoding),
-                                     dialect=self.csv_dialect))
-            for _ in range(self.skip_lines):
-                next(reader)
-            if has_header:
-                next(reader)
-            max_date = None
-            for row in reader:
-                if not row:
-                    continue
-                if row[0].startswith('#'):
-                    continue
-                date_str = row[iconfig[Col.DATE]]
-                date = parse_date_liberally(date_str, self.dateutil_kwds)
-                if max_date is None or date > max_date:
-                    max_date = date
-            return max_date
+            with open(file.name, encoding=self.encoding) as infile:
+                reader = iter(csv.reader(infile, dialect=self.csv_dialect))
+                for _ in range(self.skip_lines):
+                    next(reader)
+                if has_header:
+                    next(reader)
+                max_date = None
+                for row in reader:
+                    if not row:
+                        continue
+                    if row[0].startswith('#'):
+                        continue
+                    date_str = row[iconfig[Col.DATE]]
+                    date = parse_date_liberally(date_str, self.dateutil_kwds)
+                    if max_date is None or date > max_date:
+                        max_date = date
+                return max_date
 
     def extract(self, file, existing_entries=None):
         account = self.file_account(file)
@@ -216,103 +216,103 @@ class Importer(identifier.IdentifyMixin, filing.FilingMixin):
             self.skip_lines,
         )
 
-        reader = iter(csv.reader(open(file.name, encoding=self.encoding),
-                                 dialect=self.csv_dialect))
+        with open(file.name, encoding=self.encoding) as infile:
+            reader = iter(csv.reader(infile, dialect=self.csv_dialect))
 
-        # Skip garbage lines
-        for _ in range(self.skip_lines):
-            next(reader)
+            # Skip garbage lines
+            for _ in range(self.skip_lines):
+                next(reader)
 
-        # Skip header, if one was detected.
-        if has_header:
-            next(reader)
+            # Skip header, if one was detected.
+            if has_header:
+                next(reader)
 
-        def get(row, ftype):
-            try:
-                return row[iconfig[ftype]] if ftype in iconfig else None
-            except IndexError:  # FIXME: this should not happen
-                return None
+            def get(row, ftype):
+                try:
+                    return row[iconfig[ftype]] if ftype in iconfig else None
+                except IndexError:  # FIXME: this should not happen
+                    return None
 
-        # Parse all the transactions.
-        first_row = last_row = None
-        for index, row in enumerate(reader, 1):
-            if not row:
-                continue
-            if row[0].startswith('#'):
-                continue
-
-            # If debugging, print out the rows.
-            if self.debug:
-                print(row)
-
-            if first_row is None:
-                first_row = row
-            last_row = row
-
-            # Extract the data we need from the row, based on the configuration.
-            date = get(row, Col.DATE)
-            txn_date = get(row, Col.TXN_DATE)
-            txn_time = get(row, Col.TXN_TIME)
-
-            payee = get(row, Col.PAYEE)
-            if payee:
-                payee = payee.strip()
-
-            fields = filter(None, [get(row, field)
-                                   for field in (Col.NARRATION1,
-                                                 Col.NARRATION2,
-                                                 Col.NARRATION3)])
-            narration = self.narration_sep.join(
-                field.strip() for field in fields).replace('\n', '; ')
-
-            tag = get(row, Col.TAG)
-            tags = {tag} if tag else data.EMPTY_SET
-
-            link = get(row, Col.REFERENCE_ID)
-            links = {link} if link else data.EMPTY_SET
-
-            last4 = get(row, Col.LAST4)
-
-            balance = get(row, Col.BALANCE)
-
-            # Create a transaction
-            meta = data.new_metadata(file.name, index)
-            if txn_date is not None:
-                meta['date'] = parse_date_liberally(txn_date,
-                                                    self.dateutil_kwds)
-            if txn_time is not None:
-                meta['time'] = str(dateutil.parser.parse(txn_time).time())
-            if balance is not None:
-                meta['balance'] = self.parse_amount(balance)
-            if last4:
-                last4_friendly = self.last4_map.get(last4.strip())
-                meta['card'] = last4_friendly if last4_friendly else last4
-            date = parse_date_liberally(date, self.dateutil_kwds)
-            txn = data.Transaction(meta, date, self.FLAG, payee, narration,
-                                   tags, links, [])
-
-            # Attach one posting to the transaction
-            amount_debit, amount_credit = self.get_amounts(iconfig, row,
-                                                           False, self.parse_amount)
-
-            # Skip empty transactions
-            if amount_debit is None and amount_credit is None:
-                continue
-
-            for amount in [amount_debit, amount_credit]:
-                if amount is None:
+            # Parse all the transactions.
+            first_row = last_row = None
+            for index, row in enumerate(reader, 1):
+                if not row:
                     continue
-                if self.invert_sign:
-                    amount = -amount
-                units = Amount(amount, self.currency)
-                txn.postings.append(
-                    data.Posting(account, units, None, None, None, None))
+                if row[0].startswith('#'):
+                    continue
 
-            # Attach the other posting(s) to the transaction.
-            txn = self.call_categorizer(txn, row)
+                # If debugging, print out the rows.
+                if self.debug:
+                    print(row)
 
-            # Add the transaction to the output list
-            entries.append(txn)
+                if first_row is None:
+                    first_row = row
+                last_row = row
+
+                # Extract the data we need from the row, based on the configuration.
+                date = get(row, Col.DATE)
+                txn_date = get(row, Col.TXN_DATE)
+                txn_time = get(row, Col.TXN_TIME)
+
+                payee = get(row, Col.PAYEE)
+                if payee:
+                    payee = payee.strip()
+
+                fields = filter(None, [get(row, field)
+                                       for field in (Col.NARRATION1,
+                                                     Col.NARRATION2,
+                                                     Col.NARRATION3)])
+                narration = self.narration_sep.join(
+                    field.strip() for field in fields).replace('\n', '; ')
+
+                tag = get(row, Col.TAG)
+                tags = {tag} if tag else data.EMPTY_SET
+
+                link = get(row, Col.REFERENCE_ID)
+                links = {link} if link else data.EMPTY_SET
+
+                last4 = get(row, Col.LAST4)
+
+                balance = get(row, Col.BALANCE)
+
+                # Create a transaction
+                meta = data.new_metadata(file.name, index)
+                if txn_date is not None:
+                    meta['date'] = parse_date_liberally(txn_date,
+                                                        self.dateutil_kwds)
+                if txn_time is not None:
+                    meta['time'] = str(dateutil.parser.parse(txn_time).time())
+                if balance is not None:
+                    meta['balance'] = self.parse_amount(balance)
+                if last4:
+                    last4_friendly = self.last4_map.get(last4.strip())
+                    meta['card'] = last4_friendly if last4_friendly else last4
+                date = parse_date_liberally(date, self.dateutil_kwds)
+                txn = data.Transaction(meta, date, self.FLAG, payee, narration,
+                                       tags, links, [])
+
+                # Attach one posting to the transaction
+                amount_debit, amount_credit = self.get_amounts(iconfig, row,
+                                                               False, self.parse_amount)
+
+                # Skip empty transactions
+                if amount_debit is None and amount_credit is None:
+                    continue
+
+                for amount in [amount_debit, amount_credit]:
+                    if amount is None:
+                        continue
+                    if self.invert_sign:
+                        amount = -amount
+                    units = Amount(amount, self.currency)
+                    txn.postings.append(
+                        data.Posting(account, units, None, None, None, None))
+
+                # Attach the other posting(s) to the transaction.
+                txn = self.call_categorizer(txn, row)
+
+                # Add the transaction to the output list
+                entries.append(txn)
 
         # Figure out if the file is in ascending or descending order.
         first_date = parse_date_liberally(get(first_row, Col.DATE),
