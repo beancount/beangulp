@@ -6,7 +6,6 @@ downloaded files, and for each of those files, extract transactions from it.
 __copyright__ = "Copyright (C) 2016-2017  Martin Blais"
 __license__ = "GNU GPLv2"
 
-import itertools
 import inspect
 import logging
 import textwrap
@@ -29,7 +28,6 @@ DUPLICATE_META = '__duplicate__'
 
 def extract_from_file(filename, importer,
                       existing_entries=None,
-                      min_date=None,
                       allow_none_for_tags_and_links=False):
     """Import entries from file 'filename' with the given matches,
 
@@ -41,9 +39,6 @@ def extract_from_file(filename, importer,
       importer: An importer object that matched the file.
       existing_entries: A list of existing entries parsed from a ledger, used to
         detect duplicates and automatically complete or categorize transactions.
-      min_date: A date before which entries should be ignored. This is useful
-        when an account has a valid check/assert; we could just ignore whatever
-        comes before, if desired.
       allow_none_for_tags_and_links: A boolean, whether to allow plugins to
         generate Transaction objects with None as value for the 'tags' or 'links'
         attributes.
@@ -72,11 +67,6 @@ def extract_from_file(filename, importer,
     # Ensure that the entries are typed correctly.
     for entry in new_entries:
         data.sanity_check_types(entry, allow_none_for_tags_and_links)
-
-    # Filter out entries with dates before 'min_date'.
-    if min_date:
-        new_entries = list(itertools.dropwhile(lambda x: x.date < min_date,
-                                               new_entries))
 
     return new_entries
 
@@ -143,7 +133,6 @@ def extract(importer_config,
             output,
             entries=None,
             options_map=None,
-            mindate=None,
             ascending=True,
             hooks=None):
     """Given an importer configuration, search for files that can be imported in the
@@ -160,7 +149,6 @@ def extract(importer_config,
       entries: A list of directives loaded from the existing file for the newly
         extracted entries to be merged in.
       options_map: The options parsed from existing file.
-      mindate: Optional minimum date to output transactions for.
       ascending: A boolean, true to print entries in ascending order, false if
         descending is desired.
       hooks: An optional list of hook functions to apply to the list of extract
@@ -181,7 +169,6 @@ def extract(importer_config,
                     filename,
                     importer,
                     existing_entries=entries,
-                    min_date=mindate,
                     allow_none_for_tags_and_links=allow_none_for_tags_and_links)
                 new_entries_list.append((filename, new_entries))
             except Exception as exc:

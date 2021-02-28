@@ -40,7 +40,6 @@ def _extract(ctx, src, output, existing, reverse):
     ctx.extract(src, output,
                 entries=entries,
                 options_map=options_map,
-                mindate=None,
                 ascending=not reverse)
 
 
