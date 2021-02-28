@@ -27,8 +27,7 @@ DUPLICATE_META = '__duplicate__'
 
 
 def extract_from_file(filename, importer,
-                      existing_entries=None,
-                      allow_none_for_tags_and_links=False):
+                      existing_entries=None):
     """Import entries from file 'filename' with the given matches,
 
     Also cross-check against a list of provided 'existing_entries' entries,
@@ -39,9 +38,6 @@ def extract_from_file(filename, importer,
       importer: An importer object that matched the file.
       existing_entries: A list of existing entries parsed from a ledger, used to
         detect duplicates and automatically complete or categorize transactions.
-      allow_none_for_tags_and_links: A boolean, whether to allow plugins to
-        generate Transaction objects with None as value for the 'tags' or 'links'
-        attributes.
     Returns:
       A list of new imported entries.
     Raises:
@@ -66,7 +62,7 @@ def extract_from_file(filename, importer,
 
     # Ensure that the entries are typed correctly.
     for entry in new_entries:
-        data.sanity_check_types(entry, allow_none_for_tags_and_links)
+        data.sanity_check_types(entry)
 
     return new_entries
 
@@ -132,7 +128,6 @@ def extract(importer_config,
             files_or_directories,
             output,
             entries=None,
-            options_map=None,
             ascending=True,
             hooks=None):
     """Given an importer configuration, search for files that can be imported in the
@@ -148,16 +143,12 @@ def extract(importer_config,
       output: A file object, to be written to.
       entries: A list of directives loaded from the existing file for the newly
         extracted entries to be merged in.
-      options_map: The options parsed from existing file.
       ascending: A boolean, true to print entries in ascending order, false if
         descending is desired.
       hooks: An optional list of hook functions to apply to the list of extract
         (filename, entries) pairs, in order. If not specified, find_duplicate_entries()
         is used, automatically.
     """
-    allow_none_for_tags_and_links = (
-        options_map and options_map["allow_deprecated_none_for_tags_and_links"])
-
     # Run all the importers and gather their result sets.
     new_entries_list = []
     for filename, importers in identify.find_imports(importer_config,
@@ -168,8 +159,7 @@ def extract(importer_config,
                 new_entries = extract_from_file(
                     filename,
                     importer,
-                    existing_entries=entries,
-                    allow_none_for_tags_and_links=allow_none_for_tags_and_links)
+                    existing_entries=entries)
                 new_entries_list.append((filename, new_entries))
             except Exception as exc:
                 logging.exception("Importer %s.extract() raised an unexpected error: %s",
