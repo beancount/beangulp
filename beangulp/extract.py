@@ -128,7 +128,7 @@ def extract(importer_config,
             files_or_directories,
             output,
             entries=None,
-            ascending=True,
+            reverse=True,
             hooks=None):
     """Given an importer configuration, search for files that can be imported in the
     list of files or directories, run the signature checks on them, and if it
@@ -143,8 +143,7 @@ def extract(importer_config,
       output: A file object, to be written to.
       entries: A list of directives loaded from the existing file for the newly
         extracted entries to be merged in.
-      ascending: A boolean, true to print entries in ascending order, false if
-        descending is desired.
+      reverse: A boolean, true to print entries in reverse order.
       hooks: An optional list of hook functions to apply to the list of extract
         (filename, entries) pairs, in order. If not specified, find_duplicate_entries()
         is used, automatically.
@@ -184,6 +183,6 @@ def extract(importer_config,
     for key, new_entries in new_entries_list:
         output.write(identify.SECTION.format(key))
         output.write('\n')
-        if not ascending:
+        if reverse:
             new_entries.reverse()
         print_extracted_entries(new_entries, output)

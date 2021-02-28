@@ -34,9 +34,7 @@ def _extract(ctx, src, output, existing, reverse):
     # Load the ledger, if one is specified.
     entries = loader.load_file(existing)[0] if existing else None
 
-    ctx.extract(src, output,
-                entries=entries,
-                ascending=not reverse)
+    ctx.extract(src, output, entries=entries, reverse=reverse)
 
 
 @click.command('file')
