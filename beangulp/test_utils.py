@@ -115,7 +115,7 @@ class TestExamplesBase(test_utils.TestTempdirMixin, unittest.TestCase):
         # Add examples dir to the Python path to import importers.
         sys.path.insert(0, self.example_dir)
 
-        from beangulp.importers import ofx
+        from importers import ofx
         from importers import utrade
         from importers import acme
 

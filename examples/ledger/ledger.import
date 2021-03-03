@@ -2,16 +2,16 @@
 
 from os import path
 import sys
-importers_path = path.join(path.dirname(path.dirname(path.abspath(__file__))), "importers")
+importers_path = path.dirname(path.dirname(path.abspath(__file__)))
 sys.path.insert(0, importers_path)
 
 from beancount.core import data
 import beangulp
-from beangulp.importers import ofx
 
 # Import custom importers.
-import utrade
-import acme
+from importers import acme
+from importers import ofx
+from importers import utrade
 
 
 importers = [
