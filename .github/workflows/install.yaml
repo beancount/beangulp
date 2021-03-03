@@ -18,8 +18,17 @@ jobs:
       # There are no released packages for beancount v3. Install from Git
       - run: python -m pip install git+https://github.com/beancount/beancount#egg=beancount
       - run: python setup.py install
-      - run: python examples/ledger/ledger.import --help
-      # Run the example importers tests
-      - run: python examples/importers/acme.py test examples/importers_tests/acme --verbose
-      - run: python examples/importers/csvbank.py test examples/importers_tests/csvbank --verbose
-      - run: python examples/importers/utrade.py test examples/importers_tests/utrade --verbose
+      - name: Run smoke test
+        run: |
+          cd examples
+          python ledger/ledger.import --help
+      - name: Run example importers unit tests
+        run: |
+          cd examples
+          python -m unittest
+      - name: Run example importers tests
+        run: |
+          cd examples
+          python importers/acme.py test importers_tests/acme --verbose
+          python importers/csvbank.py test importers_tests/csvbank --verbose
+          python importers/utrade.py test importers_tests/utrade --verbose
