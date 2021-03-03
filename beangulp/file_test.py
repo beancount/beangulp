@@ -8,14 +8,12 @@ import os
 import logging
 import datetime
 import shutil
-import unittest
-import warnings
 
 from beancount.utils import test_utils
 from beancount.utils import file_utils
 
 from beangulp import file
-from beangulp.test_utils import TestScriptsBase, TestExamplesBase
+from beangulp.test_utils import TestScriptsBase
 
 
 class TestScriptFile(TestScriptsBase, test_utils.TestCase):
@@ -317,26 +315,3 @@ class TestScriptFile(TestScriptsBase, test_utils.TestCase):
         moved_files = list(file_utils.find_files([self.documents]))
         for regexp in expected_res:
             self.assertTrue(any(re.match(regexp, filename) for filename in moved_files))
-
-
-class TestFileExamples(TestExamplesBase, TestScriptsBase):
-
-    def test_file_examples(self):
-        # For some reason via Bazel this isn't active from beancount.__init__.
-        warnings.filterwarnings(
-            'ignore', module='html5lib', category=DeprecationWarning,
-            message='Using or importing the ABCs from')
-
-        downloads = path.join(self.tempdir, 'Downloads')
-        result = self.ingest('file', downloads, '-o', self.tempdir)
-        self.assertEqual(result.exit_code, 0)
-
-        filed_files = []
-        for root, dirs, files in os.walk(self.tempdir):
-            filed_files.extend(files)
-        self.assertEqual(set(filed_files),
-                         set(['ofxdownload.ofx','bank.csv', 'readme.txt']))
-
-
-if __name__ == '__main__':
-    unittest.main()
