@@ -10,7 +10,7 @@ import bs4
 from beancount.core.number import D
 from beancount.parser import parser
 from beancount.parser import cmptest
-from beangulp.importers import ofx
+from importers import ofx
 
 
 def clean_xml(string):
