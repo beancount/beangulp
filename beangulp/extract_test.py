@@ -21,7 +21,7 @@ from beancount import loader
 from beangulp import Ingest
 from beangulp import extract
 from beangulp import importer
-from beangulp.test_utils import TestScriptsBase, TestExamplesBase
+from beangulp.test_utils import TestScriptsBase
 
 
 class TestScriptExtractFromFile(test_utils.TestCase):
@@ -333,27 +333,3 @@ class TestScriptExtract(test_utils.TestTempdirMixin, unittest.TestCase):
         result = self.ingest('extract', emptydir)
         output = result.stdout
         self.assertRegex(output, r';; -\*- mode: beancount -\*-')
-
-
-class TestExtractExamples(TestExamplesBase):
-
-    def test_extract_examples(self):
-        downloads = path.join(self.example_dir, 'Downloads')
-        existing = path.join(self.example_dir, 'ledger', 'ledger.beancount')
-        result = self.ingest('extract', downloads, '--existing', existing)
-        self.assertEqual(0, result.exit_code)
-        output = result.stdout
-
-        self.assertRegex(output, r';; -\*- mode: beancount -\*-')
-
-        self.assertRegex(output, 'Downloads/UTrade20160215.csv')
-        self.assertRegex(output, 'ORDINARY DIVIDEND~CSKO')
-        self.assertRegex(output, 'Income:US:UTrade:CSKO:Gains')
-        self.assertRegex(output, '2016-02-08 balance Assets:US:UTrade:Cash .*4665.89 USD')
-
-        self.assertRegex(output, 'Downloads/ofxdownload.ofx')
-        self.assertRegex(output, r'2013-12-16 \* "LES CAFES 400 LAFAYENEW YORK /')
-
-
-if __name__ == '__main__':
-    unittest.main()
