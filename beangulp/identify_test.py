@@ -72,11 +72,11 @@ class TestScriptIdentify(TestScriptsBase):
     def test_identify(self):
         regexp = textwrap.dedent("""\
             \\*\\*\\*\\* .*/Downloads/ofxdownload.ofx
-            Importer: +mybank-checking-ofx
+            Importer: +ofxbank.Importer
             Account: +Assets:Checking
 
             \\*\\*\\*\\* .*/Downloads/Subdir/bank.csv
-            Importer: +mybank-credit-csv
+            Importer: +csvbank.Importer
             Account: +Liabilities:CreditCard
 
             \\*\\*\\*\\* .*/Downloads/Subdir/readme.txt
