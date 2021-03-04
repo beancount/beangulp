@@ -5,7 +5,7 @@ import click.testing
 from beancount.utils import test_utils
 from beangulp import Ingest
 from beangulp import importer
-from beangulp import cache
+from beangulp import mimetypes
 
 
 class _TestFileImporter(importer.ImporterProtocol):
@@ -19,7 +19,7 @@ class _TestFileImporter(importer.ImporterProtocol):
         return self._name
 
     def identify(self, file):
-        mimetype = file.convert(cache.mimetype)
+        mimetype, encoding = mimetypes.guess_type(file.name, strict=False)
         if mimetype == self.mimetype:
             return True
         return False
