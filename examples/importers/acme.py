@@ -18,6 +18,7 @@ import subprocess
 from dateutil.parser import parse as parse_datetime
 
 from beangulp import importer
+from beangulp import mimetypes
 from beangulp.cache import cache
 from beangulp.testing import main
 
@@ -37,7 +38,8 @@ class Importer(importer.ImporterProtocol):
         self.account_filing = account_filing
 
     def identify(self, file):
-        if file.mimetype() != 'application/pdf':
+        mimetype, encoding = mimetypes.guess_type(file.name)
+        if mimetype != 'application/pdf':
             return False
 
         # Look for some words in the PDF file to figure out if it's a statement
