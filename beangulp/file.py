@@ -234,32 +234,28 @@ def file(importer_config,
 
     # Actually carry out the moving job.
     for old_filename, new_filename in jobs:
-        move_xdev_file(old_filename, new_filename, mkdirs)
+        move(old_filename, new_filename, mkdirs)
 
     return jobs
 
 
-def move_xdev_file(src_filename, dst_filename, mkdirs=False):
+def move(src: str, dst: str):
     """Move a file, potentially across devices.
 
+    The destination direcory, and all intermediate path segments, are
+    created if they do not exist. The move is performed with the
+    shutil.move() function. See the documentation of this function for
+    details of the semantic.
+
     Args:
-      src_filename: A string, the name of the file to copy.
-      dst_filename: A string, where to copy the file.
-      mkdirs: A flag, true if we should create a non-existing destination directory.
+      src: Name of the file to copy.
+      dst: Where to copy the file. For the creation of the destination
+        directory, this is assumed to be a file name and not a directory.
+
     """
-    # Create missing directory if required.
-    dst_dirname = path.dirname(dst_filename)
-    if mkdirs:
-        if not path.exists(dst_dirname):
-            os.makedirs(dst_dirname)
-    else:
-        if not path.exists(dst_dirname):
-            raise OSError("Destination directory '{}' does not exist.".format(dst_dirname))
+    # Create missing directories.
+    os.makedirs(path.dirname(dst), exist_ok=True)
 
-    # Copy the file to its new name.
-    shutil.copyfile(src_filename, dst_filename)
-
-    # Remove the old file. Note that we copy and remove to support
-    # cross-device moves, because it's sensible that the destination might
-    # be on an encrypted device.
-    os.remove(src_filename)
+    # Copy the file to its new name: use shutil.move() instead of
+    # os.rename() to support moving across filesystems.
+    shutil.move(src, dst)
