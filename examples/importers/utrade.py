@@ -57,7 +57,7 @@ class Importer(importer.ImporterProtocol):
         return datetime.datetime.strptime(path.basename(file.name),
                                           'UTrade%Y%m%d.csv').date()
 
-    def extract(self, file):
+    def extract(self, file, existing_entries=None):
         # Open the CSV file and create directives.
         entries = []
         index = 0
