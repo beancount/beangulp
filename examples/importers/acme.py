@@ -1,13 +1,10 @@
 """Example importer for PDF statements from ACME Bank.
 
-This importer identifies the file from its contents and only supports filing, it
-cannot extract any transactions from the PDF conversion to text. This is common,
-and I figured I'd provide an example for how this works.
+This importer identifies the file from its contents and only supports
+filing, it cannot extract any transactions from the PDF conversion to
+text.  This is common, and I figured I'd provide an example for how
+this works.
 
-Furthermore, it uses an external library called PDFMiner2
-(https://github.com/metachris/pdfminer), which may or may not be installed on
-your machine. This example shows how to write a test that gets skipped
-automatically when an external tool isn't installed.
 """
 __copyright__ = "Copyright (C) 2016  Martin Blais"
 __license__ = "GNU GPLv2"
