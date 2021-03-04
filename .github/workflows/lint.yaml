@@ -13,4 +13,4 @@ jobs:
         with:
           python-version: '3.9'
       - run: pip install -r requirements.txt pylint
-      - run: python -m pylint beangulp
+      - run: python -m pylint beangulp/ examples/
