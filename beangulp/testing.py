@@ -1,13 +1,12 @@
 """Implementation of testing and generate functionality."""
 
 from os import path
-from typing import Callable, Iterator, List, Optional, Tuple
+from typing import Callable, List, Optional, Tuple
 import datetime
 import difflib
 import hashlib
 import io
 import os
-import re
 import sys
 import warnings
 
@@ -21,28 +20,7 @@ import beangulp
 from beangulp.importer import ImporterProtocol
 from beangulp import cache
 from beangulp import extract
-
-
-def walk(paths: str, ignore: str) -> Iterator[str]:
-    """Yield all the files under 'paths'.
-
-    Args:
-      paths: A list of filenames and/or directory names.
-      ignore: A regular expression for filenames to ignore.
-    Yields:
-      Absolute filenames not matching 'ignore'.
-    """
-    for file_or_dir in paths:
-        file_or_dir = path.normpath(file_or_dir)
-        if path.isdir(file_or_dir):
-            for root, dirs, files in os.walk(file_or_dir):
-                for filename in sorted(files):
-                    if not re.match(ignore, filename):
-                        yield path.join(root, filename)
-            continue
-        if path.exists(file_or_dir):
-            if not re.match(ignore, file_or_dir):
-                yield file_or_dir
+from beangulp.utils import logger, walk
 
 
 def sha1sum(filepath: str) -> str:
@@ -112,15 +90,6 @@ def modification_date(filepath: str) -> datetime.date:
     """Return file modification date."""
     mtime = path.getmtime(filepath)
     return datetime.datetime.fromtimestamp(mtime).date()
-
-
-def logger(verbosity: int):
-    """Convenient logging method factory."""
-    color = False if os.getenv('TERM', '') in ('', 'dumb') else None
-    def log(msg, level=0, **kwargs):
-        if level <= verbosity:
-            click.secho(msg, color=color, **kwargs)
-    return log
 
 
 @click.command('test')
@@ -220,7 +189,10 @@ def _run(ctx,
     log = logger(verbosity)
     failures = 0
 
-    for doc in walk(documents, r".*\.beancount$"):
+    for doc in walk(documents):
+        if doc.endswith('.beancount'):
+            continue
+
         # Unless verbose mode is enabled, do not output a newline so
         # the test result is printed on the same line as the test
         # document filename.
