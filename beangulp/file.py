@@ -13,6 +13,7 @@ from beancount.core import account
 from beancount.utils import misc_utils
 from beangulp import identify
 from beangulp import cache
+from beangulp.utils import walk
 
 
 def file_one_file(filename, importers, destination, idify=False, logfile=None):
@@ -171,17 +172,31 @@ def file(importer_config,
     """
     jobs = []
     has_errors = False
-    for filename, importers in identify.find_imports(importer_config,
-                                                     files_or_directories,
-                                                     logfile):
+
+    # TODO(dnicolodi): This is necessary because the unit tests pass a
+    # string as second argument instead than the required list of
+    # files or directory paths. Fix the tests and removed this.
+    if isinstance(files_or_directories, str):
+        files_or_directories = [files_or_directories]
+
+    for filename in walk(files_or_directories):
+        print(f'* {filename:}')
+        if os.path.getsize(filename) > identify.FILE_TOO_LARGE_THRESHOLD:
+            continue
+        try:
+            importer = identify.identify(importer_config, filename)
+        except Exception as ex:
+            logging.exception("Exception from importer code: %s", ex)
+            continue
+
         # If we're debugging, print out the match text.
         # This option is useful when we're building our importer configuration,
         # to figure out which patterns to create as unique signatures.
-        if not importers:
+        if not importer:
             continue
 
         # Process a single file.
-        new_fullname = file_one_file(filename, importers, destination, idify, logfile)
+        new_fullname = file_one_file(filename, [importer], destination, idify, logfile)
         if new_fullname is None:
             continue
 
