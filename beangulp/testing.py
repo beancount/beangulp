@@ -102,7 +102,7 @@ def modification_date(filepath: str) -> datetime.date:
               help="Enable verbose output.")
 @click.option('--quiet', '-q', count=True,
               help="Suppress all output.")
-@click.option('--exitfirst', '-x', is_flag=True,
+@click.option('--failfast', '-x', is_flag=True,
               help="Stop at the first test failure.")
 @click.pass_obj
 def _test(ctx,
@@ -110,7 +110,7 @@ def _test(ctx,
           expected: str,
           verbose: int,
           quiet: int,
-          exitfirst: bool):
+          failfast: bool):
     """Test the importer.
 
     Run the importer on all DOCUMENTS and verify that it produces the
@@ -130,7 +130,7 @@ def _test(ctx,
     output file exists must be positively identify by the importer.
 
     """
-    return _run(ctx, documents, expected, verbose, quiet, exitfirst=exitfirst)
+    return _run(ctx, documents, expected, verbose, quiet, failfast=failfast)
 
 
 @click.command('generate')
@@ -178,7 +178,7 @@ def _run(ctx,
          verbose: int,
          quiet: int,
          generate: bool = False,
-         exitfirst: bool = False,
+         failfast: bool = False,
          force: bool = False):
     """Do it."""
 
@@ -261,7 +261,7 @@ def _run(ctx,
             # importer and for which there is no expected output file.
             log('  IGNORED')
 
-        if exitfirst and failures:
+        if failfast and failures:
             break
 
     if failures:
