@@ -61,10 +61,6 @@ class Importer(importer.ImporterProtocol):
         self.basename = basename
         self.balance_type = balance_type
 
-    def name(self):
-        """Include the filing account in the name."""
-        return '{}: "{}"'.format(super().name(), self.file_account(None))
-
     def identify(self, file):
         # Match for a compatible MIME type.
         if file.mimetype() not in {'application/x-ofx',
