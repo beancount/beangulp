@@ -8,15 +8,34 @@ hierarchy for preservation.
 __copyright__ = "Copyright (C) 2016,2018  Martin Blais"
 __license__ = "GNU GPLv2"
 
+
 import os
 import sys
 import click
 
 from beancount import loader
+from beangulp import cache
+from beangulp import exceptions
 from beangulp import extract
 from beangulp import file
 from beangulp import identify
 from beangulp import importer
+from beangulp import utils
+
+
+def _walk(file_or_dirs, log):
+    """Convenience wrapper around beangulp.utils.walk()
+
+    Log the name of the file being processed and check the input file
+    size against identify.FILE_TOO_LARGE_THRESHOLD for too large input.
+
+    """
+    for filename in utils.walk(file_or_dirs):
+        log(f'* {filename:}', nl=False)
+        if os.path.getsize(filename) > identify.FILE_TOO_LARGE_THRESHOLD:
+            log(' ... SKIP')
+            continue
+        yield filename
 
 
 @click.command('extract')
@@ -72,10 +91,45 @@ def _file(ctx, src, destination, dry_run, overwrite):
 
 @click.command('identify')
 @click.argument('src', nargs=-1, type=click.Path(exists=True, resolve_path=True))
+@click.option('--failfast', '-x', is_flag=True,
+              help='Stop processing at the first error.')
+@click.option('--verbose', '-v', is_flag=True,
+              help='Show account information.')
 @click.pass_obj
-def _identify(ctx, src):
-    """Identify files for import."""
-    return ctx.identify(src)
+def _identify(ctx, src, failfast, verbose):
+    """Identify files for import.
+
+    Walk the SRC list of files or directories and report each file
+    identified by one of the configured importers.  When verbose
+    output is requested, also print the account name associated to the
+    document by the importer.
+
+    """
+    log = utils.logger(verbose)
+    errors = exceptions.ExceptionsTrap(log)
+
+    for filename in _walk(src, log):
+        with errors:
+            importer = identify.identify(ctx.importers, filename)
+            if not importer:
+                log('') # Newline.
+                continue
+
+            # Signal processing of this document.
+            log(' ...', nl=False)
+
+            # When verbose output is requested, get the associated account.
+            account = importer.file_account(cache.get_file(filename)) if verbose else None
+
+            log(' OK', fg='green')
+            log(f'  {importer.name():}')
+            log(f'  {account:}', 1)
+
+        if failfast and errors:
+            break
+
+    if errors:
+        sys.exit(1)
 
 
 class Ingest:
@@ -101,9 +155,6 @@ class Ingest:
 
     def file(self, what, *args, **kwargs):
         file.file(self.importers, what, *args, **kwargs)
-
-    def identify(self, what, *args, **kwargs):
-        identify.identify(self.importers, what, *args, **kwargs)
 
     def __call__(self):
         return self.main()

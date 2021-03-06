@@ -52,42 +52,6 @@ class TestScriptFile(TestScriptsBase, test_utils.TestCase):
         file.file([imp], self.downloads, self.documents)
         self.assertEqual(0, move_mock.call_count)
 
-    @mock.patch.object(logging, 'warning')
-    @mock.patch.object(file, 'move_xdev_file')
-    def test_file__ambiguous_accounts(self, move_mock, error_mock):
-        imp1 = mock.MagicMock()
-        imp1.identify = mock.MagicMock(return_value=True)
-        imp1.file_account = mock.MagicMock(return_value='Assets:Account1')
-        imp1.file_date = mock.MagicMock(return_value=datetime.date.today())
-        imp1.file_name = mock.MagicMock(return_value='filename_account1')
-        imp2 = mock.MagicMock()
-        imp2.identify = mock.MagicMock(return_value=True)
-        imp2.file_account = mock.MagicMock(return_value='Assets:Account2')
-        imp2.file_date = mock.MagicMock(return_value=datetime.date.today())
-        imp2.file_name = mock.MagicMock(return_value='filename_account2')
-        file.file([imp1, imp2], self.downloads, self.documents)
-        self.assertEqual(0, move_mock.call_count)
-        self.assertEqual(3, error_mock.call_count)
-        self.assertTrue(all(re.match('Ambiguous accounts', call[1][0])
-                            for call in error_mock.mock_calls))
-
-    @mock.patch.object(logging, 'error')
-    @mock.patch.object(file, 'move_xdev_file')
-    def test_file__two_importers_same_accounts(self, move_mock, error_mock):
-        account = 'Assets:Account1'
-        imp1 = mock.MagicMock()
-        imp1.identify = mock.MagicMock(return_value=True)
-        imp1.file_account = mock.MagicMock(return_value=account)
-        imp1.file_date = mock.MagicMock(return_value=None)
-        imp1.file_name = mock.MagicMock(return_value=None)
-        imp2 = mock.MagicMock()
-        imp2.identify = mock.MagicMock(return_value=True)
-        imp2.file_account = mock.MagicMock(return_value=account)
-        imp2.file_name = mock.MagicMock(return_value=None)
-        file.file([imp1, imp2], self.downloads, self.documents, mkdirs=True)
-        self.assertEqual(3, move_mock.call_count)
-        self.assertEqual(0, error_mock.call_count)
-
     @mock.patch.object(logging, 'error')
     @mock.patch.object(file, 'move_xdev_file')
     def test_file__date_uses_mtime(self, move_mock, error_mock):

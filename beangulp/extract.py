@@ -6,6 +6,7 @@ downloaded files, and for each of those files, extract transactions from it.
 __copyright__ = "Copyright (C) 2016-2017  Martin Blais"
 __license__ = "GNU GPLv2"
 
+import os
 import inspect
 import logging
 import textwrap
@@ -15,6 +16,7 @@ from beancount.parser import printer
 from beangulp import similar
 from beangulp import identify
 from beangulp import cache
+from beangulp.utils import walk
 
 
 # The format for the header in the extracted output.
@@ -146,20 +148,22 @@ def extract(importer_config,
     """
     # Run all the importers and gather their result sets.
     new_entries_list = []
-    for filename, importers in identify.find_imports(importer_config,
-                                                     files_or_directories):
-        for importer in importers:
-            # Import and process the file.
-            try:
-                new_entries = extract_from_file(
-                    filename,
-                    importer,
-                    existing_entries=entries)
-                new_entries_list.append((filename, new_entries))
-            except Exception as exc:
-                logging.exception("Importer %s.extract() raised an unexpected error: %s",
-                                  importer.name(), exc)
+
+    for filename in walk(files_or_directories):
+        if os.path.getsize(filename) > identify.FILE_TOO_LARGE_THRESHOLD:
+            continue
+        try:
+            importer = identify.identify(importer_config, filename)
+            if not importer:
                 continue
+            new_entries = extract_from_file(
+                filename,
+                importer,
+                existing_entries=entries)
+            new_entries_list.append((filename, new_entries))
+        except Exception as ex:
+            logging.exception("Exception from importer code: %s", ex)
+            continue
 
     # Find potential duplicate entries in the result sets, either against the
     # list of existing ones, or against each other. A single call to this
