@@ -1,7 +1,6 @@
 Setup::
 
   >>> from datetime import date
-  >>> from hashlib import sha1
   >>> from os import mkdir, path, rename, unlink
   >>> from tempfile import mkdtemp
   >>> from shutil import rmtree
@@ -30,25 +29,25 @@ The importer being tested::
 Test harness::
 
   >>> runner = click.testing.CliRunner()
-  >>> def main(*args):
+  >>> def run(*args):
   ...     func = beangulp.testing.wrap(Importer())
   ...     return runner.invoke(func, args, catch_exceptions=False)
 
 Check the basics::
 
-  >>> r = main()
+  >>> r = run()
   >>> r.exit_code
   0
   >>> print(r.output)
   Usage: main [OPTIONS] COMMAND [ARGS]...
 
-  >>> r = main('test', '--help')
+  >>> r = run('test', '--help')
   >>> r.exit_code
   0
   >>> print(r.output)
   Usage: main test [OPTIONS] [DOCUMENTS]...
 
-  >>> r = main('test')
+  >>> r = run('test')
   >>> r.exit_code
   0
   >>> print(r.output)
@@ -67,19 +66,19 @@ Poulate it with a file that should be ignored::
 
 The test harness should report this file as ignored and report success::
 
-  >>> r = main('test', documents)
+  >>> r = run('test', documents)
   >>> r.exit_code
   0
   >>> print(r.output)
-  * .../test.txt  IGNORED
+  * .../documents/test.txt  IGNORED
 
 and no expected output file should be generated for it::
 
-  >>> r = main('generate', documents)
+  >>> r = run('generate', documents)
   >>> r.exit_code
   0
   >>> print(r.output)
-  * .../test.txt  IGNORED
+  * .../documents/test.txt  IGNORED
 
   >>> unlink(path.join(documents, 'test.txt'))
 
@@ -89,56 +88,56 @@ test error::
 
   >>> with open(path.join(documents, 'test.csv'), 'w') as f:
   ...     _ = f.write('TEST')
-  >>> r = main('test', documents)
+  >>> r = run('test', documents)
   >>> r.exit_code
   1
   >>> print(r.output)
-  * .../test.csv  ERROR
+  * .../documents/test.csv  ERROR
   ExpectedOutputFileNotFound
 
 Generate the expected output file::
 
-  >>> r = main('generate', documents)
+  >>> r = run('generate', documents)
   >>> r.exit_code
   0
   >>> print(r.output)
-  * .../test.csv  OK
+  * .../documents/test.csv  OK
 
 Now the test should succeed::
 
-  >>> r = main('test', documents)
+  >>> r = run('test', documents)
   >>> r.exit_code
   0
   >>> print(r.output)
-  * .../test.csv  PASSED
+  * .../documents/test.csv  PASSED
 
 Overwriting the expected output file is an error::
 
-  >>> r = main('generate', documents)
+  >>> r = run('generate', documents)
   >>> r.exit_code
   1
   >>> print(r.output)
-  * .../test.csv  ERROR
+  * .../documents/test.csv  ERROR
   FileExistsError: .../test.csv.beancount
 
 unless the --force options is specified::
 
-  >>> r = main('generate', documents, '--force')
+  >>> r = run('generate', documents, '--force')
   >>> r.exit_code
   0
   >>> print(r.output)
-  * .../test.csv  OK
+  * .../documents/test.csv  OK
 
 Put back a file that should be ignored and verify that it is::
 
   >>> with open(path.join(documents, 'test.txt'), 'w') as f:
   ...     _ = f.write('IGNORED')
-  >>> r = main('test', documents)
+  >>> r = run('test', documents)
   >>> r.exit_code
   0
   >>> print(r.output)
-  * .../test.csv  PASSED
-  * .../test.txt  IGNORED
+  * .../documents/test.csv  PASSED
+  * .../documents/test.txt  IGNORED
 
   >>> unlink(path.join(documents, 'test.txt'))
 
@@ -147,11 +146,11 @@ Altering the expected output file should result in a test error::
   >>> filename = path.join(documents, 'test.csv.beancount')
   >>> with open(filename, 'a') as f:
   ...     _ = f.write('FAIL')
-  >>> r = main('test', documents)
+  >>> r = run('test', documents)
   >>> r.exit_code
   1
   >>> print(r.output)
-  * .../test.csv  ERROR
+  * .../documents/test.csv  ERROR
   --- imported.beancount
   +++ expected.beancount
   @@ -1,4 +1,3 @@
@@ -165,16 +164,16 @@ a test error is reported::
 
   >>> rename(path.join(documents, 'test.csv'), path.join(documents, 'test.foo'))
   >>> rename(path.join(documents, 'test.csv.beancount'), path.join(documents, 'test.foo.beancount'))
-  >>> r = main('test', documents)
+  >>> r = run('test', documents)
   >>> r.exit_code
   1
   >>> print(r.output)
-  * .../test.foo  ERROR
+  * .../documents/test.foo  ERROR
   DocumentNotIdentified
 
 Cleanup::
 
-  >>> rmtree(documents)
+  >>> rmtree(temp)
 
 ..
    Local Variables:
