@@ -17,7 +17,6 @@ class TestFileOnly(unittest.TestCase):
                           filing='Assets:BofA:Checking',
                           prefix='bofa')
 
-    @unittest.skipIf(not file_type.magic, 'python-magic is not installed')
     @test_utils.docfile
     def test_match(self, filename):
         """\
@@ -27,13 +26,11 @@ class TestFileOnly(unittest.TestCase):
         """
         importer = fileonly.Importer(
             matchers=[('filename', 'te?mp'),
-                      ('mime', '(text|application)/'),
                       ('content', 'DATE,TYPE,REF #,DESCRIPTION,FEES,AMOUNT')],
             filing='Assets:BofA:Checking',
             prefix='bofa')
         file = cache._FileMemo(filename)
         self.assertTrue(importer.identify(file))
-
         assert importer.file_name(file).startswith('bofa.')
 
 
