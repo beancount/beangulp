@@ -27,7 +27,6 @@ class TestFileMemo(unittest.TestCase):
             self.assertEqual('abc', wrap.convert(converter))
             self.assertEqual(1, converter.call_count)
 
-    @unittest.skipIf(not file_type.magic, 'python-magic is not installed')
     def test_cache_head_and_contents(self):
         with tempfile.NamedTemporaryFile() as tmpfile:
             shutil.copy(__file__, tmpfile.name)
@@ -45,7 +44,7 @@ class TestFileMemo(unittest.TestCase):
             self.assertEqual(128, len(head))
 
             mimetype = wrap.convert(cache.mimetype)
-            self.assertRegex(mimetype, r'text/(x-(python|c\+\+)|plain)')
+            self.assertIsNone(mimetype)
 
     def test_cache_head_obeys_explict_utf8_encoding_avoids_chardet_exception(self):
         emoji_header = 'asciiHeader1,🍏Header1,asciiHeader2'.encode('utf-8')
