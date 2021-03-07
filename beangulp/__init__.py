@@ -32,16 +32,9 @@ def _extract(ctx, src, output, existing, reverse):
     """Extract transactions from documents."""
 
     # Load the ledger, if one is specified.
-    if existing:
-        entries, _, options_map = loader.load_file(existing)
-    else:
-        entries, options_map = None, None
+    entries = loader.load_file(existing)[0] if existing else None
 
-    ctx.extract(src, output,
-                entries=entries,
-                options_map=options_map,
-                mindate=None,
-                ascending=not reverse)
+    ctx.extract(src, output, entries=entries, reverse=reverse)
 
 
 @click.command('file')

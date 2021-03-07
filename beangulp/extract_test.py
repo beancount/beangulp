@@ -21,7 +21,7 @@ from beancount import loader
 from beangulp import Ingest
 from beangulp import extract
 from beangulp import importer
-from beangulp.test_utils import TestScriptsBase, TestExamplesBase
+from beangulp.test_utils import TestScriptsBase
 
 
 class TestScriptExtractFromFile(test_utils.TestCase):
@@ -71,31 +71,6 @@ class TestScriptExtractFromFile(test_utils.TestCase):
         imp.extract = mock.MagicMock(return_value=entries)
         with self.assertRaises(AssertionError):
             extract.extract_from_file('blabla.ofx', imp)
-
-    def test_extract_from_file__min_date(self):
-        entries, _, __ = loader.load_string("""
-
-          2016-02-01 * "A"
-            Assets:Account1    10.00 USD
-            Assets:Account2   -10.00 USD
-
-          2016-02-02 * "B"
-            Assets:Account1    10.00 USD
-            Assets:Account2   -10.00 USD
-
-          2016-02-03 * "C"
-            Assets:Account1    10.00 USD
-            Assets:Account2   -10.00 USD
-
-        """)
-        imp = mock.MagicMock()
-        imp.identify = mock.MagicMock(return_value=True)
-        imp.extract = mock.MagicMock(return_value=entries)
-        new_entries = extract.extract_from_file(
-            '/tmp/blabla.ofx', imp, min_date=datetime.date(2016, 2, 2))
-        self.assertEqual(2, len(new_entries))
-        self.assertEqual([datetime.date(2016, 2, 2), datetime.date(2016, 2, 3)],
-                         [entry.date for entry in new_entries])
 
     @unittest.skip("FIXME: more this to call extract()")
     def test_extract_from_file__existing_entries(self):
@@ -358,27 +333,3 @@ class TestScriptExtract(test_utils.TestTempdirMixin, unittest.TestCase):
         result = self.ingest('extract', emptydir)
         output = result.stdout
         self.assertRegex(output, r';; -\*- mode: beancount -\*-')
-
-
-class TestExtractExamples(TestExamplesBase):
-
-    def test_extract_examples(self):
-        downloads = path.join(self.example_dir, 'Downloads')
-        existing = path.join(self.example_dir, 'ledger', 'ledger.beancount')
-        result = self.ingest('extract', downloads, '--existing', existing)
-        self.assertEqual(0, result.exit_code)
-        output = result.stdout
-
-        self.assertRegex(output, r';; -\*- mode: beancount -\*-')
-
-        self.assertRegex(output, 'Downloads/UTrade20160215.csv')
-        self.assertRegex(output, 'ORDINARY DIVIDEND~CSKO')
-        self.assertRegex(output, 'Income:US:UTrade:CSKO:Gains')
-        self.assertRegex(output, '2016-02-08 balance Assets:US:UTrade:Cash .*4665.89 USD')
-
-        self.assertRegex(output, 'Downloads/ofxdownload.ofx')
-        self.assertRegex(output, r'2013-12-16 \* "LES CAFES 400 LAFAYENEW YORK /')
-
-
-if __name__ == '__main__':
-    unittest.main()

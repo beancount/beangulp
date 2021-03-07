@@ -10,7 +10,7 @@ import unittest
 from beancount.utils import test_utils
 from beangulp.importer import ImporterProtocol
 from beangulp import identify
-from beangulp.test_utils import TestScriptsBase, TestExamplesBase
+from beangulp.test_utils import TestScriptsBase
 
 
 class _TestImporter(ImporterProtocol):
@@ -87,26 +87,3 @@ class TestScriptIdentify(TestScriptsBase):
         result = self.ingest('identify', downloads)
         output = result.stdout
         self.assertTrue(re.match(regexp, output))
-
-
-class TestIdentifyExamples(TestExamplesBase, TestScriptsBase):
-
-    def test_identify_examples(self):
-        downloads = path.join(self.example_dir, 'Downloads')
-        result = self.ingest('identify', downloads)
-
-        self.assertEqual(result.exit_code, 0)
-        output = result.stdout
-
-        self.assertRegex(output, 'Downloads/UTrade20160215.csv')
-        self.assertRegex(output, 'Importer:.*importers.utrade.Importer')
-        self.assertRegex(output, 'Account:.*Assets:US:UTrade')
-
-        self.assertRegex(output, 'Downloads/ofxdownload.ofx')
-        self.assertRegex(output,
-                         'Importer:.*beangulp.importers.ofx_importer.Importer')
-        self.assertRegex(output, 'Account:.*Liabilities:US:CreditCard')
-
-
-if __name__ == '__main__':
-    unittest.main()
