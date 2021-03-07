@@ -26,8 +26,8 @@ def identify(remap, converter, file):
     """
     if remap.get('mime', None):
         mimetype = file.convert(cache.mimetype)
-        if not all(regexp.search(mimetype)
-                   for regexp in remap['mime']):
+        if not mimetype or not all(regexp.search(mimetype)
+                                   for regexp in remap['mime']):
             return False
 
     if remap.get('filename', None):
