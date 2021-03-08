@@ -1,3 +1,5 @@
+"""Test loader to make unittest test discovery pick up the doctests."""
+
 import doctest
 import unittest
 
