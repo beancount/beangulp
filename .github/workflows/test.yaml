@@ -15,4 +15,4 @@ jobs:
         with:
           python-version: ${{ matrix.python }}
       - run: pip install -r requirements.txt pytest
-      - run: python -m pytest beangulp tests
+      - run: python -m pytest beangulp
