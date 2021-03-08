@@ -4,7 +4,7 @@ from typing import Iterator
 import click
 
 
-def logger(verbosity: int):
+def logger(verbosity: int = 0):
     """Convenient logging method factory."""
     color = False if os.getenv('TERM', '') in ('', 'dumb') else None
     def log(msg, level=0, **kwargs):

@@ -1,9 +1,10 @@
 """Code to help identify, extract, and file external downloads.
 
-This package contains code to help you build importers and drive the process of
-identifying which importer to run on an externally downloaded file, extract
-transactions from them and file away these files under a clean and rigidly named
-hierarchy for preservation.
+This package contains code to help you build importers and drive the
+process of identifying which importer to run on an externally
+downloaded file, extract transactions from them and file away these
+files under a clean and rigidly named hierarchy for preservation.
+
 """
 __copyright__ = "Copyright (C) 2016,2018  Martin Blais"
 __license__ = "GNU GPLv2"
@@ -14,6 +15,7 @@ import sys
 import click
 
 from beancount import loader
+
 from beangulp import cache
 from beangulp import exceptions
 from beangulp import extract
@@ -58,20 +60,31 @@ def _extract(ctx, src, output, existing, reverse):
 
 @click.command('file')
 @click.argument('src', nargs=-1, type=click.Path(exists=True, resolve_path=True))
-@click.option('--destination', '-o',
-              type=click.Path(exists=True, file_okay=False), metavar='DIR',
+@click.option('--destination', '-o', metavar='DIR',
+              type=click.Path(exists=True, file_okay=False, resolve_path=True),
               help='The destination documents tree root directory.')
-@click.option('--dry-run', '-n', is_flag=True,
-              help='Just print where the files would be moved.')
 @click.option('--overwrite', '-f', is_flag=True,
               help='Overwrite destination files with the same name.')
+@click.option('--dry-run', '-n', is_flag=True,
+              help='Just print where the files would be moved.')
+@click.option('--failfast', '-x', is_flag=True,
+              help='Stop processing at the first error.')
 @click.pass_obj
-def _file(ctx, src, destination, dry_run, overwrite):
+def _file(ctx, src, destination, dry_run, overwrite, failfast):
     """File away documents.
 
-    Walk the list of SRC filenames or directories of downloaded files,
-    and for each of those files, move the file under a filing
-    directory corresponding to the assocaited account.
+    Walk the SRC list of files or directories and move each file
+    identified by one of the configured importers in a directory
+    hierarchy mirroring the structure of the accounts associated to
+    the documents and with a file name composed by the document date
+    and document name returned by the importer.
+
+    Documents are moved to their filing location only when no errors
+    are encountered processing all the input files.  Documents in the
+    destination directory are not overwritten, unless the --force
+    option is used.  When the directory hierarchy root is not
+    specified with the --destination DIR options, it is assumed to be
+    directory in which the ingest script is located.
 
     """
     # If the output directory is not specified, move the files at the
@@ -81,12 +94,49 @@ def _file(ctx, src, destination, dry_run, overwrite):
         import __main__
         destination = os.path.dirname(os.path.abspath(__main__.__file__))
 
-    ctx.file(src, destination,
-             dry_run=dry_run,
-             mkdirs=True,
-             overwrite=overwrite,
-             idify=True,
-             logfile=sys.stdout)
+    log = utils.logger()
+    errors = exceptions.ExceptionsTrap(log)
+    renames = []
+
+    for filename in _walk(src, log):
+        with errors:
+            importer = identify.identify(ctx.importers, filename)
+            if not importer:
+                log('') # Newline.
+                continue
+
+            # Signal processing of this document.
+            log(' ...', nl=False)
+
+            destpath = file.filepath(importer, filename)
+
+            # Prepend destination directory path.
+            destpath = os.path.join(destination, destpath)
+
+            # Check for destination filename collisions.
+            collisions = [src for src, dst in renames if dst == destpath]
+            if collisions:
+                raise exceptions.Error('Collision in destination file path.', destpath)
+
+            # Check if the destination file already exists.
+            if not overwrite and os.path.exists(destpath):
+                raise exceptions.Error('Destination file already exists.', destpath)
+
+            renames.append((filename, destpath))
+            log(' OK', fg='green')
+            log(f'  {destpath:}')
+
+        if failfast and errors:
+            break
+
+    # If there are any errors, stop here.
+    if errors:
+        log('# Errors detected: documents will not be filed.')
+        sys.exit(1)
+
+    if not dry_run:
+        for src, dst in renames:
+            file.move(src, dst)
 
 
 @click.command('identify')
@@ -152,9 +202,6 @@ class Ingest:
 
     def extract(self, what, *args, **kwargs):
         extract.extract(self.importers, what, *args, hooks=self.hooks, **kwargs)
-
-    def file(self, what, *args, **kwargs):
-        file.file(self.importers, what, *args, **kwargs)
 
     def __call__(self):
         return self.main()

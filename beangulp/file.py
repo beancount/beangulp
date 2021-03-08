@@ -1,242 +1,58 @@
 __copyright__ = "Copyright (C) 2016  Martin Blais"
 __license__ = "GNU GPLv2"
 
-from os import path
-import collections
-import datetime
-import logging
 import os
-import shutil
 import re
+import shutil
 
-from beancount.core import account
 from beancount.utils import misc_utils
-from beangulp import identify
 from beangulp import cache
-from beangulp.utils import walk
+from beangulp import utils
+from beangulp.exceptions import Error
 
 
-def file_one_file(filename, importers, destination, idify=False, logfile=None):
-    """Move a single filename using its matched importers.
+def filepath(importer, filepath: str) -> str:
+    """Compute filing path for a document.
+
+    The path mirrors the structure of the accounts associated to the
+    documents and with a file name composed by the document date and
+    document name returned by the importer.
 
     Args:
-      filename: A string, the name of the downloaded file to be processed.
-      importers: A list of importer instances that handle this file.
-      destination: A string, the root destination directory where the files are
-        to be filed. The files are organized there under a hierarchy mirroring
-        that of the chart of accounts.
-      idify: A flag, if true, remove whitespace and funky characters in the destination
-        filename.
-      logfile: A file object to write log entries to, or None, in which case no log is
-        written out.
+      importer: The importer instance to handle the document.
+      filepath: Filesystem path to the document.
+
     Returns:
-      The full new destination filename on success, and None if there was an error.
+      Filing tree location where to store the document.
+
+    Raises:
+      beangulp.exceptions.Error: The canonical file name returned by
+      the importer contains a path separator charachter or seems to
+      contain a date.
+
     """
-    # Create an object to cache all the conversions between the importers
-    # and phases and what-not.
-    file = cache.get_file(filename)
+    file = cache.get_file(filepath)
 
     # Get the account corresponding to the file.
-    file_accounts = []
-    for index, importer in enumerate(importers):
-        try:
-            account_ = importer.file_account(file)
-        except Exception as exc:
-            account_ = None
-            logging.exception("Importer %s.file_account() raised an unexpected error: %s",
-                              importer.name(), exc)
-        if account_ is not None:
-            file_accounts.append(account_)
+    account = importer.file_account(file)
+    filename = importer.file_name(file) or os.path.basename(file.name)
+    date = importer.file_date(file) or utils.getmdate(file.name)
 
-    file_accounts_set = set(file_accounts)
-    if not file_accounts_set:
-        logging.error("No account provided by importers: {}".format(
-            ", ".join(imp.name() for imp in importers)))
-        return None
+    # The returned filename cannot contain the file path separator character.
+    if os.sep in filename:
+        raise Error("The filename contains path separator character.")
 
-    if len(file_accounts_set) > 1:
-        logging.warning("Ambiguous accounts from many importers: {}".format(
-            ', '.join(file_accounts_set)))
-        # Note: Don't exit; select the first matching importer's account.
+    if re.match(r'\d\d\d\d-\d\d-\d\d', filename):
+        raise Error("The filename contains what looks like a date.")
 
-    file_account = file_accounts.pop(0)
+    # Remove whitespace and other funny characters from the filename.
+    # TODO(dnicolodi): This should probably be importer responsibility.
+    filename = misc_utils.idify(filename)
 
-    # Given multiple importers, select the first one that was yielded to
-    # obtain the date and process the filename.
-    importer = importers[0]
+    # Prepend account directory and date prefix.
+    filename = os.path.join(account.replace(':', os.sep), f'{date:%Y-%m-%d}.{filename:}')
 
-    # Compute the date from the last modified time.
-    mtime = path.getmtime(filename)
-    mtime_date = datetime.datetime.fromtimestamp(mtime).date()
-
-    # Try to get the file's date by calling a module support function. The
-    # module may be able to extract the date from the filename, from the
-    # contents of the file itself (e.g. scraping some text from the PDF
-    # contents, or grabbing the last line of a CSV file).
-    try:
-        date = importer.file_date(file)
-    except Exception as exc:
-        logging.exception("Importer %s.file_date() raised an unexpected error: %s",
-                          importer.name(), exc)
-        date = None
-    if date is None:
-        # Fallback on the last modified time of the file.
-        date = mtime_date
-        date_source = 'mtime'
-    else:
-        date_source = 'contents'
-
-    # Apply filename renaming, if implemented.
-    # Otherwise clean up the filename.
-    try:
-        clean_filename = importer.file_name(file)
-
-        # Warn the importer implementor if a name is returned and it's an
-        # absolute filename.
-        if clean_filename and (path.isabs(clean_filename) or os.sep in clean_filename):
-            logging.error(("The importer '%s' file_name() method should return a relative "
-                           "filename; the filename '%s' is absolute or contains path "
-                           "separators"),
-                          importer.name(), clean_filename)
-    except Exception as exc:
-        logging.exception("Importer %s.file_name() raised an unexpected error: %s",
-                          importer.name(), exc)
-        clean_filename = None
-    if clean_filename is None:
-        # If no filename has been provided, use the basename.
-        clean_filename = path.basename(file.name)
-    elif re.match(r'\d\d\d\d-\d\d-\d\d', clean_filename):
-        logging.error("The importer '%s' file_name() method should not date the "
-                      "returned filename. Implement file_date() instead.")
-
-    # We need a simple filename; remove the directory part if there is one.
-    clean_basename = path.basename(clean_filename)
-
-    # Remove whitespace if requested.
-    if idify:
-        clean_basename = misc_utils.idify(clean_basename)
-
-    # Prepend the date prefix.
-    new_filename = '{0:%Y-%m-%d}.{1}'.format(date, clean_basename)
-
-    # Prepend destination directory.
-    new_fullname = path.normpath(path.join(destination,
-                                           file_account.replace(account.sep, os.sep),
-                                           new_filename))
-
-    # Print the filename and which modules matched.
-    if logfile is not None:
-        logfile.write('Importer:    {}\n'.format(importer.name() if importer else '-'))
-        logfile.write('Account:     {}\n'.format(file_account))
-        logfile.write('Date:        {} (from {})\n'.format(date, date_source))
-        logfile.write('Destination: {}\n'.format(new_fullname))
-        logfile.write('\n')
-
-    return new_fullname
-
-
-def file(importer_config,
-         files_or_directories,
-         destination,
-         dry_run=False,
-         mkdirs=False,
-         overwrite=False,
-         idify=False,
-         logfile=None):
-    """File importable files under a destination directory.
-
-    Given an importer configuration object, search for files that can be
-    imported under the given list of files or directories and moved them under
-    the given destination directory with the date computed by the module
-    prepended to the filename. If the date cannot be extracted, use a reasonable
-    default for the date (e.g. the last modified time of the file itself).
-
-    If 'mkdirs' is True, create the destination directories before moving the
-    files.
-
-    Args:
-      importer_config: A list of importer instances that define the config.
-      files_or_directories: a list of files of directories to walk recursively and
-        hunt for files to import.
-      destination: A string, the root destination directory where the files are
-        to be filed. The files are organized there under a hierarchy mirroring
-        that of the chart of accounts.
-      dry_run: A flag, if true, don't actually move the files.
-      mkdirs: A flag, if true, make all the intervening directories; otherwise,
-        fail to move files to non-existing dirs.
-      overwrite: A flag, if true, overwrite an existing destination file.
-      idify: A flag, if true, remove whitespace and funky characters in the destination
-        filename.
-      logfile: A file object to write log entries to, or None, in which case no log is
-        written out.
-    """
-    jobs = []
-    has_errors = False
-
-    # TODO(dnicolodi): This is necessary because the unit tests pass a
-    # string as second argument instead than the required list of
-    # files or directory paths. Fix the tests and removed this.
-    if isinstance(files_or_directories, str):
-        files_or_directories = [files_or_directories]
-
-    for filename in walk(files_or_directories):
-        print(f'* {filename:}')
-        if os.path.getsize(filename) > identify.FILE_TOO_LARGE_THRESHOLD:
-            continue
-        try:
-            importer = identify.identify(importer_config, filename)
-        except Exception as ex:
-            logging.exception("Exception from importer code: %s", ex)
-            continue
-
-        # If we're debugging, print out the match text.
-        # This option is useful when we're building our importer configuration,
-        # to figure out which patterns to create as unique signatures.
-        if not importer:
-            continue
-
-        # Process a single file.
-        new_fullname = file_one_file(filename, [importer], destination, idify, logfile)
-        if new_fullname is None:
-            continue
-
-        # Check if the destination directory exists.
-        new_dirname = path.dirname(new_fullname)
-        if not path.exists(new_dirname) and not mkdirs:
-            logging.error("Destination directory '{}' does not exist.".format(new_dirname))
-            has_errors = True
-            continue
-
-        # Check if the destination file already exists; we don't want to clobber
-        # it by accident.
-        if not overwrite and path.exists(new_fullname):
-            logging.error("Destination file '{}' already exists.".format(new_fullname))
-            has_errors = True
-            continue
-
-        jobs.append((filename, new_fullname))
-
-    # Check if any two imported files would be colliding in their destination
-    # name, before we move anything.
-    destmap = collections.defaultdict(list)
-    for src, dest in jobs:
-        destmap[dest].append(src)
-    for dest, sources in destmap.items():
-        if len(sources) != 1:
-            logging.error("Collision in destination filenames '{}': from {}.".format(
-                dest, ", ".join(["'{}'".format(source) for source in sources])))
-            has_errors = True
-
-    # If there are any errors, just don't do anything at all. This is a nicer
-    # behaviour than moving just *some* files.
-    if dry_run or has_errors:
-        return None
-
-    # Actually carry out the moving job.
-    for old_filename, new_filename in jobs:
-        move(old_filename, new_filename, mkdirs)
-
-    return jobs
+    return filename
 
 
 def move(src: str, dst: str):
@@ -248,13 +64,15 @@ def move(src: str, dst: str):
     details of the semantic.
 
     Args:
-      src: Name of the file to copy.
-      dst: Where to copy the file. For the creation of the destination
-        directory, this is assumed to be a file name and not a directory.
+      src: Filesystem path of the file to move.
+      dst: Desitnation filesytem path. For the creation of the
+        destination directory, this is assumed to be a file path and
+        not a directory, namely the directory structure up to only
+        path.dirname(dst) is created.
 
     """
     # Create missing directories.
-    os.makedirs(path.dirname(dst), exist_ok=True)
+    os.makedirs(os.path.dirname(dst), exist_ok=True)
 
     # Copy the file to its new name: use shutil.move() instead of
     # os.rename() to support moving across filesystems.
