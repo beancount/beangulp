@@ -9,6 +9,7 @@ def load_tests(loader, tests, pattern):
     suite.addTest(
         doctest.DocFileSuite(
             'archive.rst',
+            'extract.rst',
             'identify.rst',
             'testing.rst',
             optionflags=(
