@@ -111,15 +111,11 @@ def print_extracted_entries(entries, file):
 
     # Print out the entries.
     for entry in entries:
-        # Check if this entry is a dup, and if so, comment it out.
-        if DUPLICATE_META in entry.meta:
-            meta = entry.meta.copy()
-            meta.pop(DUPLICATE_META)
-            entry = entry._replace(meta=meta)
-            entry_string = textwrap.indent(printer.format_entry(entry), '; ')
-        else:
-            entry_string = printer.format_entry(entry)
-        pr(entry_string)
+        string = printer.format_entry(entry)
+        # If this entry is a duplicate, comment it out.
+        if entry.meta.get(DUPLICATE_META, False):
+            string = textwrap.indent(string, '; ')
+        pr(string)
 
     pr('')
 
