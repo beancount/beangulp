@@ -48,14 +48,62 @@ def _walk(file_or_dirs, log):
               help='Existing Beancount ledger for de-duplication.')
 @click.option('--reverse', '-r', is_flag=True,
               help='Sort entries in reverse order.')
+@click.option('--failfast', '-x', is_flag=True,
+              help='Stop processing at the first error.')
+@click.option('--quiet', '-q', count=True,
+              help="Suppress all output.")
 @click.pass_obj
-def _extract(ctx, src, output, existing, reverse):
-    """Extract transactions from documents."""
+def _extract(ctx, src, output, existing, reverse, failfast, quiet):
+    """Extract transactions from documents.
+
+    Walk the SRC list of files or directories and extract the ledger
+    entries from each file identified by one of the configured
+    importers.  The entries are written to the specified output file
+    or to the standard output in Beancount ledger format in sections
+    associated to the source document.
+
+    """
+    verbosity = -quiet
+    log = utils.logger(verbosity, err=True)
+    errors = exceptions.ExceptionsTrap(log)
 
     # Load the ledger, if one is specified.
-    entries = loader.load_file(existing)[0] if existing else None
+    existing_entries = loader.load_file(existing)[0] if existing else []
 
-    ctx.extract(src, output, entries=entries, reverse=reverse)
+    extracted = []
+    for filename in _walk(src, log):
+        with errors:
+            importer = identify.identify(ctx.importers, filename)
+            if not importer:
+                log('') # Newline.
+                continue
+
+            # Signal processing of this document.
+            log(' ...', nl=False)
+
+            # Extract entries.
+            entries = extract.extract_from_file(importer, filename, existing_entries)
+            extracted.append((filename, entries))
+            log(' OK', fg='green')
+
+        if failfast and errors:
+            break
+
+    # Invoke hooks.
+    hooks = [extract.find_duplicate_entries] if ctx.hooks is None else ctx.hooks
+    for func in hooks:
+        extracted = func(extracted, existing_entries)
+
+    # Reverse sort order, if requested.
+    if reverse:
+        for filename, entries in extracted:
+            entries.reverse()
+
+    # Serialize entries.
+    extract.print_extracted_entries(extracted, output)
+
+    if errors:
+        sys.exit(1)
 
 
 @click.command('archive')
@@ -199,9 +247,6 @@ class Ingest:
         main.add_command(_identify)
 
         self.main = main
-
-    def extract(self, what, *args, **kwargs):
-        extract.extract(self.importers, what, *args, hooks=self.hooks, **kwargs)
 
     def __call__(self):
         return self.main()

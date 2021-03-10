@@ -5,10 +5,6 @@ from beangulp import cache
 from beangulp.exceptions import Error
 
 
-# The format for the section titles in the extracted output.
-# You may override this value from your .import script.
-SECTION = '**** {}'
-
 # A file size beyond which we will simply ignore the file. This is
 # used to skip large files that are commonly present in a Downloads
 # directory.

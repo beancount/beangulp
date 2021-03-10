@@ -82,7 +82,7 @@ def run_importer(importer: ImporterProtocol,
     account = importer.file_account(cfile)
     date = importer.file_date(cfile)
     name = importer.file_name(cfile)
-    entries = extract.extract_from_file(cfile.name, importer, None)
+    entries = extract.extract_from_file(importer, cfile.name, None)
     return account, date, name, entries
 
 
