@@ -21,13 +21,20 @@ def getmdate(filepath: str) -> datetime.date:
     return log
 
 
-def walk(paths: str) -> Iterator[str]:
-    """Yield all the files under 'paths'.
+def walk(paths: Sequence[str]) -> Iterator[str]:
+    """Yield all the files under paths.
+
+    Takes a sequence of file or directory paths. Directories are
+    traversed with os.walk() and complete file paths are returned
+    joining filenames to the root directory path. Other elements of
+    the list are assumed to be file paths and returned unchanged.
 
     Args:
-      paths: A list of filenames and/or directory names.
+      paths: List of filesystems paths.
+
     Yields:
-      Absolute filenames.
+      Filesystem paths of all the files under paths.
+
     """
     for file_or_dir in paths:
         if path.isdir(file_or_dir):
