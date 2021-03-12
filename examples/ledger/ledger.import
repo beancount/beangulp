@@ -6,6 +6,7 @@ importers_path = path.dirname(path.dirname(path.abspath(__file__)))
 sys.path.insert(0, importers_path)
 
 from beancount.core import data
+from beangulp.extract import find_duplicate_entries
 import beangulp
 
 # Import custom importers.
@@ -70,6 +71,9 @@ def process_extracted_entries(extracted_entries_list, ledger_entries):
             for filename, entries in extracted_entries_list]
 
 
+hooks = [process_extracted_entries, find_duplicate_entries]
+
+
 if __name__ == '__main__':
-    ingest = beangulp.Ingest(importers, hooks=[process_extracted_entries])
+    ingest = beangulp.Ingest(importers, hooks)
     ingest()
