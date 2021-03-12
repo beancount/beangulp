@@ -1,10 +1,18 @@
 import os
+import datetime
+
 from os import path
-from typing import Iterator
+from typing import Iterator, Sequence
+
 import click
 
 
-def logger(verbosity: int = 0):
+def getmdate(filepath: str) -> datetime.date:
+    """Return file modification date."""
+    mtime = path.getmtime(filepath)
+    return datetime.datetime.fromtimestamp(mtime).date()
+
+
     """Convenient logging method factory."""
     color = False if os.getenv('TERM', '') in ('', 'dumb') else None
     def log(msg, level=0, **kwargs):
