@@ -20,7 +20,7 @@ import beangulp
 from beangulp.importer import ImporterProtocol
 from beangulp import cache
 from beangulp import extract
-from beangulp.utils import logger, walk
+from beangulp import utils
 
 
 def sha1sum(filepath: str) -> str:
@@ -84,12 +84,6 @@ def run_importer(importer: ImporterProtocol,
     name = importer.file_name(cfile)
     entries = extract.extract_from_file(cfile.name, importer, None)
     return account, date, name, entries
-
-
-def modification_date(filepath: str) -> datetime.date:
-    """Return file modification date."""
-    mtime = path.getmtime(filepath)
-    return datetime.datetime.fromtimestamp(mtime).date()
 
 
 @click.command('test')
@@ -186,10 +180,10 @@ def _run(ctx,
     importer = ctx.importers[0]
 
     verbosity = verbose - quiet
-    log = logger(verbosity)
+    log = utils.logger(verbosity)
     failures = 0
 
-    for doc in walk(documents):
+    for doc in utils.walk(documents):
         if doc.endswith('.beancount'):
             continue
 
@@ -218,7 +212,7 @@ def _run(ctx,
                 continue
             log('  {}/{:%Y-%m-%d}-{}'.format(
                 account.replace(":", "/"),
-                date or modification_date(doc),
+                date or utils.getmdate(doc),
                 name or path.basename(doc)), 1)
             if generate:
                 try:
