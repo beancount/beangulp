@@ -16,10 +16,10 @@ import click
 
 from beancount import loader
 
+from beangulp import archive
 from beangulp import cache
 from beangulp import exceptions
 from beangulp import extract
-from beangulp import file
 from beangulp import identify
 from beangulp import importer
 from beangulp import utils
@@ -58,7 +58,7 @@ def _extract(ctx, src, output, existing, reverse):
     ctx.extract(src, output, entries=entries, reverse=reverse)
 
 
-@click.command('file')
+@click.command('archive')
 @click.argument('src', nargs=-1, type=click.Path(exists=True, resolve_path=True))
 @click.option('--destination', '-o', metavar='DIR',
               type=click.Path(exists=True, file_okay=False, resolve_path=True),
@@ -70,8 +70,8 @@ def _extract(ctx, src, output, existing, reverse):
 @click.option('--failfast', '-x', is_flag=True,
               help='Stop processing at the first error.')
 @click.pass_obj
-def _file(ctx, src, destination, dry_run, overwrite, failfast):
-    """File away documents.
+def _archive(ctx, src, destination, dry_run, overwrite, failfast):
+    """Archive documents.
 
     Walk the SRC list of files or directories and move each file
     identified by one of the configured importers in a directory
@@ -108,7 +108,7 @@ def _file(ctx, src, destination, dry_run, overwrite, failfast):
             # Signal processing of this document.
             log(' ...', nl=False)
 
-            destpath = file.filepath(importer, filename)
+            destpath = archive.filepath(importer, filename)
 
             # Prepend destination directory path.
             destpath = os.path.join(destination, destpath)
@@ -136,7 +136,7 @@ def _file(ctx, src, destination, dry_run, overwrite, failfast):
 
     if not dry_run:
         for src, dst in renames:
-            file.move(src, dst)
+            archive.move(src, dst)
 
 
 @click.command('identify')
@@ -194,8 +194,8 @@ class Ingest:
             """Import data from and file away documents from financial institutions."""
             ctx.obj = self
 
+        main.add_command(_archive)
         main.add_command(_extract)
-        main.add_command(_file)
         main.add_command(_identify)
 
         self.main = main

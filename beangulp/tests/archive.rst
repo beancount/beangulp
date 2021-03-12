@@ -46,15 +46,15 @@ Tests
 
 The basics:
 
-  >>> r = run('file', '--help')
+  >>> r = run('archive', '--help')
   >>> r.exit_code
   0
   >>> print(r.output)
-  Usage: main file [OPTIONS] [SRC]...
+  Usage: main archive [OPTIONS] [SRC]...
 
 Test with an empty downloads directory:
 
-  >>> r = run('file', downloads)
+  >>> r = run('archive', downloads)
   >>> r.exit_code
   0
   >>> print(r.output)
@@ -68,7 +68,7 @@ Add some documents:
 
 Run in dry-run mode:
   
-  >>> r = run('file', downloads, '-o', documents, '-n')
+  >>> r = run('archive', downloads, '-o', documents, '-n')
   >>> r.exit_code
   0
   >>> print(r.output)
@@ -86,7 +86,7 @@ No files have actually been moved:
 
 Now for real:
 
-  >>> r = run('file', downloads, '-o', documents)
+  >>> r = run('archive', downloads, '-o', documents)
   >>> r.exit_code
   0
   >>> print(r.output)
@@ -105,7 +105,7 @@ Trying to move a documents over an exisiting file:
   >>> with open(path.join(downloads, 'bbb.csv'), 'w') as f:
   ...     pass
 
-  >>> r = run('file', downloads, '-o', documents)
+  >>> r = run('archive', downloads, '-o', documents)
   >>> r.exit_code
   1
   >>> print(r.output)
@@ -128,7 +128,7 @@ Collision in destination filename:
   ...     with open(path.join(downloads, fname), 'w') as f:
   ...         pass
 
-  >>> r = run('file', downloads, '-o', documents)
+  >>> r = run('archive', downloads, '-o', documents)
   >>> r.exit_code
   1
   >>> print(r.output)
