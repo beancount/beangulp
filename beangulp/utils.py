@@ -13,11 +13,12 @@ def getmdate(filepath: str) -> datetime.date:
     return datetime.datetime.fromtimestamp(mtime).date()
 
 
+def logger(verbosity: int = 0, err: bool = False):
     """Convenient logging method factory."""
     color = False if os.getenv('TERM', '') in ('', 'dumb') else None
-    def log(msg, level=0, **kwargs):
+    def log(msg, level=0, err=err, **kwargs):
         if level <= verbosity:
-            click.secho(msg, color=color, **kwargs)
+            click.secho(msg, color=color, err=err, **kwargs)
     return log
 
 
