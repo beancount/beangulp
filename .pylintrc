@@ -4,6 +4,7 @@ disable=
   locally-disabled,
   suppressed-message,
   duplicate-code,
+  f-string-without-interpolation,
   fixme,
   import-error,
   import-outside-toplevel,
@@ -16,6 +17,7 @@ disable=
   no-value-for-parameter,
   not-callable,
   protected-access,
+  redefined-argument-from-local,
   stop-iteration-return,
   superfluous-parens,
   too-few-public-methods,
@@ -25,6 +27,10 @@ disable=
   too-many-statements,
   undefined-loop-variable,
   unsubscriptable-object,
+  # does not play nicely with decorators injecting arguments as done
+  # by the cache decorator. disable it globally instead than having to
+  # sprinkle pylint directives all over
+  unexpected-keyword-arg,
   # revisit these maybe
   assignment-from-no-return,
   broad-except,
