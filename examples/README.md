@@ -10,8 +10,7 @@ discussion of these files.
 There are five directories demonstrated here:
 
 * `ledger`: This is a directory, typically a repository under source control,
-  containing your Beancount ledger file(s) (e.g., `ledger.beancount`) and import
-  configuration ('ledger.import'), which is a Python file.
+  containing your Beancount ledger files.
 
 * `documents`: This is a directory containing your past imported files.
   Beangulps' filing command is able to automatically date and rename the files
@@ -49,28 +48,27 @@ overwhelming.
 Here's an example for how you could start with all your files in one directory:
 
     ledger/
+    ├── import.py
     ├── ledger.beancount
-    ├── ledger.import
     ├── importers
-    │   ├── runtests.sh
-    │   ├── acme
-    │   │   ├── acmebank1.pdf
-    │   │   ├── acmebank1.pdf.beancount
-    │   │   └── acme.py
-    │   └── utrade
-    │       ├── UTrade20140713.csv
-    │       ├── UTrade20140713.csv.beancount
-    │       ├── UTrade20150225.csv
-    │       ├── UTrade20150225.csv.beancount
-    │       ├── UTrade20150720.csv
-    │       ├── UTrade20150720.csv.beancount
-    │       └── utrade.py
+    │   ├── acme
+    │   │   ├── acmebank1.pdf
+    │   │   ├── acmebank1.pdf.beancount
+    │   │   └── acme.py
+    │   └── utrade
+    │       ├── UTrade20140713.csv
+    │       ├── UTrade20140713.csv.beancount
+    │       ├── UTrade20150225.csv
+    │       ├── UTrade20150225.csv.beancount
+    │       ├── UTrade20150720.csv
+    │       ├── UTrade20150720.csv.beancount
+    │       └── utrade.py
     └── documents
         ├── Assets
-        │   └── US
-        │       ├── AcmeBank
-        │       └── UTrade
-        │           └── ...
+        │   └── US
+        │       ├── AcmeBank
+        │       └── UTrade
+        │           └── ...
         ├── Expenses
         ├── Income
         └── Liabilities
