@@ -1,18 +1,12 @@
 #!/usr/bin/env python3
 
-from os import path
-import sys
-importers_path = path.dirname(path.dirname(path.abspath(__file__)))
-sys.path.insert(0, importers_path)
-
-from beancount.core import data
-import beangulp
-
-# Import custom importers.
 from importers import acme
 from importers import csvbank
 from importers import ofx
 from importers import utrade
+
+from beancount.core import data
+import beangulp
 
 
 importers = [
