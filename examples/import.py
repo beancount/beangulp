@@ -63,8 +63,8 @@ def process_extracted_entries(extracted_entries_list, ledger_entries):
       A possibly different version of extracted_entries_list, a list of
       (filename, entries), to be printed.
     """
-    return [(filename, clean_up_descriptions(entries))
-            for filename, entries in extracted_entries_list]
+    return [(filename, clean_up_descriptions(entries), account, importer)
+            for filename, entries, account, importer in extracted_entries_list]
 
 
 hooks = [process_extracted_entries]

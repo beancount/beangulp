@@ -53,12 +53,66 @@ def extract_from_file(importer, filename, existing_entries):
     return entries
 
 
+def sort_extracted_entries(extracted):
+    """Sort the extraxted entries.
+
+    Sort extracged entries, grouped by source document, in the order
+    in which they will be used in deduplication and in which they will
+    be serialized to file.
+
+    Args:
+      extracted: List of (filepath, entries, account, importer) tuples
+        where entries is the list of entries extracted from the
+        document at filepath by importer.
+
+    """
+
+    # The entries are sorted on a key composed by (max-date, account,
+    # min-date, filename) where max-date and min-date are the latest
+    # and earliest date appearing in the entries list.  This should
+    # place entries from documents produced earlier in time at before
+    # ones coming from documents produced later.
+    #
+    # Most imports have a balance statement at the end with a date
+    # that is one day later than the reporting period (balance
+    # statement are effective at the beginning of the day).  Thus
+    # using the end date should be more predictable than sorting on
+    # the earliest entry.
+    #
+    # This diagram, where the bars represents the time span covered by
+    # contained entries, represent the sort order we want to obtain:
+    #
+    # Assets:Ali   (-----)
+    # Assets:Ali   (=====--------)
+    # Assets:Bob    (------------)
+    # Assets:Bob             (===----)
+    # Assets:Ali                 (--------------)
+    # Assets:Bob                (====-----------)
+    #
+    # The sections marked with = represent the time spans in which
+    # duplicated entries could be present.  We want entries form
+    # documents produced earlier in time to take precedence over
+    # entries from documents produced later in time.
+
+    def key(element):
+        filename, entries, account, importer = element
+        dates = [entry.date for entry in entries]
+        # Sort documents that do not contain any entry last.
+        max_date = min_date = datetime.date(9999, 1, 1)
+        if dates:
+            max_date, min_date = max(dates), min(dates)
+        return max_date, account, min_date, filename
+
+    extracted.sort(key=key)
+
+
 def find_duplicate_entries(extracted, existing):
     """Flag potentially duplicate entries.
 
     Args:
-      extracted: List of (filepath, entries) tuples where entries is
-        the list of ledger entries extracted from the filepath.
+      extracted: List of (filepath, entries, account, importer) tuples
+        where entries is the list of entries extracted from the
+        document at filepath by importer.
       existing: Existing entries.
 
     Returns:
@@ -67,19 +121,18 @@ def find_duplicate_entries(extracted, existing):
 
     """
 
-    # Ensure that the existing entries are sorted by date.
-    # find_similar_entries() uses bisection to reduce the list of
-    # existing entries to the set in a narrow date interval around the
-    # date of each entry in the set it is comparing against. This
-    # requires that the existing entries are sorted by date. Do the
-    # sorting here to avoid to have to repeat it for each entries
-    # group in the extracted list. Sorting the existing entries does
-    # not have any effect of the result of the extraction.
-    existing.sort(key=operator.attrgetter('date'))
-
     ret = []
-    for filepath, entries in extracted:
+    for filepath, entries, account, importer in extracted:
+
+        # Sort the existing entries by date: find_similar_entries()
+        # uses bisection to reduce the list of existing entries to the
+        # set in a narrow date interval around the date of each entry
+        # in the set it is comparing against.
+        existing.sort(key=operator.attrgetter('date'))
+
+        # Find duplicates.
         pairs = similar.find_similar_entries(entries, existing)
+
         # We could do something smarter than trowing away the
         # information about which entry is the source of the possible
         # duplication.
@@ -91,7 +144,13 @@ def find_duplicate_entries(extracted, existing):
                 meta[DUPLICATE] = True
                 entry = entry._replace(meta=meta)
             marked.append(entry)
-        ret.append((filepath, marked))
+        ret.append((filepath, marked, account, importer))
+
+        # Append the current batch of extracted entries to the
+        # existing entries. This allows to deduplicate entries in the
+        # current extraction run.
+        existing.extend(marked)
+
     return ret
 
 
@@ -147,16 +206,17 @@ def print_extracted_entries(extracted, output):
     Entries marked as duplicates are printed as comments.
 
     Args:
-      extracted: List of (filepath, entries) tuples where entries is
-        the list of ledger entries extracted from the filepath.
-      output: A file object to write to. The object just need to
-       implement a .write() method.
+      extracted: List of (filepath, entries, account, importer) tuples
+        where entries is the list of entries extracted from the
+        document at filepath by importer.
+      output: A file object to write to. The object needs to implement
+       a write() method that accepts an unicode string.
 
     """
     if extracted:
         output.write(HEADER + '\n')
 
-    for filepath, entries in extracted:
+    for filepath, entries, account, importer in extracted:
         output.write(SECTION.format(filepath) + '\n\n')
 
         for entry in entries:
