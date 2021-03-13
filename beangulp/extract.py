@@ -66,6 +66,17 @@ def find_duplicate_entries(extracted, existing):
       entries marked setting the "__duplicate__" metadata field to True.
 
     """
+
+    # Ensure that the existing entries are sorted by date.
+    # find_similar_entries() uses bisection to reduce the list of
+    # existing entries to the set in a narrow date interval around the
+    # date of each entry in the set it is comparing against. This
+    # requires that the existing entries are sorted by date. Do the
+    # sorting here to avoid to have to repeat it for each entries
+    # group in the extracted list. Sorting the existing entries does
+    # not have any effect of the result of the extraction.
+    existing.sort(key=operator.attrgetter('date'))
+
     ret = []
     for filepath, entries in extracted:
         pairs = similar.find_similar_entries(entries, existing)
