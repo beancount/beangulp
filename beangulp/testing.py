@@ -26,10 +26,10 @@ def write_expected(outfile: TextIO,
                    date: Optional[datetime.date],
                    name: Optional[str],
                    entries: data.Entries):
-    """Produce expected file.
+    """Produce the expected output file.
 
     Args:
-      outfile: The name of the expected filename to write.
+      outfile: The file object where to write.
       account: The account name produced by the importer.
       date: The date of the downloads file, produced by the importer.
       name: The filename for filing, produced by the importer.
@@ -166,7 +166,7 @@ def _run(ctx,
          generate: bool = False,
          failfast: bool = False,
          force: bool = False):
-    """Do it."""
+    """Implement the test and generate commands."""
 
     assert len(ctx.importers) == 1
     importer = ctx.importers[0]
@@ -243,7 +243,7 @@ def _run(ctx,
             log('  DocumentNotIdentified')
 
         else:
-            # ignore files that are not positively identified by the
+            # Ignore files that are not positively identified by the
             # importer and for which there is no expected output file.
             log('  IGNORED')
 
