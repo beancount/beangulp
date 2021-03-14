@@ -11,7 +11,7 @@ from unittest import mock
 
 from beangulp import cache
 from beangulp import file_type
-from beangulp import testing
+from beangulp import utils
 
 
 class TestFileMemo(unittest.TestCase):
@@ -194,7 +194,7 @@ class CacheTestCase(unittest.TestCase):
     def test_cache_key_sha1(self):
         counter = 0
 
-        @cache.cache(key=testing.sha1sum)
+        @cache.cache(key=utils.sha1sum)
         def func(filename):
             nonlocal counter
             counter +=1

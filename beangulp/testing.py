@@ -4,7 +4,6 @@ from os import path
 from typing import Callable, List, Optional, Tuple
 import datetime
 import difflib
-import hashlib
 import io
 import os
 import sys
@@ -21,12 +20,6 @@ from beangulp.importer import ImporterProtocol
 from beangulp import cache
 from beangulp import extract
 from beangulp import utils
-
-
-def sha1sum(filepath: str) -> str:
-    """Compute hash of given filename"""
-    with open(filepath, 'rb') as f:
-        return hashlib.sha1(f.read()).hexdigest()
 
 
 def write_expected(outfile: str,
