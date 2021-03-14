@@ -1,7 +1,7 @@
 """Implementation of testing and generate functionality."""
 
 from os import path
-from typing import Callable, List, Optional, Tuple
+from typing import Callable, List, Optional, TextIO, Tuple
 import datetime
 import difflib
 import io
@@ -13,7 +13,6 @@ import click
 
 from beancount.parser import printer
 from beancount.core import data
-from beancount.core.data import Account
 
 import beangulp
 from beangulp.importer import ImporterProtocol
@@ -22,8 +21,8 @@ from beangulp import extract
 from beangulp import utils
 
 
-def write_expected(outfile: str,
-                   account: Account,
+def write_expected(outfile: TextIO,
+                   account: data.Account,
                    date: Optional[datetime.date],
                    name: Optional[str],
                    entries: data.Entries):
@@ -67,7 +66,7 @@ def compare_expected(filepath: str, *data) -> List[str]:
 
 
 def run_importer(importer: ImporterProtocol,
-                 cfile: cache._FileMemo) -> Tuple[Account,
+                 cfile: cache._FileMemo) -> Tuple[data.Account,
                                                   Optional[datetime.date],
                                                   Optional[str],
                                                   data.Entries]:
