@@ -1,3 +1,4 @@
+import hashlib
 import os
 import datetime
 
@@ -44,3 +45,9 @@ def walk(paths: Sequence[str]) -> Iterator[str]:
                     yield path.join(root, filename)
             continue
         yield file_or_dir
+
+
+def sha1sum(filepath: str) -> str:
+    """Compute hash of the file at filepath."""
+    with open(filepath, 'rb') as fd:
+        return hashlib.sha1(fd.read()).hexdigest()
