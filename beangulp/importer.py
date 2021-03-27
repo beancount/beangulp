@@ -11,6 +11,7 @@ from typing import Optional
 
 from beancount.core import flags
 from beancount.core import data
+from beancount.utils import misc_utils
 from beangulp import cache
 
 
@@ -175,7 +176,12 @@ class Adapter(Importer):
         return self.importer.file_date(cache.get_file(filepath))
 
     def filename(self, filepath):
-        return self.importer.file_name(cache.get_file(filepath))
+        filename = self.importer.file_name(cache.get_file(filepath))
+        # The current implementation of the archive command does not
+        # modify the filename returned by the importer. This preserves
+        # backward compatibility with the old implementation of the
+        # command.
+        return misc_utils.idify(filename)
 
     def extract(self, filepath, existing):
         p = inspect.signature(self.importer.extract).parameters
