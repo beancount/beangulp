@@ -86,7 +86,7 @@ def find_duplicate_entries(extracted, existing):
 
 
 def print_extracted_entries(extracted, output):
-    """Print extracgted entries.
+    """Print extracted entries.
 
     Entries marked as duplicates are printed as comments.
 
