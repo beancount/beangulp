@@ -35,8 +35,8 @@ def extract_from_file(importer, filename, existing_entries):
     if not entries:
         return []
 
-    # Make sure the newly imported entries are sorted; don't trust the importer.
-    entries.sort(key=data.entry_sortkey)
+    # Sort the newly imported entries.
+    importer.sort(entries)
 
     # Ensure that the entries are typed correctly.
     for entry in entries:
