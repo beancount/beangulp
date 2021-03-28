@@ -118,6 +118,25 @@ class Importer(abc.ABC):
         """
         return []
 
+    def sort(self, entries: data.Entries, reverse=False) -> None:
+        """Sort the extracted directives.
+
+        The sort is in-place and stable. The reverse flag can be set
+        to sort in descending order. Importers can implement this
+        method to have entries serialized to file in a specific
+        order. The default implementation sorts the entries according
+        to beancount.core.data.entry_sortkey().
+
+        Args:
+          entries: Entries list to sort.
+          reverse: When True sort in descending order.
+
+        Returns:
+          None.
+
+        """
+        return entries.sort(key=data.entry_sortkey, reverse=reverse)
+
 
 class ImporterProtocol:
     """Old importers interface, superseded by the Importer ABC.
