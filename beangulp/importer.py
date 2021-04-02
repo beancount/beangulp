@@ -4,15 +4,21 @@ __copyright__ = "Copyright (C) 2016  Martin Blais"
 __license__ = "GNU GPLv2"
 
 import abc
+import datetime
 import inspect
 
-from datetime import date
 from typing import Optional
 
 from beancount.core import flags
 from beancount.core import data
 from beancount.utils import misc_utils
 from beangulp import cache
+from beangulp import extract
+from beangulp import similar
+
+
+# The default comparison function used for deduplication.
+compare = similar.SimilarityComparator()
 
 
 class Importer(abc.ABC):
@@ -67,7 +73,7 @@ class Importer(abc.ABC):
         """
         raise NotImplementedError
 
-    def date(self, filepath: str) -> Optional[date]:
+    def date(self, filepath: str) -> Optional[datetime.date]:
         """Return the archival date the given file.
 
         The date is used by the archive command to form the archival
@@ -103,20 +109,62 @@ class Importer(abc.ABC):
     def extract(self, filepath: str, existing: data.Entries) -> data.Entries:
         """Extract transactions and other directives from a document.
 
-        The list of existing entries can be used to flag some of the
-        returned transactions as known duplicates, marking them
-        setting the "__duplicate__" metadata entry to True, or to aid
-        in the processing of the document being imported.
+        The existing entries list is loaded from the existing ledger
+        file, if the user specified one on the command line. It can be
+        used to supplement the information provided by the document
+        being processed to drive the extraction. For example to derive
+        the prior state of the inventory.
 
         Args:
           filepath: Filesystem path to the document being imported.
-          existing: List of existing directives.
+          existing: Entries loaded from the existing ledger.
 
         Returns:
           A list of imported directives extracted from the document.
 
         """
         return []
+
+    @staticmethod
+    def cmp(a: data.Directive, b: data.Directive) -> bool:
+        """Compare two entries.
+
+        This function is used by the deduplicate() method to determine
+        if two entries are similar enough to be considered duplicates.
+
+        Args:
+          a: First entry.
+          b: Second entry.
+
+        Returns:
+          True if the entries are deemed duplicates, False otherwise.
+
+        """
+        if isinstance(a, data.Transaction) and isinstance(b, data.Transaction):
+            # There may be a better way of doing this.
+            return compare(a, b)
+        return False
+
+    def deduplicate(self, entries: data.Entries, existing: data.Entries) -> data.Entries:
+        """Mark duplicates in extracted entries.
+
+        The default implementation uses the cmp() method to compare
+        each newly extracted entries to the existing entries. Only
+        existing entries dated within a 5 days window around the date
+        of the each existing entry (two days prior and two days past)
+        are considered.
+
+        Args:
+          entries: Entries extracted from the document being processed.
+          existing: Entries loaded from the existing ledger.
+
+        Returns:
+          A new list of entries where duplicates have been marked
+          setting the "__duplicate__" entry metadata field to True.
+
+        """
+        window = datetime.timedelta(days=2)
+        return extract.mark_duplicate_entries(entries, existing, window, self.cmp)
 
     def sort(self, entries: data.Entries, reverse=False) -> None:
         """Sort the extracted directives.
@@ -164,7 +212,7 @@ class ImporterProtocol:
     def file_account(self, file) -> data.Account:
         """See Importer class account() method."""
 
-    def file_date(self, file) -> Optional[date]:
+    def file_date(self, file) -> Optional[datetime.date]:
         """See Importer class date() method."""
 
     def file_name(self, file) -> Optional[str]:

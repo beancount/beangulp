@@ -28,3 +28,7 @@ class Importer(importer.Importer):
 
     def extract(self, filepath, existing):
         return []
+
+    def deduplicate(self, entries, existing):
+        # Opt-out from the default deduplication mechanism.
+        return entries

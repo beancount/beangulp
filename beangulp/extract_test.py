@@ -31,7 +31,7 @@ class TestExtract(unittest.TestCase):
               Assets:Tests  1.00 USD
             '''))
 
-        importer = mock.MagicMock(spec=self.importer)
+        importer = mock.MagicMock(wraps=self.importer)
         importer.extract.return_value = entries
         entries = extract.extract_from_file(importer, path.abspath('test.csv'), [])
         dates = [entry.date for entry in entries]
@@ -45,7 +45,7 @@ class TestExtract(unittest.TestCase):
 
         # Break something.
         entries[-1] = entries[-1]._replace(narration=42)
-        importer = mock.MagicMock(spec=self.importer)
+        importer = mock.MagicMock(wraps=self.importer)
         importer.extract.return_value = entries
         with self.assertRaises(AssertionError):
             extract.extract_from_file(importer, path.abspath('test.csv'), [])

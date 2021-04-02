@@ -5,8 +5,8 @@ This can be used during import in order to identify and flag duplicate entries.
 __copyright__ = "Copyright (C) 2016  Martin Blais"
 __license__ = "GNU GPLv2"
 
-import datetime
 import collections
+import datetime
 
 from beancount.core.number import D
 from beancount.core.number import ZERO
