@@ -1,7 +1,12 @@
 __copyright__ = "Copyright (C) 2016-2017  Martin Blais"
 __license__ = "GNU GPLv2"
 
+import bisect
+import datetime
+import operator
 import textwrap
+
+from typing import Callable
 
 from beancount.core import data
 from beancount.parser import printer
@@ -34,6 +39,9 @@ def extract_from_file(importer, filename, existing_entries):
     entries = importer.extract(filename, existing_entries)
     if not entries:
         return []
+
+    # Deduplicate.
+    entries = importer.deduplicate(entries, existing_entries)
 
     # Sort the newly imported entries.
     importer.sort(entries)
@@ -74,6 +82,52 @@ def find_duplicate_entries(extracted, existing):
             marked.append(entry)
         ret.append((filepath, marked))
     return ret
+
+
+def mark_duplicate_entries(
+        entries: data.Entries,
+        existing: data.Entries,
+        window: datetime.timedelta,
+        compare: Callable[[data.Directive, data.Directive], bool]) -> data.Entries:
+    """Mark duplicate entries.
+
+    Compare newly extracted entries to the existing entries. Only
+    existing entries dated within the given time window around the
+    date of the each existing entry.
+
+    Args:
+      entries: Entries to be deduplicated.
+      existing: Existing entries.
+      window: Time window in which entries are compared.
+      compare: Entry comparison function.
+
+    Returns:
+      A new list of entries where duplicates have been marked setting
+      the "__duplicate__" metadata field to True.
+
+    """
+    # The use of bisection to identify the entries in the existing
+    # list that have dates within a given window around the date
+    # of each newly extracted entry requires the existing entries
+    # to be sorted by date.
+    existing.sort(key=operator.attrgetter('date'))
+    dates = [entry.date for entry in existing]
+
+    def entries_date_window_iterator(date):
+        lo = bisect.bisect_left(dates, date - window)
+        hi = bisect.bisect_right(dates, date + window)
+        for i in range(lo, hi):
+            yield entries[i]
+
+    marked = []
+    for entry in entries:
+        for target in entries_date_window_iterator(entry.date):
+            if compare(entry, target):
+                meta = entry.meta.copy()
+                meta[DUPLICATE] = True
+                entry = entry._replace(meta=meta)
+        marked.append(entry)
+    return marked
 
 
 def print_extracted_entries(extracted, output):

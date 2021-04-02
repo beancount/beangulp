@@ -12,6 +12,7 @@ __license__ = "GNU GPLv2"
 
 import os
 import sys
+import warnings
 import click
 
 from beancount import loader
@@ -89,9 +90,7 @@ def _extract(ctx, src, output, existing, reverse, failfast, quiet):
         if failfast and errors:
             break
 
-    # Invoke hooks.
-    hooks = [extract.find_duplicate_entries] if ctx.hooks is None else ctx.hooks
-    for func in hooks:
+    for func in ctx.hooks:
         extracted = func(extracted, existing_entries)
 
     # Reverse sort order, if requested.
@@ -246,7 +245,14 @@ def _importer(importer):
 class Ingest:
     def __init__(self, importers, hooks=None):
         self.importers = [_importer(i) for i in importers]
-        self.hooks = hooks
+        self.hooks = list(hooks) if hooks is not None else []
+
+        while extract.find_duplicate_entries in self.hooks:
+            self.hooks.remove(extract.find_duplicate_entries)
+            warnings.warn('beangulp.extract.find_duplicate_entries has been removed '
+                          'from the import hooks. Deduplication is now integral part '
+                          'of the extract processing and can be customized by the '
+                          'importers. See beangulp.importer.Importer.', stacklevel=2)
 
         @click.group()
         @click.version_option()
