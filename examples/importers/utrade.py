@@ -174,6 +174,38 @@ class Importer(beangulp.Importer):
 
         return entries
 
+    @staticmethod
+    def cmp(a, b):
+        # This importer attaches an unique ID to all transactions in
+        # the form of a link. The link can be used to implement
+        # transaction duplicates detection based on transactions IDs.
+
+        if not isinstance(a, data.Transaction):
+            return False
+        if not isinstance(b, data.Transaction):
+            return False
+
+        # Get all the links with the expected ut$ID format.
+        aids = [link for link in a.links if re.match(r'ut\d{8}', link)]
+        if not aids:
+            # If there are no matching links, stop here.
+            return False
+
+        # Get all the links with the expected ut$ID format.
+        bids = [link for link in b.links if re.match(r'ut\d{8}', link)]
+        if not bids:
+            # If there are no matching links, stop here.
+            return False
+
+        if len(aids) != len(bids):
+            return False
+
+        # Compare all collected IDs.
+        if all(aid == bid for aid, bid in zip(sorted(aids), sorted(bids))):
+            return True
+
+        return False
+
 
 if __name__ == '__main__':
     importer = Importer(
