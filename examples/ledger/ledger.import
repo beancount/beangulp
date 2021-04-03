@@ -29,7 +29,7 @@ importers = [
                  "Liabilities:US:CreditCard",
                  "bofa"),
 
-    acme.Importer("Assets:US:AcmeBank"),
+    acme.Importer("Assets:US:ACMEBank"),
 
     csvbank.Importer('Assets:US:CSVBank'),
 ]
