@@ -32,3 +32,9 @@ jobs:
           python importers/acme.py test importers_tests/acme --verbose
           python importers/csvbank.py test importers_tests/csvbank --verbose
           python importers/utrade.py test importers_tests/utrade --verbose
+      - name: Run example ledger.import
+        run: |
+          cd examples
+          python ledger/ledger.import identify Downloads -v
+          python ledger/ledger.import extract Downloads
+          python ledger/ledger.import archive Downloads -n -o documents
