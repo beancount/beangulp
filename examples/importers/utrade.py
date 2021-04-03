@@ -7,22 +7,23 @@ import csv
 import datetime
 import re
 import logging
-from os import path
 
+from os import path
 from dateutil.parser import parse
 
-from beancount.core.number import D
-from beancount.core.number import ZERO
-from beancount.core import data
 from beancount.core import account
 from beancount.core import amount
+from beancount.core import data
+from beancount.core import flags
 from beancount.core import position
+from beancount.core.number import D
+from beancount.core.number import ZERO
 
-from beangulp import importer
+import beangulp
 from beangulp.testing import main
 
 
-class Importer(importer.ImporterProtocol):
+class Importer(beangulp.Importer):
     """An importer for UTrade CSV files (an example investment bank)."""
 
     def __init__(self, currency,
@@ -40,30 +41,35 @@ class Importer(importer.ImporterProtocol):
         self.account_fees = account_fees
         self.account_external = account_external
 
-    def identify(self, file):
+    def identify(self, filepath):
         # Match if the filename is as downloaded and the header has the unique
         # fields combination we're looking for.
-        return (re.match(r"UTrade\d\d\d\d\d\d\d\d\.csv", path.basename(file.name)) and
-                re.match("DATE,TYPE,REF", file.head()))
+        if not re.match(r"UTrade\d\d\d\d\d\d\d\d\.csv", path.basename(filepath)):
+            return False
+        with open(filepath, 'r') as fd:
+            head = fd.read(13)
+        if head != "DATE,TYPE,REF":
+            return False
+        return True
 
-    def file_name(self, file):
-        return 'utrade.{}'.format(path.basename(file.name))
+    def filename(self, filepath):
+        return 'utrade.{}'.format(path.basename(filepath))
 
-    def file_account(self, _):
+    def account(self, filepath):
         return self.account_root
 
-    def file_date(self, file):
+    def date(self, filepath):
         # Extract the statement date from the filename.
-        return datetime.datetime.strptime(path.basename(file.name),
+        return datetime.datetime.strptime(path.basename(filepath),
                                           'UTrade%Y%m%d.csv').date()
 
-    def extract(self, file, existing_entries=None):
+    def extract(self, filepath, existing):
         # Open the CSV file and create directives.
         entries = []
         index = 0
-        with open(file.name) as infile:
+        with open(filepath) as infile:
             for index, row in enumerate(csv.DictReader(infile)):
-                meta = data.new_metadata(file.name, index)
+                meta = data.new_metadata(filepath, index)
                 date = parse(row['DATE']).date()
                 rtype = row['TYPE']
                 link = "ut{0[REF #]}".format(row)
@@ -75,7 +81,7 @@ class Importer(importer.ImporterProtocol):
                 if rtype == 'XFER':
                     assert fees.number == ZERO
                     txn = data.Transaction(
-                        meta, date, self.FLAG, None, desc, data.EMPTY_SET, {link}, [
+                        meta, date, flags.FLAG_OKAY, None, desc, data.EMPTY_SET, {link}, [
                             data.Posting(self.account_cash, units, None, None, None,
                                          None),
                             data.Posting(self.account_external, -other, None, None, None,
@@ -94,7 +100,7 @@ class Importer(importer.ImporterProtocol):
                     account_dividends = self.account_dividends.format(instrument)
 
                     txn = data.Transaction(
-                        meta, date, self.FLAG, None, desc, data.EMPTY_SET, {link}, [
+                        meta, date, flags.FLAG_OKAY, None, desc, data.EMPTY_SET, {link}, [
                             data.Posting(self.account_cash, units, None, None, None, None),
                             data.Posting(account_dividends, -other, None, None, None, None),
                         ])
@@ -118,7 +124,7 @@ class Importer(importer.ImporterProtocol):
                     if rtype == 'BUY':
                         cost = position.Cost(rate, self.currency, None, None)
                         txn = data.Transaction(
-                            meta, date, self.FLAG, None, desc, data.EMPTY_SET, {link}, [
+                            meta, date, flags.FLAG_OKAY, None, desc, data.EMPTY_SET, {link}, [
                                 data.Posting(self.account_cash, units, None, None, None,
                                              None),
                                 data.Posting(self.account_fees, fees, None, None, None,
@@ -141,7 +147,7 @@ class Importer(importer.ImporterProtocol):
                         price = amount.Amount(rate, self.currency)
                         account_gains = self.account_gains.format(instrument)
                         txn = data.Transaction(
-                            meta, date, self.FLAG, None, desc, data.EMPTY_SET, {link}, [
+                            meta, date, flags.FLAG_OKAY, None, desc, data.EMPTY_SET, {link}, [
                                 data.Posting(self.account_cash, units, None, None, None,
                                              None),
                                 data.Posting(self.account_fees, fees, None, None, None,
