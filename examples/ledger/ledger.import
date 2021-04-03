@@ -11,6 +11,7 @@ import beangulp
 
 # Import custom importers.
 from importers import acme
+from importers import csvbank
 from importers import ofx
 from importers import utrade
 
@@ -29,6 +30,8 @@ importers = [
                  "bofa"),
 
     acme.Importer("Assets:US:AcmeBank"),
+
+    csvbank.Importer('Assets:US:CSVBank'),
 ]
 
 
