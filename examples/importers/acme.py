@@ -61,5 +61,5 @@ class Importer(importer.ImporterProtocol):
 
 
 if __name__ == '__main__':
-    importer = Importer("Assets:US:AcmeBank")
+    importer = Importer("Assets:US:ACMEBank")
     main(importer)
