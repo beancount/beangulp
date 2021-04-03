@@ -49,7 +49,10 @@ class TestFileMemo(unittest.TestCase):
             self.assertEqual(128, len(head))
 
             mimetype = wrap.convert(cache.mimetype)
-            self.assertRegex(mimetype, r'text/(x-(python|c\+\+)|plain)')
+            self.assertIn(mimetype, {'text/plain',
+                                     'text/x-python',
+                                     'text/x-script.python',
+                                     'text/c++'})
 
     def test_cache_head_obeys_explict_utf8_encoding_avoids_chardet_exception(self):
         emoji_header = 'asciiHeader1,🍏Header1,asciiHeader2'.encode('utf-8')
