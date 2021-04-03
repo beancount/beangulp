@@ -31,7 +31,10 @@ import bs4
 from beancount.core.number import D
 from beancount.core import amount
 from beancount.core import data
-from beangulp import importer
+from beancount.core import flags
+
+import beangulp
+from beangulp import mimetypes
 
 
 class BalanceType(enum.Enum):
@@ -42,7 +45,7 @@ class BalanceType(enum.Enum):
                  # extracted transaction.
 
 
-class Importer(importer.ImporterProtocol):
+class Importer(beangulp.Importer):
     """An importer for Open Financial Exchange files."""
 
     def __init__(self, acctid_regexp, account, basename=None,
@@ -57,39 +60,44 @@ class Importer(importer.ImporterProtocol):
           balance_type: An enum of type BalanceType.
         """
         self.acctid_regexp = acctid_regexp
-        self.account = account
+        self.importer_account = account
         self.basename = basename
         self.balance_type = balance_type
 
-    def identify(self, file):
+    def identify(self, filepath):
         # Match for a compatible MIME type.
-        if file.mimetype() not in {'application/x-ofx',
-                                   'application/vnd.intu.qbo',
-                                   'application/vnd.intu.qfx'}:
+        if mimetypes.guess_type(filepath) not in {'application/x-ofx',
+                                                  'application/vnd.intu.qbo',
+                                                  'application/vnd.intu.qfx'}:
             return False
 
         # Match the account id.
+        with open(filepath) as fd:
+            contents = fd.read()
         return any(re.match(self.acctid_regexp, acctid)
-                   for acctid in find_acctids(file.contents()))
+                   for acctid in find_acctids(contents))
 
-    def file_account(self, _):
+    def account(self, filepath):
         """Return the account against which we post transactions."""
-        return self.account
+        return self.importer_account
 
-    def file_name(self, file):
+    def filename(self, filepath):
         """Return the optional renamed account filename."""
         if self.basename:
-            return self.basename + path.splitext(file.name)[1]
+            return self.basename + path.splitext(filepath)[1]
 
-    def file_date(self, file):
+    def date(self, filepath):
         """Return the optional renamed account filename."""
-        return find_max_date(file.contents())
+        with open(filepath) as fd:
+            contents = fd.read()
+        return find_max_date(contents)
 
-    def extract(self, file, existing_entries=None):
+    def extract(self, filepath, existing):
         """Extract a list of partially complete transactions from the file."""
-        soup = bs4.BeautifulSoup(file.contents(), 'lxml')
-        return extract(soup, file.name, self.acctid_regexp, self.account, self.FLAG,
-                       self.balance_type)
+        with open(filepath) as fd:
+            soup = bs4.BeautifulSoup(fd, 'lxml')
+        return extract(soup, filepath, self.acctid_regexp, self.importer_account,
+                       flags.FLAG_OKAY, self.balance_type)
 
 
 def extract(soup, filename, acctid_regexp, account, flag, balance_type):

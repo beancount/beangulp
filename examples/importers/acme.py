@@ -14,7 +14,7 @@ import subprocess
 
 from dateutil.parser import parse as parse_datetime
 
-from beangulp import importer
+import beangulp
 from beangulp import mimetypes
 from beangulp.cache import cache
 from beangulp.testing import main
@@ -28,33 +28,33 @@ def pdf_to_text(filename):
     return r.stdout.decode()
 
 
-class Importer(importer.ImporterProtocol):
+class Importer(beangulp.Importer):
     """An importer for ACME Bank PDF statements."""
 
     def __init__(self, account_filing):
         self.account_filing = account_filing
 
-    def identify(self, file):
-        mimetype, encoding = mimetypes.guess_type(file.name)
+    def identify(self, filepath):
+        mimetype, encoding = mimetypes.guess_type(filepath)
         if mimetype != 'application/pdf':
             return False
 
         # Look for some words in the PDF file to figure out if it's a statement
         # from ACME. The filename they provide (Statement.pdf) isn't useful.
-        text = file.convert(pdf_to_text)
+        text = pdf_to_text(filepath)
         if text:
             return re.match('ACME Bank', text) is not None
 
-    def file_name(self, file):
+    def filename(self, filepath):
         # Normalize the name to something meaningful.
         return 'acmebank.pdf'
 
-    def file_account(self, _):
+    def account(self, filepath):
         return self.account_filing
 
-    def file_date(self, file):
+    def date(self, filepath):
         # Get the actual statement's date from the contents of the file.
-        text = file.convert(pdf_to_text)
+        text = pdf_to_text(filepath)
         match = re.search('Date: ([^\n]*)', text)
         if match:
             return parse_datetime(match.group(1)).date()
