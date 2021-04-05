@@ -16,26 +16,25 @@ from beancount.core import amount
 from beancount.core import interpolate
 
 
-def find_similar_entries(entries, source_entries, comparator=None, window_days=2):
+def find_similar_entries(entries, existing_entries, comparator=None, window_days=2):
     """Find which entries from a list are potential duplicates of a set.
 
-    Note: If there are multiple entries from 'source_entries' matching an entry
-    in 'entries', only the first match is returned. Note that this function
-    could in theory decide to merge some of the imported entries with each
-    other.
+    The existing_entries array must be sorted by date. If there are
+    multiple entries in existing_entries matching an entry in entries,
+    only the first match is returned.
 
     Args:
       entries: The list of entries to classify as duplicate or note.
-      source_entries: The list of entries against which to match. This is the
-        previous, or existing set of entries to compare against. This may be null
-        or empty.
+      existing_entries: The list of entries against which to match.
       comparator: A functor used to establish the similarity of two entries.
       window_days: The number of days (inclusive) before or after to scan the
         entries to classify against.
+
     Returns:
-      A list of pairs of entries (entry, source_entry) where entry is from
-      'entries' and is deemed to be a duplicate of source_entry, from
-      'source_entries'.
+      A list of (entry, existing_entry) tuples where entry is from
+      entries and is deemed to be a duplicate of existing_entry, from
+      existing_entries.
+
     """
     window_head = datetime.timedelta(days=window_days)
     window_tail = datetime.timedelta(days=window_days + 1)
@@ -45,14 +44,14 @@ def find_similar_entries(entries, source_entries, comparator=None, window_days=2
 
     # For each of the new entries, look at existing entries at a nearby date.
     duplicates = []
-    if source_entries is not None:
+    if existing_entries is not None:
         for entry in data.filter_txns(entries):
-            for source_entry in data.filter_txns(
-                    data.iter_entry_dates(source_entries,
+            for existing_entry in data.filter_txns(
+                    data.iter_entry_dates(existing_entries,
                                           entry.date - window_head,
                                           entry.date + window_tail)):
-                if comparator(entry, source_entry):
-                    duplicates.append((entry, source_entry))
+                if comparator(entry, existing_entry):
+                    duplicates.append((entry, existing_entry))
                     break
     return duplicates
 

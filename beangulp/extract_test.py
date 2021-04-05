@@ -58,7 +58,7 @@ class TestDuplicates(unittest.TestCase):
             1970-01-01 * "Test"
               Assets:Tests  10.00 USD'''))
         extracted = [
-            ('/path/to/test.csv', entries),
+            ('/path/to/test.csv', entries, None, None),
         ]
         marked = extract.find_duplicate_entries(extracted, entries)
         self.assertTrue(marked[0][1][0].meta[extract.DUPLICATE])
@@ -72,8 +72,8 @@ class TestPrint(unittest.TestCase):
               Assets:Tests  10.00 USD'''))
 
         extracted = [
-            ('/path/to/test.csv', entries),
-            ('/path/to/empty.pdf', []),
+            ('/path/to/test.csv', entries, None, None),
+            ('/path/to/empty.pdf', [], None, None),
         ]
 
         output = io.StringIO()
@@ -105,7 +105,7 @@ class TestPrint(unittest.TestCase):
         entries[1].meta[extract.DUPLICATE] = True
 
         extracted = [
-            ('/path/to/test.csv', entries),
+            ('/path/to/test.csv', entries, None, None),
         ]
 
         output = io.StringIO()
