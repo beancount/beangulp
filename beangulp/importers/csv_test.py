@@ -255,6 +255,185 @@ class TestCSVImporter(cmptest.TestCase):
         """, entries)
 
     @test_utils.docfile
+    def test_currency_and_balances_where_there_are_multiple_currency_transactions(self, filename):
+        """\
+          Posting Date,"Description",Amount,Currency,Balance
+          3/18/2016,"1st Payment in GBP",-1.00,GBP,-1
+          3/18/2016,"1st Payment in PLN",-1,PLN,-1
+          3/18/2016,"1st Payment in ZAR",-1.0,ZAR,-1
+          3/19/2016,"2nd Payment in GBP",-2,GBP,-3
+          3/19/2016,"2nd Payment in Main Currency",-2.00,,-3
+          3/20/2016,"3rd Payment in GBP",-3,GBP,-6
+        """
+        file = cache.get_file(filename)
+
+        importer = csv.Importer({Col.DATE: 'Posting Date',
+                                 Col.NARRATION1: 'Description',
+                                 Col.AMOUNT: 'Amount',
+                                 Col.CURRENCY: 'Currency',
+                                 Col.BALANCE: 'Balance'},
+                                'Assets:Bank',
+                                'PLN')
+        entries = importer.extract(file)
+        self.assertEqualEntries(r"""
+           
+           2016-03-18 * "1st Payment in GBP"
+             Assets:Bank  -1.00 GBP
+           
+           2016-03-18 * "1st Payment in PLN"
+             Assets:Bank  -1 PLN
+           
+           2016-03-18 * "1st Payment in ZAR"
+             Assets:Bank  -1.0 ZAR
+           
+           2016-03-19 * "2nd Payment in GBP"
+             Assets:Bank  -2 GBP
+           
+           2016-03-19 * "2nd Payment in Main Currency"
+             Assets:Bank  -2.00 PLN
+           
+           2016-03-20 * "3rd Payment in GBP"
+             Assets:Bank  -3 GBP
+           
+           2016-03-20 balance Assets:Bank  -3 PLN           
+
+           2016-03-19 balance Assets:Bank  -1 ZAR           
+
+           2016-03-21 balance Assets:Bank  -6 GBP           
+        
+        """, entries)
+
+    @test_utils.docfile
+    def test_zero_balance_assertion_is_added_with_currency_field(self, filename):
+        """\
+          Posting Date,"Description",Amount,Currency,Balance
+          3/18/2016,"1st Payment in GBP",-1.00,GBP,-1
+          3/18/2016,"1st Payment in PLN",-1,PLN,-1
+          3/18/2016,"1st Payment in ZAR",-1.0,ZAR,-1
+          3/19/2016,"2nd Payment in GBP",-2,GBP,-3
+          3/19/2016,"2nd Payment in Main Currency",-2.00,,-3
+          3/20/2016,"3rd Payment in GBP",-3,GBP,-6
+          3/21/2016,"4th Payment in GBP",6,GBP,0
+        """
+        file = cache.get_file(filename)
+
+        importer = csv.Importer({Col.DATE: 'Posting Date',
+                                 Col.NARRATION1: 'Description',
+                                 Col.AMOUNT: 'Amount',
+                                 Col.CURRENCY: 'Currency',
+                                 Col.BALANCE: 'Balance'},
+                                'Assets:Bank',
+                                'PLN')
+        entries = importer.extract(file)
+        self.assertEqualEntries(r"""
+           
+           2016-03-18 * "1st Payment in GBP"
+             Assets:Bank  -1.00 GBP
+           
+           2016-03-18 * "1st Payment in PLN"
+             Assets:Bank  -1 PLN
+           
+           2016-03-18 * "1st Payment in ZAR"
+             Assets:Bank  -1.0 ZAR
+           
+           2016-03-19 * "2nd Payment in GBP"
+             Assets:Bank  -2 GBP
+           
+           2016-03-19 * "2nd Payment in Main Currency"
+             Assets:Bank  -2.00 PLN
+           
+           2016-03-20 * "3rd Payment in GBP"
+             Assets:Bank  -3 GBP
+             
+           2016-03-21 * "4th Payment in GBP"
+             Assets:Bank  6 GBP
+           
+           2016-03-20 balance Assets:Bank  -3 PLN           
+
+           2016-03-19 balance Assets:Bank  -1 ZAR           
+
+           2016-03-22 balance Assets:Bank  0 GBP           
+        
+        """, entries)
+
+
+    @test_utils.docfile
+    def test_currency_and_balances_when_none_are_in_the_main_currency(self, filename):
+        """\
+          Posting Date,"Description",Amount,Currency,Balance
+          3/18/2016,"1st Payment in GBP",-1.00,GBP,-1
+          3/18/2016,"1st Payment in ZAR",-1.0,ZAR,-1
+          3/19/2016,"2nd Payment in GBP",-2,GBP,-3
+          3/20/2016,"3rd Payment in GBP",-3,GBP,-6
+        """
+        file = cache.get_file(filename)
+
+        importer = csv.Importer({Col.DATE: 'Posting Date',
+                                 Col.NARRATION1: 'Description',
+                                 Col.AMOUNT: 'Amount',
+                                 Col.CURRENCY: 'Currency',
+                                 Col.BALANCE: 'Balance'},
+                                'Assets:Bank',
+                                'PLN')
+        entries = importer.extract(file)
+        self.assertEqualEntries(r"""
+
+           2016-03-18 * "1st Payment in GBP"
+             Assets:Bank  -1.00 GBP
+
+           2016-03-18 * "1st Payment in ZAR"
+             Assets:Bank  -1.0 ZAR
+
+           2016-03-19 * "2nd Payment in GBP"
+             Assets:Bank  -2 GBP
+
+           2016-03-20 * "3rd Payment in GBP"
+             Assets:Bank  -3 GBP
+
+           2016-03-19 balance Assets:Bank  -1 ZAR           
+
+           2016-03-21 balance Assets:Bank  -6 GBP           
+
+        """, entries)
+
+    @test_utils.docfile
+    def test_main_currency_should_be_used_when_no_currency_is_specified(self, filename):
+        """\
+          Posting Date,"Description",Amount,Currency,Balance
+          3/18/2016,"1st Payment",-1.00,,-1
+          3/18/2016,"2nd Payment",-1.0,,-2
+          3/19/2016,"3rd Payment",-2,,-4
+          3/20/2016,"4th Payment",-3,,-7
+        """
+        file = cache.get_file(filename)
+
+        importer = csv.Importer({Col.DATE: 'Posting Date',
+                                 Col.NARRATION1: 'Description',
+                                 Col.AMOUNT: 'Amount',
+                                 Col.CURRENCY: 'Currency',
+                                 Col.BALANCE: 'Balance'},
+                                'Assets:Bank',
+                                'PLN')
+        entries = importer.extract(file)
+        self.assertEqualEntries(r"""
+
+           2016-03-18 * "1st Payment"
+             Assets:Bank  -1.00 PLN
+
+           2016-03-18 * "2nd Payment"
+             Assets:Bank  -1.0 PLN
+
+           2016-03-19 * "3rd Payment"
+             Assets:Bank  -2 PLN
+
+           2016-03-20 * "4th Payment"
+             Assets:Bank  -3 PLN
+
+           2016-03-21 balance Assets:Bank  -7 PLN           
+
+        """, entries)
+
+    @test_utils.docfile
     def test_categorizer_one_argument(self, filename):
         """\
           Date,Amount,Payee,Description
