@@ -73,6 +73,10 @@ class Col(enum.Enum):
     # account.
     CATEGORY = '[CATEGORY]'
 
+    # A column that indicates the amount currency for the current row which may
+    # be different to the base currency.
+    CURRENCY = '[CURRENCY]'
+
 
 def get_amounts(iconfig, row, allow_zero_amounts, parse_amount):
     """Get the amount columns of a row.
@@ -275,6 +279,11 @@ class Importer(identifier.IdentifyMixin, filing.FilingMixin):
 
                 balance = get(row, Col.BALANCE)
 
+                if Col.CURRENCY not in iconfig or not get(row, Col.CURRENCY):
+                    currency = self.currency
+                else:
+                    currency = get(row, Col.CURRENCY)
+
                 # Create a transaction
                 meta = data.new_metadata(file.name, index)
                 if txn_date is not None:
@@ -283,7 +292,7 @@ class Importer(identifier.IdentifyMixin, filing.FilingMixin):
                 if txn_time is not None:
                     meta['time'] = str(dateutil.parser.parse(txn_time).time())
                 if balance is not None:
-                    meta['balance'] = self.parse_amount(balance)
+                    meta['balance'] = Amount(self.parse_amount(balance), currency)
                 if last4:
                     last4_friendly = self.last4_map.get(last4.strip())
                     meta['card'] = last4_friendly if last4_friendly else last4
@@ -304,7 +313,7 @@ class Importer(identifier.IdentifyMixin, filing.FilingMixin):
                         continue
                     if self.invert_sign:
                         amount = -amount
-                    units = Amount(amount, self.currency)
+                    units = Amount(amount, currency)
                     txn.postings.append(
                         data.Posting(account, units, None, None, None, None))
 
@@ -325,17 +334,24 @@ class Importer(identifier.IdentifyMixin, filing.FilingMixin):
         if not is_ascending:
             entries = list(reversed(entries))
 
+        balances = {}
         # Add a balance entry if possible
-        if Col.BALANCE in iconfig and entries:
-            entry = entries[-1]
+        if Col.CURRENCY in iconfig:
+            for entry in entries[::-1]:
+                balance = entry.meta.get('balance', None)
+                # Only add the newest entry for each currency in the file
+                if balance is not None and balance.currency not in balances:
+                    balances[balance.currency] = entry
+        else:
+            balances[self.currency] = entries[-1]
+
+        for entry in balances.values():
             date = entry.date + datetime.timedelta(days=1)
             balance = entry.meta.get('balance', None)
             if balance is not None:
                 meta = data.new_metadata(file.name, index)
                 entries.append(
-                    data.Balance(meta, date,
-                                 account, Amount(balance, self.currency),
-                                 None, None))
+                    data.Balance(meta, date, account, balance, None, None))
 
         # Remove the 'balance' metadata.
         for entry in entries:
