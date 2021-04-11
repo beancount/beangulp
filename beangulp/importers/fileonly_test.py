@@ -35,7 +35,3 @@ class TestFileOnly(unittest.TestCase):
         self.assertTrue(importer.identify(file))
 
         assert importer.file_name(file).startswith('bofa.')
-
-
-if __name__ == '__main__':
-    unittest.main()

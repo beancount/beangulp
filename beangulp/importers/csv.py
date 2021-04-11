@@ -1,5 +1,10 @@
-"""CSV importer.
-"""
+"""CSV importer."""
+
+# Postpone evaluation of annotations. This solves an issue with the
+# import of the standard library csv module when this module or its
+# associated test are executed as scripts. This requires Python >3.7
+# and has to wait till we will drop suppport for Python 3.6
+# from __future__ import annotations
 
 __copyright__ = "Copyright (C) 2016  Martin Blais"
 __license__ = "GNU GPLv2"
