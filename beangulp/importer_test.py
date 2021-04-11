@@ -19,7 +19,3 @@ class TestImporterProtocol(unittest.TestCase):
         self.assertFalse(imp.file_account(memo))
         self.assertFalse(imp.file_date(memo))
         self.assertFalse(imp.file_name(memo))
-
-
-if __name__ == '__main__':
-    unittest.main()

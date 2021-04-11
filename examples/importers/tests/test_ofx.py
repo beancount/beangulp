@@ -3,7 +3,6 @@ __license__ = "GNU GPLv2"
 
 import datetime
 import re
-import unittest
 
 import bs4
 
@@ -530,7 +529,3 @@ class TestOFXImporter(cmptest.TestCase):
           2014-01-03 balance Liabilities:CreditCard   200.00 USD
         """, dedent=True)
         self.assertEqualEntries(balance_entries, entries)
-
-
-if __name__ == '__main__':
-    unittest.main()
