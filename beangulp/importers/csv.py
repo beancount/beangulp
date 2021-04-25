@@ -396,14 +396,14 @@ def normalize_config(config, head, dialect='excel', skip_lines: int = 0):
     # Skip garbage lines before sniffing the header
     assert isinstance(skip_lines, int)
     assert skip_lines >= 0
-    for _ in range(skip_lines):
-        head = head[head.find('\n')+1:]
 
-    has_header = csv.Sniffer().has_header(head)
+    head = io.StringIO(head, newline=None)
+    lines = list(head)[skip_lines:]
+
+    has_header = csv.Sniffer().has_header('\n'.join(lines))
     if has_header:
-        header = next(csv.reader(io.StringIO(head), dialect=dialect))
-        field_map = {field_name.strip(): index
-                     for index, field_name in enumerate(header)}
+        header = next(csv.reader(lines, dialect=dialect))
+        field_map = {name.strip(): index for index, name in enumerate(header)}
         index_config = {}
         for field_type, field in config.items():
             if isinstance(field, str):
