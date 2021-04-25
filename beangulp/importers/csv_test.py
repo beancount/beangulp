@@ -277,31 +277,31 @@ class TestCSVImporter(cmptest.TestCase):
                                 'PLN')
         entries = importer.extract(file)
         self.assertEqualEntries(r"""
-           
+
            2016-03-18 * "1st Payment in GBP"
              Assets:Bank  -1.00 GBP
-           
+
            2016-03-18 * "1st Payment in PLN"
              Assets:Bank  -1 PLN
-           
+
            2016-03-18 * "1st Payment in ZAR"
              Assets:Bank  -1.0 ZAR
-           
+
            2016-03-19 * "2nd Payment in GBP"
              Assets:Bank  -2 GBP
-           
+
            2016-03-19 * "2nd Payment in Main Currency"
              Assets:Bank  -2.00 PLN
-           
+
            2016-03-20 * "3rd Payment in GBP"
              Assets:Bank  -3 GBP
-           
-           2016-03-20 balance Assets:Bank  -3 PLN           
 
-           2016-03-19 balance Assets:Bank  -1 ZAR           
+           2016-03-20 balance Assets:Bank  -3 PLN
 
-           2016-03-21 balance Assets:Bank  -6 GBP           
-        
+           2016-03-19 balance Assets:Bank  -1 ZAR
+
+           2016-03-21 balance Assets:Bank  -6 GBP
+
         """, entries)
 
     @test_utils.docfile
@@ -327,34 +327,34 @@ class TestCSVImporter(cmptest.TestCase):
                                 'PLN')
         entries = importer.extract(file)
         self.assertEqualEntries(r"""
-           
+
            2016-03-18 * "1st Payment in GBP"
              Assets:Bank  -1.00 GBP
-           
+
            2016-03-18 * "1st Payment in PLN"
              Assets:Bank  -1 PLN
-           
+
            2016-03-18 * "1st Payment in ZAR"
              Assets:Bank  -1.0 ZAR
-           
+
            2016-03-19 * "2nd Payment in GBP"
              Assets:Bank  -2 GBP
-           
+
            2016-03-19 * "2nd Payment in Main Currency"
              Assets:Bank  -2.00 PLN
-           
+
            2016-03-20 * "3rd Payment in GBP"
              Assets:Bank  -3 GBP
-             
+
            2016-03-21 * "4th Payment in GBP"
              Assets:Bank  6 GBP
-           
-           2016-03-20 balance Assets:Bank  -3 PLN           
 
-           2016-03-19 balance Assets:Bank  -1 ZAR           
+           2016-03-20 balance Assets:Bank  -3 PLN
 
-           2016-03-22 balance Assets:Bank  0 GBP           
-        
+           2016-03-19 balance Assets:Bank  -1 ZAR
+
+           2016-03-22 balance Assets:Bank  0 GBP
+
         """, entries)
 
 
@@ -391,9 +391,9 @@ class TestCSVImporter(cmptest.TestCase):
            2016-03-20 * "3rd Payment in GBP"
              Assets:Bank  -3 GBP
 
-           2016-03-19 balance Assets:Bank  -1 ZAR           
+           2016-03-19 balance Assets:Bank  -1 ZAR
 
-           2016-03-21 balance Assets:Bank  -6 GBP           
+           2016-03-21 balance Assets:Bank  -6 GBP
 
         """, entries)
 
@@ -430,7 +430,7 @@ class TestCSVImporter(cmptest.TestCase):
            2016-03-20 * "4th Payment"
              Assets:Bank  -3 PLN
 
-           2016-03-21 balance Assets:Bank  -7 PLN           
+           2016-03-21 balance Assets:Bank  -7 PLN
 
         """, entries)
 
