@@ -1,6 +1,7 @@
 __copyright__ = "Copyright (C) 2016  Martin Blais"
 __license__ = "GNU GPLv2"
 
+import tempfile
 import textwrap
 import unittest
 
@@ -523,6 +524,30 @@ class TestCSVImporter(cmptest.TestCase):
             Assets:Bank  2 EUR
 
         """, entries)
+
+    def test_newliens(self):
+        content = textwrap.dedent("""\
+          Date,Description,Amount
+          2020-07-03,A,2
+          2020-07-03,B,3
+        """)
+        importer = csv.Importer({Col.DATE: 'Date',
+                                 Col.NARRATION: 'Description',
+                                 Col.AMOUNT: 'Amount'},
+                                'Assets:Bank', 'EUR', [])
+        for nl in '\n', '\r\n', '\r':
+            with tempfile.NamedTemporaryFile('w') as temp:
+                temp.write(content.replace('\n', nl))
+                temp.flush()
+                entries = importer.extract(cache.get_file(temp.name))
+                self.assertEqualEntries("""
+                  2020-07-03 * "A"
+                    Assets:Bank  2 EUR
+
+                  2020-07-03 * "B"
+                    Assets:Bank  3 EUR
+                """, entries)
+
 
 # TODO: Test things out with/without payee and with/without narration.
 # TODO: Test balance support.
