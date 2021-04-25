@@ -147,8 +147,7 @@ class Importer(identifier.IdentifyMixin, filing.FilingMixin):
           dateutil_kwds: An optional dict defining the dateutil parser kwargs.
           narration_sep: A string, a separator to use for splitting up the payee and
             narration fields of a source field.
-          encoding: An optional encoding for the file. Typically useful for files
-            encoded in 'latin1' instead of 'utf-8' (the default).
+          encoding: Encoding for the file, utf-8 if not specified or None.
           invert_sign: If true, invert the amount's sign unconditionally.
           **kwds: Extra keyword arguments to provide to the base mixins.
         """
@@ -163,7 +162,7 @@ class Importer(identifier.IdentifyMixin, filing.FilingMixin):
         self.dateutil_kwds = dateutil_kwds
         self.csv_dialect = csv_dialect
         self.narration_sep = narration_sep
-        self.encoding = encoding
+        self.encoding = encoding or 'utf-8'
         self.invert_sign = invert_sign
 
         self.categorizer = categorizer
