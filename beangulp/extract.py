@@ -117,7 +117,7 @@ def mark_duplicate_entries(
         lo = bisect.bisect_left(dates, date - window)
         hi = bisect.bisect_right(dates, date + window)
         for i in range(lo, hi):
-            yield entries[i]
+            yield existing[i]
 
     marked = []
     for entry in entries:
