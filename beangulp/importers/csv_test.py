@@ -40,6 +40,14 @@ class TestCSVFunctions(unittest.TestCase):
         iconfig, _ = csv.normalize_config({Col.DATE: 1}, head)
         self.assertEqual({Col.DATE: 1}, iconfig)
 
+    def test_normalize_config__has_header_false(self):
+        head = textwrap.dedent("""\
+          DEBIT,3/18/2016,"Payment to Chafe card ending in 1234 03/18",-2680.89,ACCT_XFER,3409.86,,
+        """)
+        iconfig, has_header = csv.normalize_config({Col.DATE: 1}, head,
+                                                   skip_lines=4, has_header=False)
+        self.assertFalse(has_header)
+
     def test_normalize_config__with_skip_and_header(self):
         head = textwrap.dedent("""\
           Lorem ipsum dolor sit amet, consectetur adipiscing elit.
@@ -177,6 +185,25 @@ class TestCSVImporter(cmptest.TestCase):
 
         """, entries)
 
+    @test_utils.docfile
+    def test_one_line_no_header(self, filename):
+        """\
+          11/7/2016,A,2
+        """
+        file = cache.get_file(filename)
+        importer = csv.Importer({Col.DATE: 0,
+                                 Col.NARRATION: 1,
+                                 Col.AMOUNT: 2},
+                                'Assets:Bank', 'EUR', [],
+                                dateutil_kwds={'dayfirst': True},
+                                has_header=False)
+        entries = importer.extract(file)
+        self.assertEqualEntries(r"""
+
+          2016-07-11 * "A"
+            Assets:Bank  2 EUR
+
+        """, entries)
 
     @test_utils.docfile
     def test_links(self, filename):

@@ -128,6 +128,7 @@ class Importer(identifier.IdentifyMixin, filing.FilingMixin):
                  narration_sep: str = '; ',
                  encoding: Optional[str] = None,
                  invert_sign: Optional[bool] = False,
+                 has_header: Optional[bool] = None,
                  **kwds):
         """Constructor.
 
@@ -149,6 +150,8 @@ class Importer(identifier.IdentifyMixin, filing.FilingMixin):
             narration fields of a source field.
           encoding: Encoding for the file, utf-8 if not specified or None.
           invert_sign: If true, invert the amount's sign unconditionally.
+          has_header: An optional boolean to indicate whether the csv file has a header.
+            If not set, the importer will try to detect it automatically.
           **kwds: Extra keyword arguments to provide to the base mixins.
         """
         assert isinstance(config, dict), "Invalid type: {}".format(config)
@@ -164,6 +167,7 @@ class Importer(identifier.IdentifyMixin, filing.FilingMixin):
         self.narration_sep = narration_sep
         self.encoding = encoding or 'utf-8'
         self.invert_sign = invert_sign
+        self.has_header = has_header
 
         self.categorizer = categorizer
 
@@ -192,6 +196,7 @@ class Importer(identifier.IdentifyMixin, filing.FilingMixin):
             file.head(encoding=self.encoding),
             self.csv_dialect,
             self.skip_lines,
+            self.has_header
         )
         if Col.DATE in iconfig:
             with open(file.name, encoding=self.encoding) as infile:
@@ -222,6 +227,7 @@ class Importer(identifier.IdentifyMixin, filing.FilingMixin):
             file.head(encoding=self.encoding),
             self.csv_dialect,
             self.skip_lines,
+            self.has_header
         )
 
         with open(file.name, encoding=self.encoding) as infile:
@@ -377,7 +383,7 @@ class Importer(identifier.IdentifyMixin, filing.FilingMixin):
         return get_amounts(iconfig, row, allow_zero_amounts, parse_amount)
 
 
-def normalize_config(config, head, dialect='excel', skip_lines: int = 0):
+def normalize_config(config, head, dialect='excel', skip_lines: int = 0, has_header: Optional[bool] = None):
     """Using the header line, convert the configuration field name lookups to int indexes.
 
     Args:
@@ -399,8 +405,8 @@ def normalize_config(config, head, dialect='excel', skip_lines: int = 0):
 
     head = io.StringIO(head, newline=None)
     lines = list(head)[skip_lines:]
-
-    has_header = csv.Sniffer().has_header('\n'.join(lines))
+    if has_header == None:
+        has_header = csv.Sniffer().has_header('\n'.join(lines))
     if has_header:
         header = next(csv.reader(lines, dialect=dialect))
         field_map = {name.strip(): index for index, name in enumerate(header)}
