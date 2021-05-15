@@ -3,6 +3,8 @@ enable=all
 disable=
   locally-disabled,
   suppressed-message,
+  # pylint is not smart enough to get this right
+  arguments-differ,
   duplicate-code,
   f-string-without-interpolation,
   fixme,
