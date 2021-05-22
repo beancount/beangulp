@@ -9,18 +9,21 @@ discussion of these files.
 
 There are five directories demonstrated here:
 
-* `ledger`: This is a directory, typically a repository under source control,
-  containing your Beancount ledger files.
+* `ledger`: This is a directory, typically a repository under source
+  control, containing your Beancount ledger files.
 
-* `documents`: This is a directory containing your past imported files.
-  Beangulps' filing command is able to automatically date and rename the files
-  there after you've finished updating your Beancount ledger.
+* `documents`: This is a directory containing archived imported files.
+  The directory hierarchy mirrors the structure of the accounts in the
+  ledger and is constructed by the "archive" command which can also
+  automatically date and rename the files and place them in the
+  correct location after you have finished updating your Beancount
+  ledger.
 
-* `importers`: This is a directory, typically a repository under source control,
-  containing your custom importers implementations. Note that in the most
-  general case this does not include examples of your downloaded files nor any
-  personal account-specific information (e.g. account ids), because you may want
-  to share your importers with others.
+* `importers`: This is a directory, typically a repository under
+  source control, containing your custom importers implementation.
+  Note that in the most general case this does not include examples of
+  your downloaded files nor any personal account-specific information,
+  because you may want to share your importers with others.
 
 * `tests`: This directory contains examples of real downloaded files
   from your institutions which will serve as regression tests.  Next
@@ -32,8 +35,8 @@ There are five directories demonstrated here:
   golden files.  This is a really fast way to add some testing and
   regression detection around your custom importer code.
 
-* `Downloads`: This is the location where your browser might store the files you
-  fetch from your bank(s).
+* `Downloads`: This is the location where your browser might drop the
+  files dowloaded from your statement sources.
 
 
 ## Example Files Organization - Simpler
