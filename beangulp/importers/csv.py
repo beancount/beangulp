@@ -14,6 +14,7 @@ import csv
 import datetime
 import enum
 import io
+import warnings
 
 from inspect import signature
 from typing import Callable, Dict, Optional, Union
@@ -151,6 +152,10 @@ class Importer(identifier.IdentifyMixin, filing.FilingMixin):
           invert_sign: If true, invert the amount's sign unconditionally.
           **kwds: Extra keyword arguments to provide to the base mixins.
         """
+        warnings.warn('beangulp.importers.csv.Importer is deprecated. '
+                      'Base your importer on beangulp.importers.csvbase.Importer instead.',
+                      DeprecationWarning, stacklevel=2)
+
         assert isinstance(config, dict), "Invalid type: {}".format(config)
         self.config = config
 
