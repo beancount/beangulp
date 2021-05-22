@@ -31,7 +31,6 @@ jobs:
           cd examples
           python importers/acme.py test tests/acme --verbose
           python importers/csvbank.py test tests/csvbank --verbose
-          python importers/newcsvbank.py test tests/csvbank --verbose
           python importers/utrade.py test tests/utrade --verbose
       - name: Run example ledger.import
         run: |

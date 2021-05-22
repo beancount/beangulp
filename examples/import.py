@@ -24,7 +24,7 @@ importers = [
 
     acme.Importer("Assets:US:ACMEBank"),
 
-    csvbank.Importer('Assets:US:CSVBank'),
+    csvbank.Importer("Assets:US:CSVBank", "USD"),
 ]
 
 
