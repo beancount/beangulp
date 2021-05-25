@@ -6,7 +6,7 @@ import io
 import tempfile
 import textwrap
 
-from johnny.utils import csv_utils
+from beangulp import csv_utils
 
 
 class TestCSVUtils(unittest.TestCase):
