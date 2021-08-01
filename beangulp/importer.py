@@ -248,7 +248,8 @@ class Adapter(Importer):
         # modify the filename returned by the importer. This preserves
         # backward compatibility with the old implementation of the
         # command.
-        return misc_utils.idify(filename)
+        if filename is not None:
+            return misc_utils.idify(filename)
 
     def extract(self, filepath, existing):
         p = inspect.signature(self.importer.extract).parameters
