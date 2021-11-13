@@ -113,8 +113,12 @@ def get_amounts(iconfig, row, allow_zero_amounts, parse_amount):
             parse_amount(credit) if credit else None)
 
 
+# Deprecated. TODO(blais): Remove this eventually (on a major release).
 class Importer(identifier.IdentifyMixin, filing.FilingMixin):
-    """Importer for CSV files."""
+    """Importer for CSV files (deprecated version using the ImporterProtocol).
+
+    Note that this is deprecated; use the ImporterNew class instead.
+    We will remove this eventually."""
     # pylint: disable=too-many-instance-attributes
 
     def __init__(self, config, account, currency,

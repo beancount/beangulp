@@ -241,7 +241,8 @@ def _importer(importer):
         warnings.warn('The beangulp.importer.ImporterProtocol interface for '
                       'importers has been replaced by the beangulp.Importer '
                       'interface and is therefore deprecated. Please update '
-                      'your importer to the new interface.', stacklevel=3)
+                      'your importer {} to the new interface.'.format(importer),
+                      stacklevel=3)
         return Adapter(importer)
     raise TypeError(f'expected bengulp.Importer not {type(importer):}')
 
