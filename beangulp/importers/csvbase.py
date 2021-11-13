@@ -233,7 +233,7 @@ class Importer(beangulp.Importer, CSVReader):
     """CSV files importer base class.
 
     This class provides the infrastructure and the basic functionality
-    necessary for importing transactions and balance assetions from
+    necessary for importing transactions and balance assertions from
     CSV files. To do anything useful it needs to be subclassed to add
     fields definitions. Fields are defined as class attributes of type
     Column.
