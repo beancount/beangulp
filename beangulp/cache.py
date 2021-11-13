@@ -20,7 +20,7 @@ from os import path
 import chardet
 
 from beancount.utils import defdict
-from beangulp import file_type
+from beangulp import mimetypes
 
 # NOTE: See get_file() at the end of this file to create instances of FileMemo.
 
@@ -86,7 +86,7 @@ def mimetype(filename):
     Returns:
       A converter function.
     """
-    return file_type.guess_file_type(filename)
+    return mimetypes.guess_type(filename, strict=False)
 
 
 def head(num_bytes=8192, encoding=None):

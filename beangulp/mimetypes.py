@@ -1,3 +1,8 @@
+"""The standard Python 'mimetypes' module with some custom registrations for
+types commonly used for accounting. Import 'from beangulp import mimetypes'
+instead of 'import mimetypes'.
+"""
+
 from mimetypes import *
 
 # Register some MIME types used in financial downloads.
