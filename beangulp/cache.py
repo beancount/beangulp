@@ -86,7 +86,8 @@ def mimetype(filename):
     Returns:
       A converter function.
     """
-    return mimetypes.guess_type(filename, strict=False)
+    mtype, _ = mimetypes.guess_type(filename, strict=False)
+    return mtype
 
 
 def head(num_bytes=8192, encoding=None):
