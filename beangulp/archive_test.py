@@ -1,3 +1,4 @@
+import datetime
 import os
 import unittest
 
@@ -27,9 +28,11 @@ class TestFilepath(unittest.TestCase):
     def test_filepath_no_date(self):
         importer = mock.MagicMock(wraps=self.importer)
         importer.date.return_value = None
-        with mock.patch('os.path.getmtime', return_value=86401):
+        with mock.patch('beangulp.archive.utils.getmdate',
+                        return_value=datetime.datetime.fromtimestamp(
+                            0, datetime.timezone.utc)):
             filepath = archive.filepath(importer, path.abspath('test.pdf'))
-        self.assertEqual(filepath, 'Assets/Tests/1970-01-02.test.pdf')
+        self.assertEqual(filepath, 'Assets/Tests/1970-01-01.test.pdf')
 
     def test_filepath_sep_in_name(self):
         importer = mock.MagicMock(wraps=self.importer)
