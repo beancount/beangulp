@@ -525,7 +525,7 @@ class TestCSVImporter(cmptest.TestCase):
 
         """, entries)
 
-    def test_newliens(self):
+    def test_newlines(self):
         content = textwrap.dedent("""\
           Date,Description,Amount
           2020-07-03,A,2
