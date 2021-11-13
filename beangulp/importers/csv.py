@@ -113,6 +113,47 @@ def get_amounts(iconfig, row, allow_zero_amounts, parse_amount):
             parse_amount(credit) if credit else None)
 
 
+def normalize_config(config, head, dialect='excel', skip_lines: int = 0):
+    """Using the header line, convert the configuration field name lookups to int indexes.
+
+    Args:
+      config: A dict of Col types to string or indexes.
+      head: A string, some decent number of bytes of the head of the file.
+      dialect: A dialect definition to parse the header
+      skip_lines: Skip first x (garbage) lines of file.
+    Returns:
+      A pair of
+        A dict of Col types to integer indexes of the fields, and
+        a boolean, true if the file has a header.
+    Raises:
+      ValueError: If there is no header and the configuration does not consist
+        entirely of integer indexes.
+    """
+    # Skip garbage lines before sniffing the header
+    assert isinstance(skip_lines, int)
+    assert skip_lines >= 0
+
+    head = io.StringIO(head, newline=None)
+    lines = list(head)[skip_lines:]
+
+    has_header = csv.Sniffer().has_header('\n'.join(lines))
+    if has_header:
+        header = next(csv.reader(lines, dialect=dialect))
+        field_map = {name.strip(): index for index, name in enumerate(header)}
+        index_config = {}
+        for field_type, field in config.items():
+            if isinstance(field, str):
+                field = field_map[field]
+            index_config[field_type] = field
+    else:
+        if any(not isinstance(field, int)
+               for field_type, field in config.items()):
+            raise ValueError("CSV config without header has non-index fields: "
+                             "{}".format(config))
+        index_config = config
+    return index_config, has_header
+
+
 # Deprecated. TODO(blais): Remove this eventually (on a major release).
 class Importer(identifier.IdentifyMixin, filing.FilingMixin):
     """Importer for CSV files (deprecated version using the ImporterProtocol).
@@ -384,44 +425,3 @@ class Importer(identifier.IdentifyMixin, filing.FilingMixin):
         with special cases, e.g., columns with currency symbols in them.
         """
         return get_amounts(iconfig, row, allow_zero_amounts, parse_amount)
-
-
-def normalize_config(config, head, dialect='excel', skip_lines: int = 0):
-    """Using the header line, convert the configuration field name lookups to int indexes.
-
-    Args:
-      config: A dict of Col types to string or indexes.
-      head: A string, some decent number of bytes of the head of the file.
-      dialect: A dialect definition to parse the header
-      skip_lines: Skip first x (garbage) lines of file.
-    Returns:
-      A pair of
-        A dict of Col types to integer indexes of the fields, and
-        a boolean, true if the file has a header.
-    Raises:
-      ValueError: If there is no header and the configuration does not consist
-        entirely of integer indexes.
-    """
-    # Skip garbage lines before sniffing the header
-    assert isinstance(skip_lines, int)
-    assert skip_lines >= 0
-
-    head = io.StringIO(head, newline=None)
-    lines = list(head)[skip_lines:]
-
-    has_header = csv.Sniffer().has_header('\n'.join(lines))
-    if has_header:
-        header = next(csv.reader(lines, dialect=dialect))
-        field_map = {name.strip(): index for index, name in enumerate(header)}
-        index_config = {}
-        for field_type, field in config.items():
-            if isinstance(field, str):
-                field = field_map[field]
-            index_config[field_type] = field
-    else:
-        if any(not isinstance(field, int)
-               for field_type, field in config.items()):
-            raise ValueError("CSV config without header has non-index fields: "
-                             "{}".format(config))
-        index_config = config
-    return index_config, has_header
