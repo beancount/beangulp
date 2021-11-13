@@ -32,9 +32,8 @@ class TestFileMemo(unittest.TestCase):
             self.assertEqual('abc', wrap.convert(converter))
             self.assertEqual(1, converter.call_count)
 
-    @unittest.skipIf(not file_type.magic, 'python-magic is not installed')
     def test_cache_head_and_contents(self):
-        with tempfile.NamedTemporaryFile() as tmpfile:
+        with tempfile.NamedTemporaryFile(suffix='.py') as tmpfile:
             shutil.copy(__file__, tmpfile.name)
             wrap = cache._FileMemo(tmpfile.name)
 
