@@ -1,3 +1,4 @@
+# TODO(blais): If we don't remove this file it should get renamed to archive.py.
 """Base class that implements filing account.
 
 It also sports an optional prefix to prepend to the renamed filename. Typically
