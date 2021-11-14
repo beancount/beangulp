@@ -1,3 +1,7 @@
+# TODO(blais): Make this only register the new types, and keep the user
+# referring to the interface directly. There's no real need to 'import *' here.
+# The root package would automatically register those new types.
+
 """The standard Python 'mimetypes' module with some custom registrations for
 types commonly used for accounting. Import 'from beangulp import mimetypes'
 instead of 'import mimetypes'.
