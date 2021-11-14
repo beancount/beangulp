@@ -17,14 +17,18 @@ import io
 import warnings
 
 from inspect import signature
-from typing import Callable, Dict, Optional, Union
+from typing import Callable, Dict, List, Optional, Union
 
 import dateutil.parser
 
 from beancount.core import data
+from beancount.core import flags
 from beancount.core.amount import Amount
 from beancount.core.number import ZERO, D
+from beancount.utils import misc_utils
 from beancount.utils.date_utils import parse_date_liberally
+from beangulp import cache
+from beangulp import importer
 from beangulp.importers.mixins import filing, identifier
 
 
@@ -154,13 +158,40 @@ def normalize_config(config, head, dialect='excel', skip_lines: int = 0):
     return index_config, has_header
 
 
-# Deprecated. TODO(blais): Remove this eventually (on a major release).
-class Importer(identifier.IdentifyMixin, filing.FilingMixin):
-    """Importer for CSV files (deprecated version using the ImporterProtocol).
+def prepare_for_identifier(regexps: Union[str, List[str]],
+                           matchers: Optional[List[str]]) -> Dict[str, str]:
+    """Prepare data for identifier mixin."""
+    if isinstance(regexps, str):
+        regexps = [regexps]
+    matchers = matchers or []
+    matchers.append(('mime', 'text/csv'))
+    if regexps:
+        for regexp in regexps:
+            matchers.append(('content', regexp))
+    return {'matchers': matchers}
 
-    Note that this is deprecated; use the ImporterNew class instead.
-    We will remove this eventually."""
+
+def prepare_for_filing(account: str, institution: Optional[str],
+                       prefix: Optional[str]) -> Dict[str, str]:
+    """Prepare kwds for filing mixin."""
+    kwds = {'filing': account}
+    if institution:
+        prefix = kwds.get('prefix', None)
+        assert prefix is None
+        kwds['prefix'] = institution
+    return kwds
+
+
+class _CSVImporterBase:
+    """Base class for CSV importer implementations.
+
+    Note that many existing importers are based on this; be careful with
+    modification of the attribute names and types. See concrete implementations
+    below.
+    """
     # pylint: disable=too-many-instance-attributes
+
+    FLAG = flags.FLAG_OKAY
 
     def __init__(self, config, account, currency,
                  regexps=None,
@@ -197,10 +228,6 @@ class Importer(identifier.IdentifyMixin, filing.FilingMixin):
           invert_sign: If true, invert the amount's sign unconditionally.
           **kwds: Extra keyword arguments to provide to the base mixins.
         """
-        warnings.warn('beangulp.importers.csv.Importer is deprecated. '
-                      'Base your importer on beangulp.importers.csvbase.Importer instead.',
-                      DeprecationWarning, stacklevel=2)
-
         assert isinstance(config, dict), "Invalid type: {}".format(config)
         self.config = config
 
@@ -214,25 +241,7 @@ class Importer(identifier.IdentifyMixin, filing.FilingMixin):
         self.narration_sep = narration_sep
         self.encoding = encoding or 'utf-8'
         self.invert_sign = invert_sign
-
         self.categorizer = categorizer
-
-        # Prepare kwds for filing mixin.
-        kwds['filing'] = account
-        if institution:
-            prefix = kwds.get('prefix', None)
-            assert prefix is None
-            kwds['prefix'] = institution
-
-        # Prepare kwds for identifier mixin.
-        if isinstance(regexps, str):
-            regexps = [regexps]
-        matchers = kwds.setdefault('matchers', [])
-        matchers.append(('mime', 'text/csv'))
-        if regexps:
-            for regexp in regexps:
-                matchers.append(('content', regexp))
-
         super().__init__(**kwds)
 
     def file_date(self, file):
@@ -262,8 +271,7 @@ class Importer(identifier.IdentifyMixin, filing.FilingMixin):
                         max_date = date
                 return max_date
 
-    def extract(self, file, existing_entries=None):
-        account = self.file_account(file)
+    def _do_extract(self, file, account, existing_entries=None):
         entries = []
 
         # Normalize the configuration to fetch by index.
@@ -425,3 +433,99 @@ class Importer(identifier.IdentifyMixin, filing.FilingMixin):
         with special cases, e.g., columns with currency symbols in them.
         """
         return get_amounts(iconfig, row, allow_zero_amounts, parse_amount)
+
+
+# Deprecated. TODO(blais): Remove this eventually (on a major release).
+class Importer(_CSVImporterBase, identifier.IdentifyMixin, filing.FilingMixin):
+    """Importer for CSV files.
+
+    This class implements the old ImporterProtocol interface. It is
+    deprecated and will be removed eventually. Use the CSVImporter
+    class instead.
+
+    """
+
+    def __init__(self, config, account, currency,
+                 regexps=None,
+                 skip_lines: int = 0,
+                 last4_map: Optional[Dict] = None,
+                 categorizer: Optional[Callable] = None,
+                 institution: Optional[str] = None,
+                 debug: bool = False,
+                 csv_dialect: Union[str, csv.Dialect] = 'excel',
+                 dateutil_kwds: Optional[Dict] = None,
+                 narration_sep: str = '; ',
+                 encoding: Optional[str] = None,
+                 invert_sign: Optional[bool] = False,
+                 **kwds):
+        warnings.warn('beangulp.importers.csv.Importer is deprecated. '
+                      'Base your importer on beangulp.importers.csvbase.Importer instead.',
+                      DeprecationWarning, stacklevel=2)
+
+        kwds.update(prepare_for_identifier(regexps, kwds.get('matchers')))
+        kwds.update(prepare_for_filing(account, kwds.get('prefix', None), institution))
+        super().__init__(config, account, currency, **kwds)
+
+    def extract(self, file, existing_entries=None):
+        account = self.file_account(file)
+        return self._do_extract(file, account, existing_entries)
+
+
+class CSVImporter(importer.Importer):
+    """Importer for CSV files.
+
+    This class adapts the old CSV code to implement the new redesigned
+    Importer interface. The new beangulp.importers.csvbase.Importer
+    may be a better base for newly developed importers.
+
+    """
+
+    def __init__(self, config, account, currency,
+                 regexps=None,
+                 skip_lines: int = 0,
+                 last4_map: Optional[Dict] = None,
+                 categorizer: Optional[Callable] = None,
+                 institution: Optional[str] = None,
+                 debug: bool = False,
+                 csv_dialect: Union[str, csv.Dialect] = 'excel',
+                 dateutil_kwds: Optional[Dict] = None,
+                 narration_sep: str = '; ',
+                 encoding: Optional[str] = None,
+                 invert_sign: Optional[bool] = False,
+                 **kwds):
+        """See _CSVImporterBase."""
+
+        self.base = _CSVImporterBase(config, account, currency,
+                                     regexps,
+                                     skip_lines,
+                                     last4_map,
+                                     categorizer,
+                                     institution,
+                                     debug,
+                                     csv_dialect,
+                                     dateutil_kwds,
+                                     narration_sep,
+                                     encoding,
+                                     invert_sign)
+
+        kwds = prepare_for_filing(account, kwds.get('prefix', None), institution)
+        self.filing = filing.FilingMixin(**kwds)
+
+        kwds = prepare_for_identifier(regexps, kwds.get('matchers'))
+        self.ident = identifier.IdentifyMixin(**kwds)
+
+    def identify(self, filepath):
+        return self.ident.identify(cache.get_file(filepath))
+
+    def account(self, filepath):
+        return self.filing.file_account(cache.get_file(filepath))
+
+    def date(self, filepath):
+        return self.base.file_date(cache.get_file(filepath))
+
+    def filename(self, filepath):
+        return misc_utils.idify(filepath)
+
+    def extract(self, filepath, existing=None):
+        account = self.account(filepath)
+        return self.base._do_extract(cache.get_file(filepath), account, existing)
