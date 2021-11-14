@@ -10,7 +10,6 @@ from pprint import pformat
 from beancount.core import data
 from beancount.parser import cmptest
 from beancount.utils import test_utils
-from beangulp import cache
 from beangulp.importers import csv
 
 
@@ -115,20 +114,19 @@ class TestCSVImporter(cmptest.TestCase):
           CREDIT,3/5/2016,"CA STATE         NYSTTAXRFD                 PPD ID: 1111111111",110.00,ACH_CREDIT,3710.02,,
           DEBIT,3/4/2016,"BOOGLE           WALLET     US000NEI9T      WEB ID: C234567890",-1300.00,ACH_DEBIT,3600.02,,
         """
-        file = cache.get_file(filename)
 
-        importer = csv.Importer({Col.DATE: 'Posting Date',
-                                 Col.NARRATION1: 'Description',
-                                 Col.NARRATION2: 'Check or Slip #',
-                                 Col.AMOUNT: 'Amount',
-                                 Col.BALANCE: 'Balance',
-                                 Col.DRCR: 'Details'},
-                                'Assets:Bank',
-                                'USD',
-                                ('Details,Posting Date,"Description",Amount,'
-                                 'Type,Balance,Check or Slip #,'),
-                                institution='chafe')
-        entries = importer.extract(file)
+        importer = csv.CSVImporter({Col.DATE: 'Posting Date',
+                                    Col.NARRATION1: 'Description',
+                                    Col.NARRATION2: 'Check or Slip #',
+                                    Col.AMOUNT: 'Amount',
+                                    Col.BALANCE: 'Balance',
+                                    Col.DRCR: 'Details'},
+                                   'Assets:Bank',
+                                   'USD',
+                                   ('Details,Posting Date,"Description",Amount,'
+                                    'Type,Balance,Check or Slip #,'),
+                                   institution='chafe')
+        entries = importer.extract(filename)
         self.assertEqualEntries(r"""
 
           2016-03-18 * "Payment to Chafe card ending in 1234 03/18"
@@ -161,13 +159,12 @@ class TestCSVImporter(cmptest.TestCase):
           12/7/2016,B,3
           13/7/2016,C,4
         """
-        file = cache.get_file(filename)
-        importer = csv.Importer({Col.DATE: 'Posting',
-                                 Col.NARRATION: 'Description',
-                                 Col.AMOUNT: 'Amount'},
-                                'Assets:Bank', 'EUR', [],
-                                dateutil_kwds={'dayfirst': True})
-        entries = importer.extract(file)
+        importer = csv.CSVImporter({Col.DATE: 'Posting',
+                                    Col.NARRATION: 'Description',
+                                    Col.AMOUNT: 'Amount'},
+                                   'Assets:Bank', 'EUR', [],
+                                   dateutil_kwds={'dayfirst': True})
+        entries = importer.extract(filename)
         self.assertEqualEntries(r"""
 
           2016-07-11 * "A"
@@ -189,13 +186,12 @@ class TestCSVImporter(cmptest.TestCase):
           2020-07-03,A,2,
           2020-07-03,B,3,123
         """
-        file = cache.get_file(filename)
-        importer = csv.Importer({Col.DATE: 'Date',
-                                 Col.NARRATION: 'Description',
-                                 Col.AMOUNT: 'Amount',
-                                 Col.REFERENCE_ID: 'Link'},
-                                'Assets:Bank', 'EUR', [])
-        entries = importer.extract(file)
+        importer = csv.CSVImporter({Col.DATE: 'Date',
+                                    Col.NARRATION: 'Description',
+                                    Col.AMOUNT: 'Amount',
+                                    Col.REFERENCE_ID: 'Link'},
+                                   'Assets:Bank', 'EUR', [])
+        entries = importer.extract(filename)
         self.assertEqualEntries(r"""
 
           2020-07-03 * "A"
@@ -213,13 +209,12 @@ class TestCSVImporter(cmptest.TestCase):
           2020-07-03,A,2,
           2020-07-03,B,3,foo
         """
-        file = cache.get_file(filename)
-        importer = csv.Importer({Col.DATE: 'Date',
-                                 Col.NARRATION: 'Description',
-                                 Col.AMOUNT: 'Amount',
-                                 Col.TAG: 'Tag'},
-                                'Assets:Bank', 'EUR', [])
-        entries = importer.extract(file)
+        importer = csv.CSVImporter({Col.DATE: 'Date',
+                                    Col.NARRATION: 'Description',
+                                    Col.AMOUNT: 'Amount',
+                                    Col.TAG: 'Tag'},
+                                   'Assets:Bank', 'EUR', [])
+        entries = importer.extract(filename)
         self.assertEqualEntries(r"""
 
           2020-07-03 * "A"
@@ -236,20 +231,18 @@ class TestCSVImporter(cmptest.TestCase):
           Details,Posting Date,"Description",Amount,Type,Balance,Check or Slip #,
           DEBIT,3/18/2016,"Payment to Chafe card ending in 1234 03/18",-2680.89,ACCT_XFER,0,,
         """
-        file = cache.get_file(filename)
-
-        importer = csv.Importer({Col.DATE: 'Posting Date',
-                                 Col.NARRATION1: 'Description',
-                                 Col.NARRATION2: 'Check or Slip #',
-                                 Col.AMOUNT: 'Amount',
-                                 Col.BALANCE: 'Balance',
-                                 Col.DRCR: 'Details'},
-                                'Assets:Bank',
-                                'USD',
-                                ('Details,Posting Date,"Description",Amount,'
-                                 'Type,Balance,Check or Slip #,'),
-                                institution='chafe')
-        entries = importer.extract(file)
+        importer = csv.CSVImporter({Col.DATE: 'Posting Date',
+                                    Col.NARRATION1: 'Description',
+                                    Col.NARRATION2: 'Check or Slip #',
+                                    Col.AMOUNT: 'Amount',
+                                    Col.BALANCE: 'Balance',
+                                    Col.DRCR: 'Details'},
+                                   'Assets:Bank',
+                                   'USD',
+                                   ('Details,Posting Date,"Description",Amount,'
+                                    'Type,Balance,Check or Slip #,'),
+                                   institution='chafe')
+        entries = importer.extract(filename)
         self.assertEqualEntries(r"""
 
           2016-03-18 * "Payment to Chafe card ending in 1234 03/18"
@@ -270,16 +263,14 @@ class TestCSVImporter(cmptest.TestCase):
           3/19/2016,"2nd Payment in Main Currency",-2.00,,-3
           3/20/2016,"3rd Payment in GBP",-3,GBP,-6
         """
-        file = cache.get_file(filename)
-
-        importer = csv.Importer({Col.DATE: 'Posting Date',
-                                 Col.NARRATION1: 'Description',
-                                 Col.AMOUNT: 'Amount',
-                                 Col.CURRENCY: 'Currency',
-                                 Col.BALANCE: 'Balance'},
-                                'Assets:Bank',
-                                'PLN')
-        entries = importer.extract(file)
+        importer = csv.CSVImporter({Col.DATE: 'Posting Date',
+                                    Col.NARRATION1: 'Description',
+                                    Col.AMOUNT: 'Amount',
+                                    Col.CURRENCY: 'Currency',
+                                    Col.BALANCE: 'Balance'},
+                                   'Assets:Bank',
+                                   'PLN')
+        entries = importer.extract(filename)
         self.assertEqualEntries(r"""
 
            2016-03-18 * "1st Payment in GBP"
@@ -320,16 +311,14 @@ class TestCSVImporter(cmptest.TestCase):
           3/20/2016,"3rd Payment in GBP",-3,GBP,-6
           3/21/2016,"4th Payment in GBP",6,GBP,0
         """
-        file = cache.get_file(filename)
-
-        importer = csv.Importer({Col.DATE: 'Posting Date',
-                                 Col.NARRATION1: 'Description',
-                                 Col.AMOUNT: 'Amount',
-                                 Col.CURRENCY: 'Currency',
-                                 Col.BALANCE: 'Balance'},
-                                'Assets:Bank',
-                                'PLN')
-        entries = importer.extract(file)
+        importer = csv.CSVImporter({Col.DATE: 'Posting Date',
+                                    Col.NARRATION1: 'Description',
+                                    Col.AMOUNT: 'Amount',
+                                    Col.CURRENCY: 'Currency',
+                                    Col.BALANCE: 'Balance'},
+                                   'Assets:Bank',
+                                   'PLN')
+        entries = importer.extract(filename)
         self.assertEqualEntries(r"""
 
            2016-03-18 * "1st Payment in GBP"
@@ -371,16 +360,14 @@ class TestCSVImporter(cmptest.TestCase):
           3/19/2016,"2nd Payment in GBP",-2,GBP,-3
           3/20/2016,"3rd Payment in GBP",-3,GBP,-6
         """
-        file = cache.get_file(filename)
-
-        importer = csv.Importer({Col.DATE: 'Posting Date',
-                                 Col.NARRATION1: 'Description',
-                                 Col.AMOUNT: 'Amount',
-                                 Col.CURRENCY: 'Currency',
-                                 Col.BALANCE: 'Balance'},
-                                'Assets:Bank',
-                                'PLN')
-        entries = importer.extract(file)
+        importer = csv.CSVImporter({Col.DATE: 'Posting Date',
+                                    Col.NARRATION1: 'Description',
+                                    Col.AMOUNT: 'Amount',
+                                    Col.CURRENCY: 'Currency',
+                                    Col.BALANCE: 'Balance'},
+                                   'Assets:Bank',
+                                   'PLN')
+        entries = importer.extract(filename)
         self.assertEqualEntries(r"""
 
            2016-03-18 * "1st Payment in GBP"
@@ -410,16 +397,14 @@ class TestCSVImporter(cmptest.TestCase):
           3/19/2016,"3rd Payment",-2,,-4
           3/20/2016,"4th Payment",-3,,-7
         """
-        file = cache.get_file(filename)
-
-        importer = csv.Importer({Col.DATE: 'Posting Date',
-                                 Col.NARRATION1: 'Description',
-                                 Col.AMOUNT: 'Amount',
-                                 Col.CURRENCY: 'Currency',
-                                 Col.BALANCE: 'Balance'},
-                                'Assets:Bank',
-                                'PLN')
-        entries = importer.extract(file)
+        importer = csv.CSVImporter({Col.DATE: 'Posting Date',
+                                    Col.NARRATION1: 'Description',
+                                    Col.AMOUNT: 'Amount',
+                                    Col.CURRENCY: 'Currency',
+                                    Col.BALANCE: 'Balance'},
+                                   'Assets:Bank',
+                                   'PLN')
+        entries = importer.extract(filename)
         self.assertEqualEntries(r"""
 
            2016-03-18 * "1st Payment"
@@ -445,8 +430,6 @@ class TestCSVImporter(cmptest.TestCase):
           6/2/2020,30.00,"Payee here","Description"
           7/2/2020,-25.00,"Supermarket","Groceries"
         """
-        file = cache.get_file(filename)
-
         def categorizer(txn):
             if txn.narration == "Groceries":
                 txn.postings.append(
@@ -456,15 +439,15 @@ class TestCSVImporter(cmptest.TestCase):
 
             return txn
 
-        importer = csv.Importer({Col.DATE: 'Date',
-                                 Col.NARRATION: 'Description',
-                                 Col.AMOUNT: 'Amount'},
-                                'Assets:Bank',
-                                'EUR',
-                                ('Date,Amount,Payee,Description'),
-                                categorizer=categorizer,
-                                institution='foobar')
-        entries = importer.extract(file)
+        importer = csv.CSVImporter({Col.DATE: 'Date',
+                                    Col.NARRATION: 'Description',
+                                    Col.AMOUNT: 'Amount'},
+                                   'Assets:Bank',
+                                   'EUR',
+                                   ('Date,Amount,Payee,Description'),
+                                   categorizer=categorizer,
+                                   institution='foobar')
+        entries = importer.extract(filename)
         self.assertEqualEntries(r"""
 
           2020-06-02 * "Description"
@@ -482,22 +465,20 @@ class TestCSVImporter(cmptest.TestCase):
           6/2/2020,30.00,"Payee here","Description"
           7/2/2020,-25.00,"Supermarket","Groceries"
         """
-        file = cache.get_file(filename)
-
         def categorizer(txn, row):
             txn = txn._replace(payee=row[2])
             txn.meta['source'] = pformat(row)
             return txn
 
-        importer = csv.Importer({Col.DATE: 'Date',
-                                 Col.NARRATION: 'Description',
-                                 Col.AMOUNT: 'Amount'},
-                                'Assets:Bank',
-                                'EUR',
-                                ('Date,Amount,Payee,Description'),
-                                categorizer=categorizer,
-                                institution='foobar')
-        entries = importer.extract(file)
+        importer = csv.CSVImporter({Col.DATE: 'Date',
+                                    Col.NARRATION: 'Description',
+                                    Col.AMOUNT: 'Amount'},
+                                   'Assets:Bank',
+                                   'EUR',
+                                   ('Date,Amount,Payee,Description'),
+                                   categorizer=categorizer,
+                                   institution='foobar')
+        entries = importer.extract(filename)
         self.assertEqualEntries(r"""
 
           2020-06-02 * "Payee here" "Description"
@@ -515,13 +496,12 @@ class TestCSVImporter(cmptest.TestCase):
           Posting,Description,Amount
           2020/08/08,🍏,2
         """
-        file = cache.get_file(filename)
-        importer = csv.Importer({Col.DATE: 'Posting',
-                                 Col.NARRATION: 'Description',
-                                 Col.AMOUNT: 'Amount'},
-                                'Assets:Bank', 'EUR', [],
-                                encoding='utf-8')
-        entries = importer.extract(file)
+        importer = csv.CSVImporter({Col.DATE: 'Posting',
+                                    Col.NARRATION: 'Description',
+                                    Col.AMOUNT: 'Amount'},
+                                   'Assets:Bank', 'EUR', [],
+                                   encoding='utf-8')
+        entries = importer.extract(filename)
         self.assertEqualEntries(r"""
 
           2020-08-08 * "🍏"
@@ -535,15 +515,15 @@ class TestCSVImporter(cmptest.TestCase):
           2020-07-03,A,2
           2020-07-03,B,3
         """)
-        importer = csv.Importer({Col.DATE: 'Date',
-                                 Col.NARRATION: 'Description',
-                                 Col.AMOUNT: 'Amount'},
-                                'Assets:Bank', 'EUR', [])
+        importer = csv.CSVImporter({Col.DATE: 'Date',
+                                    Col.NARRATION: 'Description',
+                                    Col.AMOUNT: 'Amount'},
+                                   'Assets:Bank', 'EUR', [])
         for nl in '\n', '\r\n', '\r':
             with tempfile.NamedTemporaryFile('w') as temp:
                 temp.write(content.replace('\n', nl))
                 temp.flush()
-                entries = importer.extract(cache.get_file(temp.name))
+                entries = importer.extract(temp.name)
                 self.assertEqualEntries("""
                   2020-07-03 * "A"
                     Assets:Bank  2 EUR
