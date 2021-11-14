@@ -45,3 +45,5 @@ disable=
   unused-variable,
   unused-wildcard-import,
   wildcard-import,
+  consider-using-f-string,
+  unspecified-encoding

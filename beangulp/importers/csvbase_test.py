@@ -433,8 +433,8 @@ class TestImporter(cmptest.TestCase):
             data = Amount(4)
             names = False
 
-            def metadata(self, filename, lineno, row):
-                meta = super().metadata(filename, lineno, row)
+            def metadata(self, filepath, lineno, row):
+                meta = super().metadata(filepath, lineno, row)
                 for field in 'meta', 'data':
                     meta[field] = getattr(row, field)
                 return meta

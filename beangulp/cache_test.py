@@ -11,7 +11,6 @@ import unittest
 from unittest import mock
 
 from beangulp import cache
-from beangulp import file_type
 from beangulp import utils
 
 
