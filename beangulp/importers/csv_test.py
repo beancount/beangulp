@@ -4,6 +4,7 @@ __license__ = "GNU GPLv2"
 import tempfile
 import textwrap
 import unittest
+import warnings
 
 from pprint import pformat
 from beancount.core import data
@@ -98,6 +99,9 @@ class TestCSVFunctions(unittest.TestCase):
 
 
 class TestCSVImporter(cmptest.TestCase):
+
+    def setUp(self):
+        warnings.simplefilter('ignore', category=DeprecationWarning)
 
     @test_utils.docfile
     def test_column_types(self, filename):
