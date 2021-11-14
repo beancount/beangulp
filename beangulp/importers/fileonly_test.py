@@ -27,7 +27,6 @@ class TestFileOnly(unittest.TestCase):
         """
         importer = fileonly.Importer(
             matchers=[('filename', 'te?mp'),
-                      ('mime', '(text|application)/'),
                       ('content', 'DATE,TYPE,REF #,DESCRIPTION,FEES,AMOUNT')],
             filing='Assets:BofA:Checking',
             prefix='bofa')

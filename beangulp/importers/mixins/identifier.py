@@ -20,12 +20,14 @@ def identify(remap, converter, file):
       remap: A dict of 'part' to list-of-compiled-regexp objects, where each item is
         a specification to match against its part. The 'part' can be one of 'mime',
         'filename' or 'content'.
-      converter: A
+      converter: A function to convert the given file.
     Returns:
       A boolean, true if the file is not rejected by the constraints.
     """
     if remap.get('mime', None):
         mimetype = file.convert(cache.mimetype)
+        if mimetype is None:
+            raise ValueError(f"Could not categorize mimetype for {cache}")
         if not all(regexp.search(mimetype)
                    for regexp in remap['mime']):
             return False
