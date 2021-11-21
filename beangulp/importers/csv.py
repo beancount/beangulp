@@ -508,11 +508,11 @@ class CSVImporter(importer.Importer):
                                      encoding,
                                      invert_sign)
 
-        kwds = prepare_for_filing(account, kwds.get('prefix', None), institution)
-        self.filing = filing.FilingMixin(**kwds)
+        filing_kwds = prepare_for_filing(account, kwds.get('prefix', None), institution)
+        self.filing = filing.FilingMixin(**filing_kwds)
 
-        kwds = prepare_for_identifier(regexps, kwds.get('matchers'))
-        self.ident = identifier.IdentifyMixin(**kwds)
+        ident_kwds = prepare_for_identifier(regexps, kwds.get('matchers'))
+        self.ident = identifier.IdentifyMixin(**ident_kwds)
 
     def identify(self, filepath):
         return self.ident.identify(cache.get_file(filepath))

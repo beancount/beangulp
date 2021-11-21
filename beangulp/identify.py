@@ -25,9 +25,9 @@ def identify(importers, filepath: str):
       beangulp.exceptions.Error: More than one importer matched the file.
 
     """
-    match = [ importer for importer in importers if importer.identify(filepath) ]
+    match = [importer for importer in importers if importer.identify(filepath)]
     if len(match) > 1:
-        match = [ importer.name for importer in match ]
+        match = ["  {}".format(importer.name) for importer in match]
         raise Error('Document identified by more than one importer.', *match)
 
     return match[0] if match else None
