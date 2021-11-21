@@ -27,21 +27,18 @@ def identify(remap, converter, file):
     if remap.get('mime', None):
         mimetype = file.convert(cache.mimetype)
         if mimetype is None:
-            raise ValueError(f"Could not categorize mimetype for {cache}")
-        if not all(regexp.search(mimetype)
-                   for regexp in remap['mime']):
+            return False
+        if not all(regexp.search(mimetype) for regexp in remap['mime']):
             return False
 
     if remap.get('filename', None):
-        if not all(regexp.search(file.name)
-                   for regexp in remap['filename']):
+        if not all(regexp.search(file.name) for regexp in remap['filename']):
             return False
 
     if remap.get('content', None):
         # If this is a text file, read the whole thing in memory.
         text = file.convert(converter or cache.contents)
-        if not all(regexp.search(text)
-                   for regexp in remap['content']):
+        if not all(regexp.search(text) for regexp in remap['content']):
             return False
 
     return True
@@ -63,8 +60,7 @@ class IdentifyMixin(importer.ImporterProtocol):
             self.remap[part].append(re.compile(regexp))
 
         # Converter is a fn(filename: Text) -> contents: Text.
-        self.converter = kwds.pop('converter',
-                                  getattr(self, 'converter', None))
+        self.converter = kwds.pop('converter', getattr(self, 'converter', None))
 
         super().__init__(**kwds)
 
