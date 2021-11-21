@@ -38,7 +38,7 @@ def filepath(importer, filepath: str) -> str:
     if os.sep in filename:
         raise Error("The filename contains path separator character.")
 
-    if re.match(r'\d\d\d\d-\d\d-\d\d', filename):
+    if re.match(r'\d\d\d\d-\d\d-\d\d\.', filename):
         raise Error("The filename contains what looks like a date.")
 
     # Prepend account directory and date prefix.
