@@ -9,15 +9,15 @@
 __copyright__ = "Copyright (C) 2016  Martin Blais"
 __license__ = "GNU GPLv2"
 
+from inspect import signature
+from os import path
+from typing import Callable, Dict, List, Optional, Union
 import collections
 import csv
 import datetime
 import enum
 import io
 import warnings
-
-from inspect import signature
-from typing import Callable, Dict, List, Optional, Union
 
 import dateutil.parser
 
@@ -524,7 +524,7 @@ class CSVImporter(importer.Importer):
         return self.base.file_date(cache.get_file(filepath))
 
     def filename(self, filepath):
-        return misc_utils.idify(filepath)
+        return path.basename(misc_utils.idify(filepath))
 
     def extract(self, filepath, existing=None):
         account = self.account(filepath)
