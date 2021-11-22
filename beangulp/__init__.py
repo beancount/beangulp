@@ -70,6 +70,7 @@ def _extract(ctx, src, output, existing, reverse, failfast, quiet):
 
     # Load the ledger, if one is specified.
     existing_entries = loader.load_file(existing)[0] if existing else []
+    accumulated_entries = existing_entries[:]
 
     extracted = []
     for filename in _walk(src, log):
@@ -83,8 +84,9 @@ def _extract(ctx, src, output, existing, reverse, failfast, quiet):
             log(' ...', nl=False)
 
             # Extract entries.
-            entries = extract.extract_from_file(importer, filename, existing_entries)
+            entries = extract.extract_from_file(importer, filename, accumulated_entries)
             extracted.append((filename, entries))
+            accumulated_entries.extend(entries)
             log(' OK', fg='green')
 
         if failfast and errors:
