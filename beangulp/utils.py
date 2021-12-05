@@ -64,7 +64,7 @@ def is_mimetype(filepath: str, check_mimetypes: Union[str, Set[str]],
     if isinstance(check_mimetypes, str):
         check_mimetypes = set((check_mimetypes,))
     mtype, _ = mimetypes.guess_type(filepath)
-    return (any(re.match(r, mtype) for r in check_mimetypes)
+    return (any(re.fullmatch(r, mtype) for r in check_mimetypes)
             if not regexp else
             (mtype in check_mimetypes))
 
