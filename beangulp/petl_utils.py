@@ -28,6 +28,7 @@ def table_to_directives(table: petl.Table, currency: str = 'USD') -> data.Entrie
       payee: A string, for the transaction's payee.
       narration: A string, for the transaction's narration.
       balance: A Decimal, the balance in the account *after* the given transaction.
+      other_account: An account string, for the remainder of the transaction.
     """
     # Ensure the table is sorted in order to produce the final balance.
     assert table.issorted('date')
@@ -52,7 +53,9 @@ def table_to_directives(table: petl.Table, currency: str = 'USD') -> data.Entrie
                                tags, links, [
             data.Posting(rec.account, units, None, None, None, None)
         ])
-
+        if hasattr(rec, 'other_account') and rec.other_account:
+            txn.postings.append(
+                data.Posting(rec.other_account, None, None, None, None, None))
         link = getattr(rec, 'link', None)
         if link:
             links.add(link)
