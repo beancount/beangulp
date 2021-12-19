@@ -61,7 +61,7 @@ def table_to_directives(table: petl.Table, currency: str = 'USD') -> data.Entrie
             links.add(link)
         tag = getattr(rec, 'tag', None)
         if tag:
-            tags.add(link)
+            tags.add(tag)
 
         for column, key in metas:
             value = getattr(rec, column, None)
