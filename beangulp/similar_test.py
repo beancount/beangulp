@@ -113,6 +113,7 @@ class TestDups(cmptest.TestCase):
             2016-01-03 *
               Expenses:Tips         1.01 USD
               Expenses:Tips         1.02 USD
+              Expenses:Tips         USD @ 1.1 CHF
               Assets:Other
         """
         txns = list(data.filter_txns(entries))
