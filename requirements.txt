@@ -4,3 +4,4 @@ chardet
 click >7.0
 lxml
 python-magic >=0.4.12; sys_platform != 'win32'
+petl
