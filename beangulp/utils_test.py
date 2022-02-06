@@ -79,9 +79,6 @@ class TestUtils(unittest.TestCase):
         self.assertTrue(utils.search_file_regexp(__file__, 'def test_search', encoding='utf8'))
         self.assertFalse(utils.search_file_regexp(__file__, '^$', encoding='utf8'))
 
-    def test_parse_date(self):
-        self.assertEqual(datetime.date(2021, 7, 4), utils.parse_date('2021-07-04'))
-
     def test_parse_amount(self):
         self.assertEqual(Decimal('-1045.67'), utils.parse_amount('(1,045.67)'))
 
