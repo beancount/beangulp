@@ -8,7 +8,6 @@ import os
 import re
 
 import click
-import dateutil.parser
 
 from beangulp import mimetypes
 
@@ -79,11 +78,6 @@ def search_file_regexp(filepath: str, *regexps: str,
         # Note: Don't convert just to match on the contents.
         contents = infile.read(nbytes)
         return any(re.search(regexp, contents) for regexp in regexps)
-
-
-def parse_date(string: str) -> datetime.date:
-    """Parse any date format into a date string."""
-    return dateutil.parser.parse(string).date()
 
 
 def parse_amount(string: str)-> decimal.Decimal:
