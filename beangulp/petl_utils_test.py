@@ -1,21 +1,10 @@
-from decimal import Decimal
 import datetime
-import os
+import decimal
 import unittest
-from functools import partial
-
 import petl
 
-from os import path
-from unittest import mock
-
-from beangulp import archive
-from beangulp import exceptions
-from beangulp import tests
-from beangulp import petl_utils
-
-from beancount.parser import printer
 from beancount.parser import cmptest
+from beangulp import petl_utils
 
 
 class TestPetlUtils(cmptest.TestCase, unittest.TestCase):
@@ -26,7 +15,7 @@ class TestPetlUtils(cmptest.TestCase, unittest.TestCase):
                        ('2021-02-15', 'Assets:Checking', '4.56'),
                        ('2021-02-16', 'Assets:Savings', '107.89')])
             .convert('date', lambda x: datetime.datetime.strptime(x, '%Y-%m-%d').date())
-            .convert('amount', Decimal))
+            .convert('amount', decimal.Decimal))
         transactions = petl_utils.table_to_directives(table)
         self.assertEqualEntries("""
 
@@ -46,7 +35,7 @@ class TestPetlUtils(cmptest.TestCase, unittest.TestCase):
                  '-4.56', '-73330.00'),
             ])
             .convert('date', lambda x: datetime.datetime.strptime(x, '%Y-%m-%d').date())
-            .convert(['amount', 'balance'], Decimal))
+            .convert(['amount', 'balance'], decimal.Decimal))
         transactions = petl_utils.table_to_directives(table)
         self.assertEqualEntries("""
 

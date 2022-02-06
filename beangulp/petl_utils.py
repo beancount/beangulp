@@ -5,12 +5,14 @@ import datetime
 import re
 
 import petl
-petl.config.look_style = 'minimal'
-petl.config.failonerror = True
 
 from beancount.core import data
 from beancount.core import amount
 from beancount.core import flags
+
+
+petl.config.look_style = 'minimal'
+petl.config.failonerror = True
 
 
 def table_to_directives(table: petl.Table, currency: str = 'USD') -> data.Entries:
