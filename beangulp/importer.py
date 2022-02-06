@@ -21,6 +21,23 @@ from beangulp import similar
 compare = similar.SimilarityComparator()
 
 
+def sortkey(entry):
+    """Comparison key for ledger entries. Sort by date and entry type.
+
+    Note that this differs from beancount.core.data.entry_sortkey() by
+    not including the "filename" and "lineno" metadata entries in the
+    key. This removes the need for importers to include these metadata
+    entries for the generated entries.
+
+    Args:
+      entry: A ledger entry.
+    Returns:
+      Sorting key.
+
+    """
+    return (entry.date, data.SORT_ORDER.get(type(entry), 0))
+
+
 class Importer(abc.ABC):
     """Interface that all source importers need to comply with.
 
@@ -173,7 +190,7 @@ class Importer(abc.ABC):
         to sort in descending order. Importers can implement this
         method to have entries serialized to file in a specific
         order. The default implementation sorts the entries according
-        to beancount.core.data.entry_sortkey().
+        to beangulp.importer.sortkey().
 
         Args:
           entries: Entries list to sort.
@@ -183,7 +200,7 @@ class Importer(abc.ABC):
           None.
 
         """
-        return entries.sort(key=data.entry_sortkey, reverse=reverse)
+        return entries.sort(key=sortkey, reverse=reverse)
 
 
 class ImporterProtocol:

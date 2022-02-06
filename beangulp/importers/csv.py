@@ -344,7 +344,7 @@ class _CSVImporterBase:
                 currency = get(row, Col.CURRENCY) or self.currency
 
                 # Create a transaction
-                meta = data.new_metadata(file.name, index)
+                meta = {}
                 if txn_date is not None:
                     meta['date'] = parse_date_liberally(txn_date,
                                                         self.dateutil_kwds)
