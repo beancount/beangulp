@@ -16,6 +16,8 @@ disable=
   missing-class-docstring,
   missing-docstring,
   missing-function-docstring,
+  # pylint is sometimes confused by inheritance
+  no-member,
   no-value-for-parameter,
   not-callable,
   protected-access,
