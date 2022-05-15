@@ -491,6 +491,39 @@ class TestCSVImporter(cmptest.TestCase):
         """, entries)
 
     @test_utils.docfile
+    def test_categorizer_three_arguments(self, filename):
+        """\
+          Date,Amount,Payee,Description
+          6/2/2020,30.00,"Payee here","Description"
+          7/2/2020,-25.00,"Supermarket","Groceries"
+        """
+        def categorizer(txn, row, iconfig):
+            txn = txn._replace(payee=row[iconfig[Col.PAYEE]])
+            txn.meta['source'] = pformat(row)
+            return txn
+
+        importer = csv.CSVImporter({Col.DATE: 'Date',
+                                    Col.NARRATION: 'Description',
+                                    Col.PAYEE: 'Payee',
+                                    Col.AMOUNT: 'Amount'},
+                                   'Assets:Bank',
+                                   'EUR',
+                                   ('Date,Amount,Payee,Description'),
+                                   categorizer=categorizer,
+                                   institution='foobar')
+        entries = importer.extract(filename)
+        self.assertEqualEntries(r"""
+
+          2020-06-02 * "Payee here" "Description"
+            source: "['6/2/2020', '30.00', 'Supermarket', 'Groceries']"
+            Assets:Bank  30.00 EUR
+
+          2020-07-02 * "Supermarket" "Groceries"
+            source: "['7/2/2020', '-25.00', 'Supermarket', 'Groceries']"
+            Assets:Bank  -25.00 EUR
+        """, entries)
+
+    @test_utils.docfile
     def test_explict_encoding_utf8(self, filename):
         """\
           Posting,Description,Amount
