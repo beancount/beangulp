@@ -1,0 +1,95 @@
+#!/usr/bin/env python3
+"""Move a file to a uniquely matching account name under a directory hierarchy.
+
+You can use this script to move a filename under a particular account-named
+directory in a directory hierarchy, like this:
+
+  file-to-account --documents=DOCUMENTS_DIR ACCOUNT_PATTERN FILENAME...
+
+For example:
+
+  file-to-account -d ~/my-documents  bofa my-bank-download.csv
+
+If the -o flag is not provided, the environment variable
+$BEANGULP_DOCUMENTS_DIR is used automatically.
+
+The script will list all the subdirectories under this root, attempt to uniquely
+match (case insensitively) the pattern given to a single directory name (e.g.,
+"bofa" above), and if found, will move the file there. Warnings are issued for
+files that could not be moved.
+
+This is intended to be a convenient, quick tool for filing away downloads
+manually.
+"""
+__copyright__ = "Copyright (C) 2022  Martin Blais"
+__license__ = "GNU GPLv2"
+
+from os import path
+import argparse
+import fnmatch
+import functools
+import logging
+import os
+import re
+import shutil
+
+
+def main():
+    logging.basicConfig(level=logging.INFO, format="%(levelname)-8s: %(message)s")
+    parser = argparse.ArgumentParser(description=__doc__.strip())
+    parser.add_argument("account_pattern", help="Account name globbing pattern")
+    parser.add_argument("filenames", nargs="+", help="List of filenames to process.")
+    parser.add_argument(
+        "-d",
+        "-o",
+        "--documents",
+        action="store",
+        default=os.environ.get("BEANGULP_DOCUMENTS_DIR", None),
+        help="Documents directory root",
+    )
+    args = parser.parse_args()
+
+    # Validate that we have an output.
+    if not args.documents:
+        parser.error(
+            "Please set environment variable BEANGULP_DOCUMENTS_DIR or "
+            "provide --documents."
+        )
+
+    # Get the list of all available directories.
+    all_dirs = [
+        path.join(root, dirname)
+        for root, dirs, _ in os.walk(path.abspath(args.documents))
+        for dirname in dirs
+    ]
+
+    # Find a uniquely matching directory.
+    matches = [
+        dirname
+        for dirname in all_dirs
+        if re.search(args.account_pattern, dirname, flags=re.I)
+    ]
+    if len(matches) == 0:
+        logging.error(f"No matches for pattern '{args.account_pattern}'")
+    elif len(matches) > 1:
+        logging.error(f"Ambiguous matches for pattern '{args.account_pattern}':")
+        for match in matches:
+            logging.error(f"  '{match}'")
+    else:
+        outdir = matches[0]
+        undo_filename = "/tmp/file-to-account-undo.sh"
+        logging.info(f"Undo script is located in {undo_filename}")
+        with open(undo_filename, "w") as f:
+            os.chmod(undo_filename, 0o755)
+            pr = functools.partial(print, file=f)
+            pr("#!/bin/bash")
+            for src in args.filenames:
+               dst = path.join(outdir, path.basename(src))
+               logging.info(f"Moving '{src}' to '{dst}'")
+               shutil.copy(src, dst)
+               os.remove(src)
+               pr(f"mv '{dst}' '{src}'")
+
+
+if __name__ == "__main__":
+    main()
