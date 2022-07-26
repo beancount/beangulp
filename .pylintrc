@@ -40,7 +40,6 @@ disable=
   assignment-from-no-return,
   broad-except,
   logging-format-interpolation,
-  no-self-use,
   redefined-outer-name,
   super-init-not-called,
   unused-argument,
@@ -48,4 +47,5 @@ disable=
   unused-wildcard-import,
   wildcard-import,
   consider-using-f-string,
-  unspecified-encoding
+  unspecified-encoding,
+  unnecessary-lambda-assignment
