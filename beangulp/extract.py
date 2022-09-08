@@ -149,9 +149,10 @@ def print_extracted_entries(extracted, output):
         output.write(SECTION.format(filepath) + '\n\n')
 
         for entry in entries:
+            duplicate = entry.meta.pop(DUPLICATE, False)
             string = printer.format_entry(entry)
             # If the entry is a duplicate, comment it out.
-            if entry.meta.get(DUPLICATE, False):
+            if duplicate:
                 string = textwrap.indent(string, '; ')
             output.write(string)
             output.write('\n')
