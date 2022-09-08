@@ -1,0 +1,43 @@
+[build-system]
+requires = ['setuptools >= 60.0']
+build-backend = 'setuptools.build_meta'
+
+[project]
+name = 'beangulp'
+version = '0.1.dev0'
+license = { text = 'GPL-2.0' }
+description = 'Importers Framework for Beancount'
+readme = 'README.md'
+authors = [
+    { name = 'Martin Blais', email = 'blais@furius.ca' },
+    { name = 'Daniele Nicolodi', email = 'daniele@grinta.net' },
+]
+maintainers = [
+    { name = 'Daniele Nicolodi', email = 'daniele@grinta.net' },
+]
+keywords = ['accounting', 'ledger', 'beancount', 'importer', 'import', 'converter', 'conversion']
+classifiers = [
+    'License :: OSI Approved :: GNU General Public License v2 (GPLv2)',
+    'Programming Language :: Python :: 3 :: Only',
+    'Programming Language :: Python :: 3.7',
+    'Programming Language :: Python :: 3.8',
+    'Programming Language :: Python :: 3.9',
+    'Programming Language :: Python :: 3.10',
+    'Topic :: Office/Business :: Financial :: Accounting',
+    'Topic :: Text Processing :: General',
+]
+dependencies = [
+    'beancount >=2.3.5',
+    'beautifulsoup4',
+    'chardet',
+    'click >8.0',
+    'lxml',
+    'python-magic >=0.4.12; sys_platform != "win32"',
+]
+
+[project.urls]
+homepage = 'https://github.com/beancount/beanquery'
+issues = 'https://github.com/beancount/beanquery/issues'
+
+[tool.setuptools.packages]
+find = {}
