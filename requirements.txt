@@ -1,4 +1,4 @@
-git+https://github.com/beancount/beancount#egg=beancount
+beancount >=2.3.5
 beautifulsoup4
 chardet
 click >7.0
