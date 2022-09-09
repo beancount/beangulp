@@ -48,4 +48,5 @@ disable=
   wildcard-import,
   consider-using-f-string,
   unspecified-encoding,
-  unnecessary-lambda-assignment
+  unnecessary-lambda-assignment,
+  isinstance-second-argument-not-valid-type

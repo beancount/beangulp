@@ -8,11 +8,16 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python: ['3.6', '3.7', '3.8', '3.9']
+        python: ['3.7', '3.8', '3.9', '3.10']
+        beancount: ['2.3.5', '3.0']
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python }}
+      - run: pip install 'beancount==${{ matrix.beancount }}'
+        if: ${{ matrix.beancount != '3.0' }}
+      - run: pip install 'git+https://github.com/beancount/beancount#egg=beancount'
+        if: ${{ matrix.beancount == '3.0' }}
       - run: pip install -r requirements.txt pytest
       - run: python -m pytest beangulp
