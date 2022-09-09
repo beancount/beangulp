@@ -7,7 +7,7 @@ name = 'beangulp'
 version = '0.1.dev0'
 license = { text = 'GPL-2.0' }
 description = 'Importers Framework for Beancount'
-readme = 'README.md'
+readme = 'README.rst'
 authors = [
     { name = 'Martin Blais', email = 'blais@furius.ca' },
     { name = 'Daniele Nicolodi', email = 'daniele@grinta.net' },
