@@ -47,7 +47,7 @@ class Importer(abc.ABC):
         """Return True if this importer matches the given file.
 
         Args:
-          filepath: Filesystem path to the document to be mathed.
+          filepath: Filesystem path to the document to be matched.
 
         Returns:
           True if this importer can handle this file.
