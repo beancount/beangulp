@@ -116,8 +116,10 @@ def _extract(ctx, src, output, existing, reverse, failfast, quiet):
               help='Just print where the files would be moved.')
 @click.option('--failfast', '-x', is_flag=True,
               help='Stop processing at the first error.')
+@click.option('--date-sep', '-ds', default='.', type=str,
+              help='Separator between date and rest of filename.')
 @click.pass_obj
-def _archive(ctx, src, destination, dry_run, overwrite, failfast):
+def _archive(ctx, src, destination, dry_run, overwrite, failfast, date_sep):
     """Archive documents.
 
     Walk the SRC list of files or directories and move each file
@@ -155,7 +157,7 @@ def _archive(ctx, src, destination, dry_run, overwrite, failfast):
             # Signal processing of this document.
             log(' ...', nl=False)
 
-            destpath = archive.filepath(importer, filename)
+            destpath = archive.filepath(importer, filename, date_sep)
 
             # Prepend destination directory path.
             destpath = os.path.join(destination, destpath)

@@ -100,7 +100,7 @@ Now for real:
   >>> path.exists(path.join(documents, 'Assets/Tests/1970-01-01.bbb.csv'))
   True
 
-Trying to move a documents over an exisiting file:
+Trying to move a documents over an existing file:
 
   >>> with open(path.join(downloads, 'bbb.csv'), 'w') as f:
   ...     pass
@@ -115,6 +115,22 @@ Trying to move a documents over an exisiting file:
     Destination file already exists.
   * .../downloads/zzz.txt
   # Errors detected: documents will not be filed.
+
+Use a custom date separator instead
+
+  >>> r = run('archive', downloads, '-o', documents, '-ds', ' ')
+  >>> r.exit_code
+  0
+  >>> print(r.output)
+  * .../downloads/aaa.txt
+  * .../downloads/bbb.csv ... OK
+    .../documents/Assets/Tests/1970-01-01 bbb.csv
+  * .../downloads/zzz.txt
+
+  >>> path.exists(path.join(downloads, 'bbb.csv'))
+  False
+  >>> path.exists(path.join(documents, 'Assets/Tests/1970-01-01 bbb.csv'))
+  True
 
 Cleanup documents directory:
 

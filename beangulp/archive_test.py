@@ -34,6 +34,12 @@ class TestFilepath(unittest.TestCase):
             filepath = archive.filepath(importer, path.abspath('test.pdf'))
         self.assertEqual(filepath, 'Assets/Tests/1970-01-01.test.pdf')
 
+    def test_filepath_date_sep(self):
+        importer = mock.MagicMock(wraps=self.importer)
+        importer.filename.return_value = 'foo.csv'
+        filepath = archive.filepath(importer, path.abspath('test.pdf'), " ")
+        self.assertEqual(filepath, 'Assets/Tests/1970-01-01 foo.csv')
+
     def test_filepath_sep_in_name(self):
         importer = mock.MagicMock(wraps=self.importer)
         importer.filename.return_value = f'dir{os.sep:}name.pdf'
