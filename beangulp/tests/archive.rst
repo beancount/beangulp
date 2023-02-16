@@ -120,7 +120,31 @@ Cleanup documents directory:
 
   >>> rmtree(documents)
   >>> mkdir(documents)
-  
+
+Strip existing date
+
+  >>> with open(path.join(downloads, '1970-01-03.name.csv'), 'w') as f:
+  ...     pass
+
+  >>> r = run('archive', downloads, '-o', documents, '-sd')
+  >>> r.exit_code
+  0
+  >>> print(r.output)
+  * .../downloads/1970-01-03.name.csv ... OK
+    .../documents/Assets/Tests/1970-01-01.name.csv
+  * .../downloads/aaa.txt
+  * .../downloads/zzz.txt
+
+  >>> path.exists(path.join(downloads, '1970-01-03.name.csv'))
+  False
+  >>> path.exists(path.join(documents, 'Assets/Tests/1970-01-01.name.csv'))
+  True
+
+Cleanup documents directory:
+
+  >>> rmtree(documents)
+  >>> mkdir(documents)
+
 Collision in destination filename:
 
   >>> fnames = ['aaa.txt', 'bbb.csv', 'zzz.txt', 'error.foo']

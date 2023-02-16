@@ -9,7 +9,7 @@ from beangulp import utils
 from beangulp.exceptions import Error
 
 
-def filepath(importer, filepath: str) -> str:
+def filepath(importer, filepath: str, strip_date=False) -> str:
     """Compute filing path for a document.
 
     The path mirrors the structure of the accounts associated to the
@@ -39,7 +39,10 @@ def filepath(importer, filepath: str) -> str:
         raise Error("The filename contains path separator character.")
 
     if re.match(r'\d\d\d\d-\d\d-\d\d\.', filename):
-        raise Error("The filename contains what looks like a date.")
+        if strip_date:
+            filename = re.sub(r'\d\d\d\d-\d\d-\d\d\.', '', filename)
+        else:
+            raise Error("The filename contains what looks like a date.")
 
     # Prepend account directory and date prefix.
     filename = os.path.join(account.replace(':', os.sep), f'{date:%Y-%m-%d}.{filename:}')

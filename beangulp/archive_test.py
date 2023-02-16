@@ -47,3 +47,9 @@ class TestFilepath(unittest.TestCase):
         with self.assertRaises(exceptions.Error) as ex:
             filepath = archive.filepath(importer, path.abspath('test.pdf'))
         self.assertRegex(ex.exception.message, r'contains [\w\s]+ date')
+
+    def test_filepath_strip_date_in_name(self):
+        importer = mock.MagicMock(wraps=self.importer)
+        importer.filename.return_value = '1970-01-03.name.pdf'
+        filepath = archive.filepath(importer, path.abspath('test.pdf'), strip_date=True)
+        self.assertEqual(filepath, 'Assets/Tests/1970-01-01.name.pdf')
