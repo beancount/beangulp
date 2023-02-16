@@ -78,6 +78,16 @@ Check the output file:
   **** .../downloads/bbb.csv
   <BLANKLINE>
 
+Disable Sections
+
+  >>> r = run('extract', downloads, '-o', output, '-ns')
+  >>> r.exit_code
+  0
+  >>> with open(output, 'r') as f:
+  ...     extracted = f.read()
+  >>> print(extracted)
+  ;; -*- mode: beancount -*-
+
 Test importer raising an error:
 
   >>> with open(path.join(downloads, 'error.foo'), 'w') as f:

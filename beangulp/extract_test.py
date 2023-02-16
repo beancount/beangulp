@@ -93,6 +93,34 @@ class TestPrint(unittest.TestCase):
 
             '''))
 
+    def test_print_extracted_entries_no_sections(self):
+        entries1, error, options = parser.parse_string(textwrap.dedent('''
+            1975-01-01 * "Test1"
+              Assets:Tests  10.00 USD'''))
+
+        entries2, error, options = parser.parse_string(textwrap.dedent('''
+            1970-01-01 * "Test2"
+              Assets:Tests  10.00 USD'''))
+
+        extracted = [
+            ('/path/to/test.csv', entries1),
+            ('/path/to/test.csv', entries2),
+        ]
+
+        output = io.StringIO()
+        extract.print_extracted_entries(extracted, output, True)
+
+        self.assertEqual(output.getvalue(), textwrap.dedent('''\
+            ;; -*- mode: beancount -*-
+
+            1970-01-01 * "Test2"
+              Assets:Tests  10.00 USD
+
+            1975-01-01 * "Test1"
+              Assets:Tests  10.00 USD
+
+            '''))
+
     def test_print_extracted_entries_duplictes(self):
         entries, error, options = parser.parse_string(textwrap.dedent('''
             1970-01-01 * "Test"

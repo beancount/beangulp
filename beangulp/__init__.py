@@ -49,12 +49,14 @@ def _walk(file_or_dirs, log):
               help='Existing Beancount ledger for de-duplication.')
 @click.option('--reverse', '-r', is_flag=True,
               help='Sort entries in reverse order.')
+@click.option('--no-sections', '-ns', is_flag=True,
+              help='Separate files into sections')
 @click.option('--failfast', '-x', is_flag=True,
               help='Stop processing at the first error.')
 @click.option('--quiet', '-q', count=True,
               help="Suppress all output.")
 @click.pass_obj
-def _extract(ctx, src, output, existing, reverse, failfast, quiet):
+def _extract(ctx, src, output, existing, reverse, no_sections, failfast, quiet):
     """Extract transactions from documents.
 
     Walk the SRC list of files or directories and extract the ledger
@@ -99,7 +101,7 @@ def _extract(ctx, src, output, existing, reverse, failfast, quiet):
             entries.reverse()
 
     # Serialize entries.
-    extract.print_extracted_entries(extracted, output)
+    extract.print_extracted_entries(extracted, output, no_sections)
 
     if errors:
         sys.exit(1)

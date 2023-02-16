@@ -130,7 +130,7 @@ def mark_duplicate_entries(
     return marked
 
 
-def print_extracted_entries(extracted, output):
+def print_extracted_entries(extracted, output, no_sections=False):
     """Print extracted entries.
 
     Entries marked as duplicates are printed as comments.
@@ -145,16 +145,34 @@ def print_extracted_entries(extracted, output):
     if extracted:
         output.write(HEADER + '\n')
 
+    if not no_sections:
+        print_with_sections(extracted, output)
+    else:
+        print_without_sections(extracted, output)
+
+
+def print_without_sections(extracted, output):
+    merged = []
+    for _, entries in extracted:
+        for entry in entries:
+            merged.append(entry)
+    print_entries(sorted(merged, key=lambda x: x.date), output)
+
+
+def print_with_sections(extracted, output):
     for filepath, entries in extracted:
         output.write(SECTION.format(filepath) + '\n\n')
 
-        for entry in entries:
-            duplicate = entry.meta.pop(DUPLICATE, False)
-            string = printer.format_entry(entry)
-            # If the entry is a duplicate, comment it out.
-            if duplicate:
-                string = textwrap.indent(string, '; ')
-            output.write(string)
-            output.write('\n')
+        print_entries(entries, output)
+        output.write('\n')
 
+
+def print_entries(entries, output):
+    for entry in entries:
+        duplicate = entry.meta.pop(DUPLICATE, False)
+        string = printer.format_entry(entry)
+        # If the entry is a duplicate, comment it out.
+        if duplicate:
+            string = textwrap.indent(string, '; ')
+        output.write(string)
         output.write('\n')
