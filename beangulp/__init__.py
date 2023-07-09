@@ -259,18 +259,18 @@ class Ingest:
                           'of the extract processing and can be customized by the '
                           'importers. See beangulp.importer.Importer.', stacklevel=2)
 
-        @click.group()
+        @click.group('beangulp')
         @click.version_option()
         @click.pass_context
-        def main(ctx):
+        def cli(ctx):
             """Import data from and file away documents from financial institutions."""
             ctx.obj = self
 
-        main.add_command(_archive)
-        main.add_command(_extract)
-        main.add_command(_identify)
+        cli.add_command(_archive)
+        cli.add_command(_extract)
+        cli.add_command(_identify)
 
-        self.main = main
+        self.cli = cli
 
     def __call__(self):
-        return self.main()
+        return self.cli()

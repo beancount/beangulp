@@ -30,13 +30,13 @@ Check the basics:
   >>> r.exit_code
   0
   >>> print(r.output)
-  Usage: main [OPTIONS] COMMAND [ARGS]...
+  Usage: beangulp [OPTIONS] COMMAND [ARGS]...
 
   >>> r = run('test', '--help')
   >>> r.exit_code
   0
   >>> print(r.output)
-  Usage: main test [OPTIONS] [DOCUMENTS]...
+  Usage: beangulp test [OPTIONS] [DOCUMENTS]...
 
   >>> r = run('test')
   >>> r.exit_code
