@@ -251,11 +251,11 @@ def _run(ctx,
 
 def wrap(importer: Union[Importer, ImporterProtocol]) -> Callable[[], None]:
     """Wrap a single importer for ingestion."""
-    main = beangulp.Ingest([importer]).main
-    main.help = importer.__doc__
-    main.add_command(_test)
-    main.add_command(_generate)
-    return main
+    cli = beangulp.Ingest([importer]).cli
+    cli.help = importer.__doc__
+    cli.add_command(_test)
+    cli.add_command(_generate)
+    return cli
 
 
 def main(importer: Union[Importer, ImporterProtocol]):

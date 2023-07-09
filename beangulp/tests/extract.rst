@@ -24,8 +24,8 @@ Test harness:
   ... ]
   >>> runner = click.testing.CliRunner()
   >>> def run(*args):
-  ...     func = beangulp.Ingest(importers).main
-  ...     return runner.invoke(func, args, catch_exceptions=False)
+  ...     ingest = beangulp.Ingest(importers)
+  ...     return runner.invoke(ingest.cli, args, catch_exceptions=False)
 
 Create a dowloads directory:
 
@@ -43,7 +43,7 @@ The basics:
   >>> r.exit_code
   0
   >>> print(r.output)
-  Usage: main extract [OPTIONS] [SRC]...
+  Usage: beangulp extract [OPTIONS] [SRC]...
 
 Test with an empty downloads directory:
 
