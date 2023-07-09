@@ -156,7 +156,7 @@ class Amount(Column):
 class CSVMeta(abc.ABCMeta):
     """A metaclass that extracts column specifications from class members
     and stores them in a columns dictionary keyed by the member name."""
-    def __new__(cls, name, bases, dct):
+    def __new__(mcs, name, bases, dct):
         columns = {}
         others = {}
         for key, value in dct.items():
@@ -165,7 +165,7 @@ class CSVMeta(abc.ABCMeta):
                 continue
             others[key] = value
         others['columns'] = columns
-        return super().__new__(cls, name, bases, others)
+        return super().__new__(mcs, name, bases, others)
 
 
 class CSVReader(metaclass=CSVMeta):
