@@ -277,10 +277,7 @@ class Importer(beangulp.Importer, CSVReader):
         balances = defaultdict(list)
         default_account = self.account(filepath)
 
-        # Compute the line number of the first data line.
-        offset = int(self.skiplines) + bool(self.names) + 1
-
-        for lineno, row in enumerate(self.read(filepath), offset):
+        for row in self.read(filepath):
             # Skip empty lines.
             if not row:
                 continue
@@ -301,7 +298,7 @@ class Importer(beangulp.Importer, CSVReader):
             units = data.Amount(row.amount, currency)
 
             # Create a transaction.
-            txn = data.Transaction(self.metadata(filepath, lineno, row),
+            txn = data.Transaction(self.metadata(row),
                                    row.date, flag, payee, row.narration, tags, links, [
                                        data.Posting(account, units, None, None, None, None),
                                    ])
@@ -317,8 +314,7 @@ class Importer(beangulp.Importer, CSVReader):
             if balance is not None:
                 date = row.date + datetime.timedelta(days=1)
                 units = data.Amount(balance, currency)
-                meta = data.new_metadata(filepath, lineno)
-                balances[currency].append(data.Balance(meta, date, account, units, None, None))
+                balances[currency].append(data.Balance({}, date, account, units, None, None))
 
         if not entries:
             return []
@@ -333,22 +329,20 @@ class Importer(beangulp.Importer, CSVReader):
 
         return entries
 
-    def metadata(self, filepath, lineno, row):
+    def metadata(self, row):
         """Build transaction metadata dictionary.
 
         This method can be extended to add customized metadata
         entries based on the content of the data row.
 
         Args:
-          filepath: Path to the file being imported.
-          lineno: Line number of the data being processed.
           row: The data row being processed.
 
         Returns:
           A metadata dictionary.
 
         """
-        return data.new_metadata(filepath, lineno)
+        return {}
 
     def finalize(self, txn, row):
         """Post process the transaction.

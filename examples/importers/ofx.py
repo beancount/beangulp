@@ -20,7 +20,6 @@ __license__ = "GNU GPLv2"
 
 import datetime
 import enum
-import itertools
 import re
 
 from os import path
@@ -96,7 +95,7 @@ class Importer(beangulp.Importer):
         """Extract a list of partially complete transactions from the file."""
         with open(filepath) as fd:
             soup = bs4.BeautifulSoup(fd, 'lxml')
-        return extract(soup, filepath, self.acctid_regexp, self.importer_account,
+        return extract(soup, self.acctid_regexp, self.importer_account,
                        flags.FLAG_OKAY, self.balance_type)
 
 
@@ -110,10 +109,9 @@ def extract(soup, filename, acctid_regexp, account, flag, balance_type):
       flag: A single-character string.
       balance_type: An enum of type BalanceType.
     Returns:
-      A sorted list of entries.
+      A list of entries.
     """
     new_entries = []
-    counter = itertools.count()
     for acctid, currency, transactions, balance in find_statement_transactions(soup):
         if not re.match(acctid_regexp, acctid):
             continue
@@ -122,9 +120,8 @@ def extract(soup, filename, acctid_regexp, account, flag, balance_type):
         stmt_entries = []
         for stmttrn in transactions:
             entry = build_transaction(stmttrn, flag, account, currency)
-            entry = entry._replace(meta=data.new_metadata(filename, next(counter)))
             stmt_entries.append(entry)
-        stmt_entries = data.sorted(stmt_entries)
+        stmt_entries.sort(key=lambda entry: entry.date)
         new_entries.extend(stmt_entries)
 
         # Create a Balance directive.
@@ -137,13 +134,12 @@ def extract(soup, filename, acctid_regexp, account, flag, balance_type):
             # it to the following day.
             date += datetime.timedelta(days=1)
 
-            meta = data.new_metadata(filename, next(counter))
-            balance_entry = data.Balance(meta, date, account,
+            balance_entry = data.Balance(None, date, account,
                                          amount.Amount(number, currency),
                                          None, None)
             new_entries.append(balance_entry)
 
-    return data.sorted(new_entries)
+    return new_entries
 
 
 def parse_ofx_time(date_str):
@@ -297,6 +293,5 @@ def build_transaction(stmttrn, flag, account, currency):
     posting = data.Posting(account, units, None, None, None, None)
 
     # Build the transaction with a single leg.
-    fileloc = data.new_metadata('<build_transaction>', 0)
-    return data.Transaction(fileloc, date, flag, payee, narration,
+    return data.Transaction({}, date, flag, payee, narration,
                             data.EMPTY_SET, data.EMPTY_SET, [posting])
