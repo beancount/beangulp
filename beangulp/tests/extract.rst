@@ -153,6 +153,7 @@ Importing again the same file results in entries marked as duplicates:
   <BLANKLINE>
   **** .../downloads/one.beans
   <BLANKLINE>
+  ; duplicate of .../existing.beancount:5
   ; 2023-01-01 * "Test"
   ;   Assets:Tests  2 TESTS
 
@@ -173,6 +174,7 @@ Importing again the same file results in entries marked as duplicates:
   <BLANKLINE>
   **** .../downloads/two.beans
   <BLANKLINE>
+  ; .../downloads/one.beans:2
   ; 2023-01-01 * "Test"
   ;   Assets:Tests  2 TESTS
 
