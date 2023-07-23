@@ -140,7 +140,7 @@ def find_duplicate_entries(extracted, existing):
         # Find duplicates.
         pairs = similar.find_similar_entries(entries, existing)
 
-        # We could do something smarter than trowing away the
+        # We could do something smarter than throwing away the
         # information about which entry is the source of the possible
         # duplication.
         duplicates = { id(duplicate) for duplicate, source in pairs }
