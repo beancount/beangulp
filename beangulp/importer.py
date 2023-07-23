@@ -154,13 +154,13 @@ class Importer(abc.ABC):
         of the each existing entry (two days prior and two days past)
         are considered.
 
+        Duplicated entries are marked setting the "__duplicate__"
+        entry metadata field to the entry of which the entry is a
+        duplicate.
+
         Args:
           entries: Entries extracted from the document being processed.
           existing: Entries loaded from the existing ledger.
-
-        Returns:
-          A new list of entries where duplicates have been marked
-          setting the "__duplicate__" entry metadata field to True.
 
         """
         window = datetime.timedelta(days=2)
