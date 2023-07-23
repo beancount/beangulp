@@ -61,7 +61,7 @@ def is_mimetype(filepath: str, check_mimetypes: Union[str, Set[str]],
                 regexp: Optional[bool] = False) -> bool:
     """Check if a file is of one of many mimetypes."""
     if isinstance(check_mimetypes, str):
-        check_mimetypes = set((check_mimetypes,))
+        check_mimetypes = {check_mimetypes,}
     mtype, _ = mimetypes.guess_type(filepath)
     if mtype is None:
         return False

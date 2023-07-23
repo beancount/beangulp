@@ -34,9 +34,11 @@ def write_expected(outfile: TextIO,
       name: The filename for filing, produced by the importer.
       entries: The list of entries extracted by the importer.
     """
-    print(';; Account: {}'.format(account), file=outfile)
-    print(';; Date: {}'.format(date.isoformat() if date else ''), file=outfile)
-    print(';; Name: {}'.format(name or ''), file=outfile)
+    date = date.isoformat() if date else ''
+    name = name or ''
+    print(f';; Account: {account}', file=outfile)
+    print(f';; Date: {date}', file=outfile)
+    print(f';; Name: {name}', file=outfile)
     printer.print_entries(entries, file=outfile)
 
 

@@ -30,7 +30,7 @@ class TestWalk(unittest.TestCase):
                 pass
 
         entries = utils.walk([self.temp])
-        self.assertListEqual(list(entries), list(sorted(filenames)))
+        self.assertListEqual(list(entries), sorted(filenames))
 
         entries = utils.walk(filenames)
         self.assertListEqual(list(entries), filenames)

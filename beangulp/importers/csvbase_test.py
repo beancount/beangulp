@@ -25,9 +25,9 @@ class TestColumn(unittest.TestCase):
     def test_named_errrors(self):
         column = Column('A')
         with self.assertRaisesRegex(KeyError, "Cannot find column 'A' in "):
-            func = column.getter({'B': 0, 'C': 1})
+            column.getter({'B': 0, 'C': 1})
         with self.assertRaisesRegex(KeyError, "Column 'A' cannot be found in "):
-            func = column.getter(None)
+            column.getter(None)
 
     def test_strip(self):
         # The default field parser strips whitespace.
@@ -146,7 +146,7 @@ class TestCSVReader(unittest.TestCase):
             second = Column('Second')
         reader = Reader()
         with self.assertRaisesRegex(IndexError, 'The input file does not contain '):
-            rows = list(reader.read(filename))
+            list(reader.read(filename))
 
     @docfile
     def test_indexed_columns_names_false(self, filename):

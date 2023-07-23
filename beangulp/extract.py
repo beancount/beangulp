@@ -192,7 +192,6 @@ def mark_duplicate_entries(
         for i in range(lo, hi):
             yield existing[i]
 
-    marked = []
     for entry in entries:
         for target in entries_date_window_iterator(entry.date):
             if compare(entry, target):

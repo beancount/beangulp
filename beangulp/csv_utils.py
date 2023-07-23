@@ -37,11 +37,11 @@ def csv_clean_header(header_row):
     for index, column in enumerate(header_row):
         field = column.lower()
         field = re.sub(r'\bp/l\b', 'pnl', field)
-        field = re.sub('[^a-z0-9]', '_', field)
+        field = re.sub(r'[^a-z0-9]', '_', field)
         field = field.strip(' _')
-        field = re.sub('__+', '_', field)
+        field = re.sub(r'__+', '_', field)
         if not field:
-            field = 'col{}'.format(index)
+            field = f'col{index}'
         assert field not in fieldnames, field
         fieldnames.append(field)
     return fieldnames
@@ -133,7 +133,7 @@ def csv_split_sections_with_titles(rows):
             name = section[0][0]
             section = section[1:]
         else:
-            name = 'Section {}'.format(index)
+            name = f'Section {index}'
         sections_map[name] = section
     return sections_map
 
