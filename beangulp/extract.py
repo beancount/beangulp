@@ -5,6 +5,7 @@ import bisect
 import datetime
 import operator
 import textwrap
+import warnings
 
 from typing import Callable
 
@@ -120,6 +121,12 @@ def find_duplicate_entries(extracted, existing):
       entries marked setting the "__duplicate__" metadata field to True.
 
     """
+    # This function is kept only for backwards compatibility.
+    warnings.warn('The find_duplicate_entries() function is kept only for '
+                  'backwards compatibility with import scripts that explicitly '
+                  'added it to the import hooks. It does not conform to the '
+                  'current way of implementing deduplication and it is not to '
+                  'be used.', stacklevel=2)
 
     ret = []
     for filepath, entries, account, importer in extracted:

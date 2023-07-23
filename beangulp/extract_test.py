@@ -2,11 +2,13 @@ import io
 import textwrap
 import unittest
 
+from datetime import timedelta
 from os import path
 from unittest import mock
 
 from beancount.parser import parser
 from beangulp import extract
+from beangulp import similar
 from beangulp import tests
 
 
@@ -53,15 +55,18 @@ class TestExtract(unittest.TestCase):
 
 class TestDuplicates(unittest.TestCase):
 
-    def test_find_duplicate_entries(self):
+    def test_mark_duplicate_entries(self):
         entries, error, options = parser.parse_string(textwrap.dedent('''
-            1970-01-01 * "Test"
-              Assets:Tests  10.00 USD'''))
-        extracted = [
-            ('/path/to/test.csv', entries, None, None),
-        ]
-        marked = extract.find_duplicate_entries(extracted, entries)
-        self.assertTrue(marked[0][1][0].meta[extract.DUPLICATE])
+          1970-01-01 * "Test"
+            Assets:Tests  10.00 USD
+
+          1970-01-02 * "Test"
+            Assets:Tests  20.00 USD
+        '''))
+        compare = similar.SimilarityComparator()
+        extract.mark_duplicate_entries(entries, entries[:1], timedelta(days=2), compare)
+        self.assertTrue(entries[0].meta[extract.DUPLICATE])
+        self.assertNotIn(extract.DUPLICATE, entries[1].meta)
 
 
 class TestPrint(unittest.TestCase):
