@@ -3,11 +3,13 @@ __license__ = "GNU GPLv2"
 
 import datetime
 
-from beancount.core.number import D
+from decimal import Decimal as D
+
 from beancount.core import data
 from beancount.parser import cmptest
 from beancount.parser import parser
 from beancount import loader
+
 from beangulp import similar
 
 

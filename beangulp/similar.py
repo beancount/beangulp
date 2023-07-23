@@ -7,8 +7,8 @@ __license__ = "GNU GPLv2"
 
 import collections
 import datetime
+import decimal
 
-from beancount.core.number import D
 from beancount.core.number import ZERO
 from beancount.core.number import ONE
 from beancount.core import data
@@ -151,7 +151,7 @@ def amounts_map(entry):
     Returns:
       A dict of account -> Amount balance.
     """
-    amounts = collections.defaultdict(D)
+    amounts = collections.defaultdict(decimal.Decimal)
     for posting in entry.postings:
         # Skip interpolated postings.
         if posting.meta and interpolate.AUTOMATIC_META in posting.meta:
