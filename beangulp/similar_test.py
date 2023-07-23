@@ -127,7 +127,7 @@ class TestDups(cmptest.TestCase):
 class TestSimilarityComparator(cmptest.TestCase):
 
     def setUp(self):
-        self.comparator = similar.SimilarityComparator(datetime.timedelta(days=2))
+        self.comparator = similar.comparator(datetime.timedelta(days=2))
 
     @loader.load_doc()
     def test_simple(self, entries, _, __):
