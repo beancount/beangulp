@@ -158,22 +158,21 @@ def mark_duplicate_entries(
         entries: data.Entries,
         existing: data.Entries,
         window: datetime.timedelta,
-        compare: Callable[[data.Directive, data.Directive], bool]) -> data.Entries:
+        compare: Callable[[data.Directive, data.Directive], bool]) -> None:
     """Mark duplicate entries.
 
     Compare newly extracted entries to the existing entries. Only
     existing entries dated within the given time window around the
     date of the each existing entry.
 
+    Entries that are determined to be duplicates of existing entries
+    are marked setting the "__duplicate__" metadata field.
+
     Args:
       entries: Entries to be deduplicated.
       existing: Existing entries.
       window: Time window in which entries are compared.
       compare: Entry comparison function.
-
-    Returns:
-      A new list of entries where duplicates have been marked setting
-      the "__duplicate__" metadata field to True.
 
     """
     # The use of bisection to identify the entries in the existing
@@ -193,11 +192,7 @@ def mark_duplicate_entries(
     for entry in entries:
         for target in entries_date_window_iterator(entry.date):
             if compare(entry, target):
-                meta = entry.meta.copy()
-                meta[DUPLICATE] = True
-                entry = entry._replace(meta=meta)
-        marked.append(entry)
-    return marked
+                entry.meta[DUPLICATE] = True
 
 
 def print_extracted_entries(extracted, output):
