@@ -41,9 +41,6 @@ def extract_from_file(importer, filename, existing_entries):
     if not entries:
         return []
 
-    # Deduplicate.
-    entries = importer.deduplicate(entries, existing_entries)
-
     # Sort the newly imported entries.
     importer.sort(entries)
 
