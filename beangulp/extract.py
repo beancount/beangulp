@@ -196,7 +196,7 @@ def mark_duplicate_entries(
     for entry in entries:
         for target in entries_date_window_iterator(entry.date):
             if compare(entry, target):
-                entry.meta[DUPLICATE] = True
+                entry.meta[DUPLICATE] = target
 
 
 def print_extracted_entries(extracted, output):
@@ -221,8 +221,14 @@ def print_extracted_entries(extracted, output):
         for entry in entries:
             duplicate = entry.meta.pop(DUPLICATE, False)
             string = printer.format_entry(entry)
-            # If the entry is a duplicate, comment it out.
+            # If the entry is a duplicate, comment it out and report
+            # of which other entry this is a duplicate.
             if duplicate:
+                if isinstance(duplicate, type(entry)):
+                    filename = duplicate.meta.get('filename')
+                    lineno = duplicate.meta.get('lineno')
+                    if filename and lineno:
+                        output.write(f'; duplicate of {filename}:{lineno}\n')
                 string = textwrap.indent(string, '; ')
             output.write(string)
             output.write('\n')
