@@ -92,18 +92,17 @@ def _extract(ctx, src, output, existing, reverse, failfast, quiet):
         if failfast and errors:
             break
 
-    # Sort extracted entries.
+    # Sort.
     extract.sort_extracted_entries(extracted)
 
-    # Invoke hooks.
-    hooks = [extract.find_duplicate_entries] if ctx.hooks is None else ctx.hooks
-    for func in hooks:
-        extracted = func(extracted, existing_entries)
+    # Deduplicate.
+    for filename, entries, account, importer in extracted:
+        importer.deduplicate(entries, existing_entries)
+        existing_entries.extend(entries)
 
-    # Reverse sort order, if requested.
-    if reverse:
-        for filename, entries, account, importer in extracted:
-            entries.reverse()
+    # Invoke hooks.
+    for func in ctx.hooks:
+        extracted = func(extracted, existing_entries)
 
     # Serialize entries.
     extract.print_extracted_entries(extracted, output)
