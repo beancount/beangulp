@@ -17,10 +17,6 @@ from beangulp import extract
 from beangulp import similar
 
 
-# The default comparison function used for deduplication.
-compare = similar.SimilarityComparator()
-
-
 class Importer(abc.ABC):
     """Interface that all source importers need to comply with.
 
@@ -125,25 +121,7 @@ class Importer(abc.ABC):
         """
         return []
 
-    @staticmethod
-    def cmp(a: data.Directive, b: data.Directive) -> bool:
-        """Compare two entries.
-
-        This function is used by the deduplicate() method to determine
-        if two entries are similar enough to be considered duplicates.
-
-        Args:
-          a: First entry.
-          b: Second entry.
-
-        Returns:
-          True if the entries are deemed duplicates, False otherwise.
-
-        """
-        if isinstance(a, data.Transaction) and isinstance(b, data.Transaction):
-            # There may be a better way of doing this.
-            return compare(a, b)
-        return False
+    cmp = staticmethod(similar.comparator())
 
     def deduplicate(self, entries: data.Entries, existing: data.Entries) -> None:
         """Mark duplicates in extracted entries.

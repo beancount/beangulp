@@ -16,7 +16,14 @@ from beancount.core import amount
 from beancount.core import interpolate
 
 
-def find_similar_entries(entries, existing_entries, comparator=None, window_days=2):
+try:
+    from functools import cache
+except ImportError:
+    from functools import lru_cache
+    cache = lru_cache(maxsize=None)
+
+
+def find_similar_entries(entries, existing_entries, cmp=None, window_days=2):
     """Find which entries from a list are potential duplicates of a set.
 
     The existing_entries array must be sorted by date. If there are
@@ -39,8 +46,8 @@ def find_similar_entries(entries, existing_entries, comparator=None, window_days
     window_head = datetime.timedelta(days=window_days)
     window_tail = datetime.timedelta(days=window_days + 1)
 
-    if comparator is None:
-        comparator = SimilarityComparator()
+    if cmp is None:
+        cmp = comparator()
 
     # For each of the new entries, look at existing entries at a nearby date.
     duplicates = []
@@ -50,57 +57,61 @@ def find_similar_entries(entries, existing_entries, comparator=None, window_days
                     data.iter_entry_dates(existing_entries,
                                           entry.date - window_head,
                                           entry.date + window_tail)):
-                if comparator(entry, existing_entry):
+                if cmp(entry, existing_entry):
                     duplicates.append((entry, existing_entry))
                     break
     return duplicates
 
 
-class SimilarityComparator:
-    """Similarity comparator of transactions.
+class hashable:
+    def __init__(self, obj):
+        self.obj = obj
 
-    This comparator needs to be able to handle Transaction instances which are
-    incomplete on one side, which have slightly different dates, or potentially
-    slightly different numbers.
-    """
+    def __hash__(self):
+        return id(self.obj)
 
-    # Fraction difference allowed of variation.
-    EPSILON = D('0.05')  # 5%
+    def __getattr__(self, name):
+        return getattr(self.obj, name)
 
-    def __init__(self, max_date_delta=None):
-        """Constructor a comparator of entries.
+
+def comparator(max_date_delta=None, epsilon=None):
+    """Comparison function generator."""
+
+    if epsilon is None:
+        epsilon = decimal.Decimal('0.05')
+
+    def cmp(entry1, entry2):
+        """Compare two entries.
+
+        Determine if two transactions are similar enough to be
+        considered duplicates. Other entry types are ignored.
+
         Args:
-          max_date_delta: A datetime.timedelta instance of the max tolerated
-            distance between dates.
-        """
-        self.cache = {}
-        self.max_date_delta = max_date_delta
+          entry1: First entry.
+          entry2: Second entry.
 
-    def __call__(self, entry1, entry2):
-        """Compare two entries, return true if they are deemed similar.
-
-        Args:
-          entry1: A first Transaction directive.
-          entry2: A second Transaction directive.
         Returns:
-          A boolean.
+          True if they are deemed duplicates, False otherwise.
+
         """
+        # This comparator needs to be able to handle Transaction
+        # instances which are incomplete on one side, which have
+        # slightly different dates, or potentially postings with
+        # slightly different amounts.
+
+        if not isinstance(entry1, data.Transaction) or not isinstance(entry2, data.Transaction):
+            return False
+
         # Check the date difference.
-        if self.max_date_delta is not None:
+        if max_date_delta is not None:
             delta = ((entry1.date - entry2.date)
                      if entry1.date > entry2.date else
                      (entry2.date - entry1.date))
-            if delta > self.max_date_delta:
+            if delta > max_date_delta:
                 return False
 
-        try:
-            amounts1 = self.cache[id(entry1)]
-        except KeyError:
-            amounts1 = self.cache[id(entry1)] = amounts_map(entry1)
-        try:
-            amounts2 = self.cache[id(entry2)]
-        except KeyError:
-            amounts2 = self.cache[id(entry2)] = amounts_map(entry2)
+        amounts1 = amounts_map_cached(hashable(entry1))
+        amounts2 = amounts_map_cached(hashable(entry2))
 
         # Look for amounts on common accounts.
         common_keys = set(amounts1) & set(amounts2)
@@ -117,7 +128,7 @@ class SimilarityComparator:
                 return False
             if diff < ONE:
                 diff = ONE/diff
-            if (diff - ONE) < self.EPSILON:
+            if (diff - ONE) < epsilon:
                 break
         else:
             return False
@@ -128,6 +139,8 @@ class SimilarityComparator:
         accounts1 = set(posting.account for posting in entry1.postings)
         accounts2 = set(posting.account for posting in entry2.postings)
         return accounts1.issubset(accounts2) or accounts2.issubset(accounts1)
+
+    return cmp
 
 
 def amounts_map(entry):
@@ -148,3 +161,6 @@ def amounts_map(entry):
             key = (posting.account, currency)
             amounts[key] += posting.units.number
     return amounts
+
+
+amounts_map_cached = cache(amounts_map)

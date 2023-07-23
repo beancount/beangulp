@@ -63,7 +63,7 @@ class TestDuplicates(unittest.TestCase):
           1970-01-02 * "Test"
             Assets:Tests  20.00 USD
         '''))
-        compare = similar.SimilarityComparator()
+        compare = similar.comparator()
         extract.mark_duplicate_entries(entries, entries[:1], timedelta(days=2), compare)
         self.assertTrue(entries[0].meta[extract.DUPLICATE])
         self.assertNotIn(extract.DUPLICATE, entries[1].meta)
