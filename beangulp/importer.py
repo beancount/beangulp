@@ -145,7 +145,7 @@ class Importer(abc.ABC):
             return compare(a, b)
         return False
 
-    def deduplicate(self, entries: data.Entries, existing: data.Entries) -> data.Entries:
+    def deduplicate(self, entries: data.Entries, existing: data.Entries) -> None:
         """Mark duplicates in extracted entries.
 
         The default implementation uses the cmp() method to compare
@@ -164,7 +164,7 @@ class Importer(abc.ABC):
 
         """
         window = datetime.timedelta(days=2)
-        return extract.mark_duplicate_entries(entries, existing, window, self.cmp)
+        extract.mark_duplicate_entries(entries, existing, window, self.cmp)
 
     def sort(self, entries: data.Entries, reverse=False) -> None:
         """Sort the extracted directives.
