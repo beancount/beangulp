@@ -38,12 +38,12 @@ class TestFilepath(unittest.TestCase):
         importer = mock.MagicMock(wraps=self.importer)
         importer.filename.return_value = f'dir{os.sep:}name.pdf'
         with self.assertRaises(exceptions.Error) as ex:
-            filepath = archive.filepath(importer, path.abspath('test.pdf'))
+            archive.filepath(importer, path.abspath('test.pdf'))
         self.assertRegex(ex.exception.message, r'contains path separator')
 
     def test_filepath_date_in_name(self):
         importer = mock.MagicMock(wraps=self.importer)
         importer.filename.return_value = '1970-01-03.name.pdf'
         with self.assertRaises(exceptions.Error) as ex:
-            filepath = archive.filepath(importer, path.abspath('test.pdf'))
+            archive.filepath(importer, path.abspath('test.pdf'))
         self.assertRegex(ex.exception.message, r'contains [\w\s]+ date')

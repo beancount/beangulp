@@ -1,1 +1,1 @@
-from . import utils
+from . import utils  # noqa: F401

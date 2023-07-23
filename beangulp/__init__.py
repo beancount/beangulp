@@ -18,7 +18,7 @@ import click
 from beancount import loader
 
 from beangulp import archive
-from beangulp import cache
+from beangulp import cache  # noqa: F401
 from beangulp import exceptions
 from beangulp import extract
 from beangulp import identify

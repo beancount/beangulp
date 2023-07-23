@@ -49,7 +49,7 @@ class _FileMemo:
         self._cache = {}
 
     def __str__(self):
-        return '<FileWrapper filename="{}">'.format(self.name)
+        return f'<FileWrapper filename="{self.name}">'
 
     def convert(self, converter_func):
         """Registers a callable used to convert the file contents.

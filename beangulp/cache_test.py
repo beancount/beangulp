@@ -79,7 +79,7 @@ class CacheTestCase(unittest.TestCase):
         cache.CACHEDIR = os.path.join(self.tempdir, 'cache')
         os.mkdir(cache.CACHEDIR)
         self.filename = os.path.join(self.tempdir, 'test.txt')
-        with open(self.filename, 'w') as f:
+        with open(self.filename, 'w'):
             pass
 
     def tearDown(self):

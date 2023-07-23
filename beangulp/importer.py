@@ -179,8 +179,7 @@ class ImporterProtocol:
 
     def name(self):
         """See Importer class name property."""
-        cls = self.__class__
-        return '{}.{}'.format(cls.__module__, cls.__name__)
+        return f'{self.__class__.__module__}.{self.__class__.__name__}'
 
     __str__ = name
 

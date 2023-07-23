@@ -136,8 +136,8 @@ def comparator(max_date_delta=None, epsilon=None):
         # Here, we have found at least one common account with a close
         # amount. Now, we require that the set of accounts are equal or that
         # one be a subset of the other.
-        accounts1 = set(posting.account for posting in entry1.postings)
-        accounts2 = set(posting.account for posting in entry2.postings)
+        accounts1 = {posting.account for posting in entry1.postings}
+        accounts2 = {posting.account for posting in entry2.postings}
         return accounts1.issubset(accounts2) or accounts2.issubset(accounts1)
 
     return cmp

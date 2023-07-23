@@ -7,7 +7,7 @@ types commonly used for accounting. Import 'from beangulp import mimetypes'
 instead of 'import mimetypes'.
 """
 
-from mimetypes import *
+from mimetypes import *  # noqa: F403
 
 # Register some MIME types used in financial downloads.
 _extra_mime_types = [
@@ -18,4 +18,4 @@ _extra_mime_types = [
 
 for mime, *extensions in _extra_mime_types:
     for ext in extensions:
-        add_type(mime, ext, strict=False)
+        add_type(mime, ext, strict=False)  # noqa: F405

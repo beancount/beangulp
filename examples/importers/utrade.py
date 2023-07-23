@@ -72,8 +72,8 @@ class Importer(beangulp.Importer):
                 meta = data.new_metadata(filepath, index)
                 date = parse(row['DATE']).date()
                 rtype = row['TYPE']
-                link = "ut{0[REF #]}".format(row)
-                desc = "({0[TYPE]}) {0[DESCRIPTION]}".format(row)
+                link = f"ut{row['REF #']}"
+                desc = f"({row['TYPE']}) {row['DESCRIPTION']}"
                 units = amount.Amount(D(row['AMOUNT']), self.currency)
                 fees = amount.Amount(D(row['FEES']), self.currency)
                 other = amount.add(units, fees)

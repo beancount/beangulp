@@ -104,8 +104,8 @@ def get_amounts(iconfig, row, allow_zero_amounts, parse_amount):
     if Col.AMOUNT in iconfig:
         credit = row[iconfig[Col.AMOUNT]]
     else:
-        debit, credit = [row[iconfig[col]] if col in iconfig else None
-                         for col in [Col.AMOUNT_DEBIT, Col.AMOUNT_CREDIT]]
+        debit = row[iconfig[Col.AMOUNT_DEBIT]] if Col.AMOUNT_DEBIT in iconfig else None
+        credit = row[iconfig[Col.AMOUNT_CREDIT]] if Col.AMOUNT_CREDIT in iconfig else None
 
     # If zero amounts aren't allowed, return null value.
     is_zero_amount = ((credit is not None and parse_amount(credit) == ZERO) and
