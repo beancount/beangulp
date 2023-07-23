@@ -1,0 +1,19 @@
+select = ['E', 'F', 'W', 'UP', 'B', 'C4', 'PL', 'RUF']
+
+ignore = [
+  'B007',
+  'B020',
+  'E731',
+  'PLR0911',
+  'PLR0912',
+  'PLR0913',
+  'PLR0915',
+  'PLR2004',
+  'PLW2901',
+  'RUF012',
+  'UP015',
+  'UP032',
+]
+
+line-length = 128
+target-version = 'py37'
