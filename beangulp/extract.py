@@ -211,7 +211,7 @@ def print_extracted_entries(extracted, output):
        a write() method that accepts an unicode string.
 
     """
-    if extracted:
+    if extracted and HEADER:
         output.write(HEADER + '\n')
 
     for filepath, entries, account, importer in extracted:
