@@ -1,6 +1,7 @@
 """Utilities using petl.
 """
 
+from typing import Optional
 import datetime
 import re
 
@@ -15,7 +16,9 @@ petl.config.look_style = "minimal"
 petl.config.failonerror = True
 
 
-def table_to_directives(table: petl.Table, currency: str = "USD") -> data.Entries:
+def table_to_directives(
+    table: petl.Table, currency: str = "USD", filename: Optional[str] = None
+) -> data.Entries:
     """Convert a petl table to Beancount directives.
 
     This is intended as a convenience for many simple CSV importers. Your CSV
@@ -45,8 +48,9 @@ def table_to_directives(table: petl.Table, currency: str = "USD") -> data.Entrie
 
     # Create transactions.
     entries = []
+    filename = filename or f"<{__file__}>"
     for index, rec in enumerate(table.records()):
-        meta = data.new_metadata(f"<{__file__}>".format, index)
+        meta = data.new_metadata(filename, index)
         units = amount.Amount(rec.amount, currency)
         tags, links = set(), set()
         txn = data.Transaction(
@@ -78,7 +82,7 @@ def table_to_directives(table: petl.Table, currency: str = "USD") -> data.Entrie
 
     if "balance" in columns:
         # Insert a balance with the final value.
-        meta = data.new_metadata(f"<{__file__}>", index + 1)
+        meta = data.new_metadata(filename, index + 1)
         balance_date = rec.date + datetime.timedelta(days=1)
         entries.append(
             data.Balance(
