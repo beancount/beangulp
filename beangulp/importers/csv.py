@@ -26,8 +26,8 @@ from beancount.core import flags
 from beancount.core.amount import Amount
 from beancount.core.number import ZERO, D
 from beancount.utils import misc_utils
-from beancount.utils.date_utils import parse_date_liberally
 from beangulp import cache
+from beangulp import date_utils
 from beangulp import importer
 from beangulp.importers.mixins import filing, identifier
 
@@ -266,7 +266,7 @@ class _CSVImporterBase:
                     if row[0].startswith('#'):
                         continue
                     date_str = row[iconfig[Col.DATE]]
-                    date = parse_date_liberally(date_str, self.dateutil_kwds)
+                    date = date_utils.parse_date(date_str, self.dateutil_kwds)
                     if max_date is None or date > max_date:
                         max_date = date
                 return max_date
@@ -346,8 +346,8 @@ class _CSVImporterBase:
                 # Create a transaction
                 meta = data.new_metadata(file.name, index)
                 if txn_date is not None:
-                    meta['date'] = parse_date_liberally(txn_date,
-                                                        self.dateutil_kwds)
+                    meta['date'] = date_utils.parse_date(txn_date,
+                                                         self.dateutil_kwds)
                 if txn_time is not None:
                     meta['time'] = str(dateutil.parser.parse(txn_time).time())
                 if balance is not None:
@@ -355,7 +355,7 @@ class _CSVImporterBase:
                 if last4:
                     last4_friendly = self.last4_map.get(last4.strip())
                     meta['card'] = last4_friendly if last4_friendly else last4
-                date = parse_date_liberally(date, self.dateutil_kwds)
+                date = date_utils.parse_date(date, self.dateutil_kwds)
                 txn = data.Transaction(meta, date, self.FLAG, payee, narration,
                                        tags, links, [])
 
@@ -383,10 +383,10 @@ class _CSVImporterBase:
                 entries.append(txn)
 
         # Figure out if the file is in ascending or descending order.
-        first_date = parse_date_liberally(get(first_row, Col.DATE),
+        first_date = date_utils.parse_date(get(first_row, Col.DATE),
+                                           self.dateutil_kwds)
+        last_date = date_utils.parse_date(get(last_row, Col.DATE),
                                           self.dateutil_kwds)
-        last_date = parse_date_liberally(get(last_row, Col.DATE),
-                                         self.dateutil_kwds)
         is_ascending = first_date < last_date
 
         # Reverse the list if the file is in descending order
