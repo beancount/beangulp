@@ -93,7 +93,7 @@ def parse_amount(string: str)-> decimal.Decimal:
         sign = -1
     else:
         sign = 1
-    cstring = string.strip(' $').replace(',', '')
+    cstring = string.replace("-$", "$-").strip(' $').replace(',', '')
     try:
         return Decimal(cstring) * sign
     except decimal.InvalidOperation as exc:
