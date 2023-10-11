@@ -11,6 +11,7 @@ import decimal
 
 from beancount.core.number import ZERO
 from beancount.core.number import ONE
+from beancount.core.number import MISSING
 from beancount.core import data
 from beancount.core import amount
 from beancount.core import interpolate
@@ -157,7 +158,7 @@ def amounts_map(entry):
         if posting.meta and interpolate.AUTOMATIC_META in posting.meta:
             continue
         currency = isinstance(posting.units, amount.Amount) and posting.units.currency
-        if isinstance(currency, str):
+        if isinstance(currency, str) and posting.units.number != MISSING:
             key = (posting.account, currency)
             amounts[key] += posting.units.number
     return amounts
