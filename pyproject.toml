@@ -60,3 +60,9 @@ lint.ignore = [
     'UP015',
     'UP032',
 ]
+
+[tool.pytest.ini_options]
+minversion = '6.0'
+addopts = ['--doctest-glob=*.rst']
+doctest_optionflags = ['ELLIPSIS', 'NORMALIZE_WHITESPACE']
+testpaths = ['beangulp']
