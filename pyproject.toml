@@ -36,8 +36,8 @@ dependencies = [
 ]
 
 [project.urls]
-homepage = 'https://github.com/beancount/beanquery'
-issues = 'https://github.com/beancount/beanquery/issues'
+homepage = 'https://github.com/beancount/beangulp'
+issues = 'https://github.com/beancount/beangulp/issues'
 
 [tool.setuptools.packages]
 find = {}
