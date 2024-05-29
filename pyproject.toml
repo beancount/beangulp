@@ -4,7 +4,7 @@ build-backend = 'setuptools.build_meta'
 
 [project]
 name = 'beangulp'
-version = '0.1.dev0'
+version = '0.1.0'
 license = { file = 'LICENSE' }
 description = 'Importers Framework for Beancount'
 readme = 'README.rst'
