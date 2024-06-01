@@ -10,6 +10,7 @@ from decimal import Decimal
 from typing import Callable
 import collections
 import datetime
+import re
 
 from beancount.core.number import ZERO
 from beancount.core.number import ONE
@@ -114,13 +115,6 @@ def heuristic_comparator(
 
         Implement a heuristic method to determine if two transactions are
         similar enough to be considered duplicates.
-
-        Args:
-          entry1: First entry.
-          entry2: Second entry.
-
-        Returns:
-          True if they are deemed duplicates, False otherwise.
         """
         # This comparator needs to be able to handle Transaction
         # instances which are incomplete on one side, which have
@@ -175,6 +169,42 @@ def heuristic_comparator(
 
 # Old alias to the heuristic comparator kept for backwards compatibility.
 comparator = heuristic_comparator
+
+
+def same_link_comparator(regex: str | None = None) -> Comparator:
+    """Comparison function generator that checks if two directives share a link.
+
+    You can use this if you have a source of transactions that consistently
+    defined and unique transaction which it produces as a link. The matching of
+    these transactions will be more precise than the heuristic no dates and
+    amounts used by default, if you keep the links in your ledger.
+
+    You can further restrict the set of links that are compared if you provide a
+    regex. This can be useful if your importer produces multiple other links.
+
+    Args:
+      regex: An optional regular expression used to filter the links.
+    Returns:
+      A comparator predicate accepting two directives and returning a bool.
+    """
+
+    def cmp(entry1: data.Directive, entry2: data.Directive) -> bool:
+        """Compare two entries by common link."""
+
+        if not isinstance(entry1, data.Transaction) or not isinstance(
+            entry2, data.Transaction
+        ):
+            return False
+
+        links1 = entry1.links
+        links2 = entry2.links
+        if regex:
+            links1 = {link for link in links1 if re.match(regex, link)}
+            links2 = {link for link in links2 if re.match(regex, link)}
+
+        return bool(links1 & links2)
+
+    return cmp
 
 
 def amounts_map(entry):
