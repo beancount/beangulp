@@ -121,7 +121,7 @@ class Importer(abc.ABC):
         """
         return []
 
-    cmp = staticmethod(similar.comparator())
+    cmp = staticmethod(similar.heuristic_comparator())
 
     def deduplicate(self, entries: data.Entries, existing: data.Entries) -> None:
         """Mark duplicates in extracted entries.

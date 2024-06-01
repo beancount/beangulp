@@ -36,7 +36,7 @@ def find_similar_entries(entries, existing_entries, cmp=None, window_days=2):
     Args:
       entries: The list of entries to classify as duplicate or note.
       existing_entries: The list of entries against which to match.
-      comparator: A functor used to establish the similarity of two entries.
+      cmp: A functor used to establish the similarity of two entries.
       window_days: The number of days (inclusive) before or after to scan the
         entries to classify against.
 
@@ -50,7 +50,7 @@ def find_similar_entries(entries, existing_entries, cmp=None, window_days=2):
     window_tail = datetime.timedelta(days=window_days + 1)
 
     if cmp is None:
-        cmp = comparator()
+        cmp = heuristic_comparator()
 
     # For each of the new entries, look at existing entries at a nearby date.
     duplicates = []
@@ -81,7 +81,7 @@ class hashable:
 Comparator = Callable[[data.Directive, data.Directive], bool]
 
 
-def comparator(
+def heuristic_comparator(
     max_date_delta: datetime.timedelta | None = None, epsilon: Decimal | None = None
 ) -> Comparator:
     """Generic comparison function generator.
@@ -103,7 +103,7 @@ def comparator(
       epsilon: A Decimal fraction representing how close the amounts are
         required to be of each other. For example, Decimal("0.01") for 1%.
     Returns:
-      A comparator predicte accepting two directives and returning a bool.
+      A comparator predicate accepting two directives and returning a bool.
     """
 
     if epsilon is None:
@@ -171,6 +171,10 @@ def comparator(
         return accounts1.issubset(accounts2) or accounts2.issubset(accounts1)
 
     return cmp
+
+
+# Old alias to the heuristic comparator kept for backwards compatibility.
+comparator = heuristic_comparator
 
 
 def amounts_map(entry):
