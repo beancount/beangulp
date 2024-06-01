@@ -7,7 +7,7 @@ __copyright__ = "Copyright (C) 2016  Martin Blais"
 __license__ = "GNU GPLv2"
 
 from decimal import Decimal
-from typing import Callable
+from typing import Callable, Optional
 import collections
 import datetime
 import re
@@ -83,7 +83,7 @@ Comparator = Callable[[data.Directive, data.Directive], bool]
 
 
 def heuristic_comparator(
-    max_date_delta: datetime.timedelta | None = None, epsilon: Decimal | None = None
+    max_date_delta: Optional[datetime.timedelta] = None, epsilon: Optional[Decimal] = None
 ) -> Comparator:
     """Generic comparison function generator.
 
