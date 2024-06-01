@@ -3,7 +3,6 @@ __license__ = "GNU GPLv2"
 
 import os
 import shutil
-import sys
 import tempfile
 import time
 import unittest
@@ -63,11 +62,6 @@ class TestFileMemo(unittest.TestCase):
         data = b'asciiHeader1,\xf0\x9f\x8d\x8fHeader1,asciiHeader2'
         # The 15th bytes is in the middle of the unicode character.
         num_bytes = 15
-        if sys.version_info < (3, 7):  # noqa: UP036
-            # Reading the documentation, a partial read from longer
-            # mocked file data should work just fine, however, this
-            # does not seem the case in practice.
-            data = data[:num_bytes]
         with mock.patch('builtins.open', mock.mock_open(read_data=data)):
             string = cache._FileMemo('filepath').head(num_bytes, encoding='utf-8')
             self.assertEqual(string, 'asciiHeader1,')
