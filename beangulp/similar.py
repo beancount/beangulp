@@ -2,12 +2,14 @@
 
 This can be used during import in order to identify and flag duplicate entries.
 """
+
 __copyright__ = "Copyright (C) 2016  Martin Blais"
 __license__ = "GNU GPLv2"
 
+from decimal import Decimal
+from typing import Callable
 import collections
 import datetime
-import decimal
 
 from beancount.core.number import ZERO
 from beancount.core.number import ONE
@@ -20,6 +22,7 @@ try:
     from functools import cache
 except ImportError:
     from functools import lru_cache
+
     cache = lru_cache(maxsize=None)
 
 
@@ -54,9 +57,10 @@ def find_similar_entries(entries, existing_entries, cmp=None, window_days=2):
     if existing_entries is not None:
         for entry in data.filter_txns(entries):
             for existing_entry in data.filter_txns(
-                    data.iter_entry_dates(existing_entries,
-                                          entry.date - window_head,
-                                          entry.date + window_tail)):
+                data.iter_entry_dates(
+                    existing_entries, entry.date - window_head, entry.date + window_tail
+                )
+            ):
                 if cmp(entry, existing_entry):
                     duplicates.append((entry, existing_entry))
                     break
@@ -74,17 +78,42 @@ class hashable:
         return getattr(self.obj, name)
 
 
-def comparator(max_date_delta=None, epsilon=None):
-    """Comparison function generator."""
+Comparator = Callable[[data.Directive, data.Directive], bool]
+
+
+def comparator(
+    max_date_delta: datetime.timedelta | None = None, epsilon: Decimal | None = None
+) -> Comparator:
+    """Generic comparison function generator.
+
+    Two transactions are deemed similar if
+
+    - their dates are within a close range of each other (e.g. 2 days), if
+      specified with `max_date_delta`,
+
+    - amounts on postings corresponding to the same account are within some
+      fraction of each other (default: 5%), and
+
+    - the set of accounts of the two transactions are the same or one is a
+      subset of the other.
+
+    Args:
+      max_date_delta: A timedelta datetime difference within which two
+        transactions may be considered similar.
+      epsilon: A Decimal fraction representing how close the amounts are
+        required to be of each other. For example, Decimal("0.01") for 1%.
+    Returns:
+      A comparator predicte accepting two directives and returning a bool.
+    """
 
     if epsilon is None:
-        epsilon = decimal.Decimal('0.05')
+        epsilon = Decimal("0.05")
 
-    def cmp(entry1, entry2):
+    def cmp(entry1: data.Directive, entry2: data.Directive) -> bool:
         """Compare two entries.
 
-        Determine if two transactions are similar enough to be
-        considered duplicates. Other entry types are ignored.
+        Implement a heuristic method to determine if two transactions are
+        similar enough to be considered duplicates.
 
         Args:
           entry1: First entry.
@@ -92,21 +121,24 @@ def comparator(max_date_delta=None, epsilon=None):
 
         Returns:
           True if they are deemed duplicates, False otherwise.
-
         """
         # This comparator needs to be able to handle Transaction
         # instances which are incomplete on one side, which have
         # slightly different dates, or potentially postings with
         # slightly different amounts.
 
-        if not isinstance(entry1, data.Transaction) or not isinstance(entry2, data.Transaction):
+        if not isinstance(entry1, data.Transaction) or not isinstance(
+            entry2, data.Transaction
+        ):
             return False
 
         # Check the date difference.
         if max_date_delta is not None:
-            delta = ((entry1.date - entry2.date)
-                     if entry1.date > entry2.date else
-                     (entry2.date - entry1.date))
+            delta = (
+                (entry1.date - entry2.date)
+                if entry1.date > entry2.date
+                else (entry2.date - entry1.date)
+            )
             if delta > max_date_delta:
                 return False
 
@@ -121,13 +153,11 @@ def comparator(max_date_delta=None, epsilon=None):
             number2 = amounts2[key]
             if number1 == ZERO and number2 == ZERO:
                 break
-            diff = abs((number1 / number2)
-                       if number2 != ZERO
-                       else (number2 / number1))
+            diff = abs((number1 / number2) if number2 != ZERO else (number2 / number1))
             if diff == ZERO:
                 return False
             if diff < ONE:
-                diff = ONE/diff
+                diff = ONE / diff
             if (diff - ONE) < epsilon:
                 break
         else:
@@ -151,7 +181,7 @@ def amounts_map(entry):
     Returns:
       A dict of account -> Amount balance.
     """
-    amounts = collections.defaultdict(decimal.Decimal)
+    amounts = collections.defaultdict(Decimal)
     for posting in entry.postings:
         # Skip interpolated postings.
         if posting.meta and interpolate.AUTOMATIC_META in posting.meta:

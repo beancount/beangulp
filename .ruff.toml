@@ -1,3 +1,7 @@
+line-length = 128
+target-version = 'py37'
+
+[lint]
 select = ['E', 'F', 'W', 'UP', 'B', 'C4', 'PL', 'RUF']
 
 ignore = [
@@ -14,6 +18,3 @@ ignore = [
   'UP015',
   'UP032',
 ]
-
-line-length = 128
-target-version = 'py37'
