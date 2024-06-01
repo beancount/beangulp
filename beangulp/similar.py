@@ -171,7 +171,7 @@ def heuristic_comparator(
 comparator = heuristic_comparator
 
 
-def same_link_comparator(regex: str | None = None) -> Comparator:
+def same_link_comparator(regex: Optional[str] = None) -> Comparator:
     """Comparison function generator that checks if two directives share a link.
 
     You can use this if you have a source of transactions that consistently
