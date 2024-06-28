@@ -66,7 +66,7 @@ class Importer(beangulp.Importer):
 
     def identify(self, filepath):
         # Match for a compatible MIME type.
-        if mimetypes.guess_type(filepath) not in {'application/x-ofx',
+        if mimetypes.guess_type(filepath, strict=False)[0] not in {'application/x-ofx',
                                                   'application/vnd.intu.qbo',
                                                   'application/vnd.intu.qfx'}:
             return False
