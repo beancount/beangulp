@@ -188,8 +188,8 @@ def _archive(ctx, src, destination, dry_run, overwrite, failfast):
         sys.exit(1)
 
     if not dry_run:
-        for src, dst in renames:
-            archive.move(src, dst)
+        for filename, destpath in renames:
+            archive.move(filename, destpath)
 
 
 @click.command('identify')
