@@ -9,6 +9,7 @@ from itertools import islice
 from beancount.core import data
 
 import beangulp
+from beangulp import utils
 
 EMPTY = frozenset()
 
@@ -146,7 +147,7 @@ class Amount(Column):
     def parse(self, value):
         for pattern, replacement in self.subs.items():
             value = re.sub(pattern, replacement, value)
-        return decimal.Decimal(value)
+        return utils.parse_amount(value)
 
 
 # The CSV Importer class needs to inherit from beangulp.Importer which
