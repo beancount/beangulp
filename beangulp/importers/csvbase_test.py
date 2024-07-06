@@ -421,6 +421,31 @@ class TestImporter(cmptest.TestCase):
         """)
 
     @docfile
+    def test_extract_amount(self, filename):
+        """\
+        "Date","Status","Type","CheckNumber","Description","Withdrawal","Deposit","RunningBalance"
+        "06/30/2024","Posted","ACH","","Test Withdrawal","$123.45","","$3473.57"
+        "06/07/2024","Posted","TRANSFER","","Test Deposit","","$2,345.67","$3597.02"
+        """
+        class CSVImporter(Base):
+            date = Date('Date', '%m/%d/%Y')
+            narration = Column('Description')
+            withdrawal = Amount('Withdrawal')
+            deposit = Amount('Deposit')
+
+            def amount(self, row):
+                return row.deposit or -row.withdrawal
+
+        importer = CSVImporter('Assets:CSV', 'USD')
+        entries = importer.extract(filename, [])
+        self.assertEqualEntries(entries, """
+        2024-06-30 * "Test Withdrawal"
+          Assets:CSV  -123.45 USD
+        2024-06-07 * "Test Deposit"
+          Assets:CSV  2345.67 USD
+        """)
+
+    @docfile
     def test_extract_metadata(self, filename):
         """\
         2021-05-17, Test, 1.00, data, 42

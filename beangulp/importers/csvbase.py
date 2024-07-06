@@ -262,8 +262,13 @@ class Importer(beangulp.Importer, CSVReader):
         """Implement beangulp.Importer::extract()
 
         This methods costructs a transaction for each data row using
-        the date, narration, and amount required fields and the flag,
+        the date, narration required fields and the flag,
         payee, account, currency, tag, link, balance optional fields.
+
+        The amount() method returns the amount for a row---the default
+        implementation requires an amount field. The method can be
+        redefined in subclasses---for use cases where the amount is
+        derived from multiple columns, e.g. deposit and withdrawal.
 
         Transaction metadata is constructed with the metadata() method
         and the finalize() method is called on each transaction. These
@@ -299,7 +304,7 @@ class Importer(beangulp.Importer, CSVReader):
             payee = getattr(row, 'payee', None)
             account = getattr(row, 'account', default_account)
             currency = getattr(row, 'currency', self.currency)
-            units = data.Amount(row.amount, currency)
+            units = data.Amount(self.amount(row), currency)
 
             # Create a transaction.
             txn = data.Transaction(self.metadata(filepath, lineno, row),
@@ -333,6 +338,9 @@ class Importer(beangulp.Importer, CSVReader):
             entries.append(max(balances, key=lambda x: x.date))
 
         return entries
+
+    def amount(self, row) -> decimal.Decimal:
+        return row.amount
 
     def metadata(self, filepath, lineno, row):
         """Build transaction metadata dictionary.
