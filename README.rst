@@ -5,9 +5,9 @@ beangulp: Importers Framework for Beancount
 Beancount ledger from account statements and other documents and for
 managing documents.
 
-``beangulp`` is compatible with both Beancount 2.3 and the unreleased
+``beangulp`` is compatible with both Beancount 2.3 and the
 Beancount 3.0. ``beangulp`` is the evolution of ``beancount.ingest`` in
-Beancount 2.3 and replaces it in the upcoming Beancount 3.0 release.
+Beancount 2.3 and replaces it in the Beancount 3.0 release.
 
 Documentation is available in form of code docstrings and
 `examples`__.  The `documentation`__ for ``beancount.ingest`` provided
