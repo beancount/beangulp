@@ -4,6 +4,7 @@ from typing import Iterator, Sequence, Union, Set, Optional, Dict
 import datetime
 import decimal
 import hashlib
+import logging
 import os
 import re
 
@@ -76,8 +77,14 @@ def search_file_regexp(filepath: str, *regexps: str,
     """Check if the header of the file matches the given regexp."""
     with open(filepath, encoding=encoding) as infile:
         # Note: Don't convert just to match on the contents.
-        contents = infile.read(nbytes)
-        return any(re.search(regexp, contents) for regexp in regexps)
+        try:
+            contents = infile.read(nbytes)
+        except UnicodeDecodeError as exc:
+            # The encoding wasn't right, don't match.
+            logging.warning(f"Error searching for regexp in '{filepath}': {exc}")
+            return False
+        else:
+            return any(re.search(regexp, contents) for regexp in regexps)
 
 
 def parse_amount(string: str)-> decimal.Decimal:
