@@ -52,7 +52,7 @@ def _walk(file_or_dirs, log):
 @click.option('--failfast', '-x', is_flag=True,
               help='Stop processing at the first error.')
 @click.option('--quiet', '-q', count=True,
-              help="Suppress all output.")
+              help='Suppress all output.')
 @click.pass_obj
 def _extract(ctx, src, output, existing, reverse, failfast, quiet):
     """Extract transactions from documents.
@@ -122,8 +122,10 @@ def _extract(ctx, src, output, existing, reverse, failfast, quiet):
               help='Just print where the files would be moved.')
 @click.option('--failfast', '-x', is_flag=True,
               help='Stop processing at the first error.')
+@click.option('--quiet', '-q', count=True,
+              help='Suppress all output.')
 @click.pass_obj
-def _archive(ctx, src, destination, dry_run, overwrite, failfast):
+def _archive(ctx, src, destination, dry_run, overwrite, failfast, quiet):
     """Archive documents.
 
     Walk the SRC list of files or directories and move each file
@@ -147,7 +149,8 @@ def _archive(ctx, src, destination, dry_run, overwrite, failfast):
         import __main__
         destination = os.path.dirname(os.path.abspath(__main__.__file__))
 
-    log = utils.logger()
+    verbosity = -quiet
+    log = utils.logger(verbosity, err=True)
     errors = exceptions.ExceptionsTrap(log)
     renames = []
 
