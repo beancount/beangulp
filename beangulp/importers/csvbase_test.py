@@ -120,8 +120,8 @@ class TestCSVReader(unittest.TestCase):
     def test_named_columns(self, filename):
         """\
         First, Second
-         1, 2
-         3, 4
+        1, 2
+        3, 4
         """
         class Reader(CSVReader):
             first = Column('First')
@@ -130,7 +130,8 @@ class TestCSVReader(unittest.TestCase):
         rows = list(reader.read(filename))
         self.assertEqual(len(rows), 2)
         # tuple elements
-        self.assertEqual(rows[0][0], ' 1')
+        self.assertEqual(rows[0][0], '1')
+        # leading space is preserved
         self.assertEqual(rows[1][1], ' 4')
         # attribute accessors
         self.assertEqual(rows[0].first, '1')
@@ -152,8 +153,8 @@ class TestCSVReader(unittest.TestCase):
     def test_indexed_columns_names_false(self, filename):
         """\
         First, Second
-         1, 2
-         3, 4
+        1, 2
+        3, 4
         """
         class Reader(CSVReader):
             first = Column(0)
@@ -164,6 +165,7 @@ class TestCSVReader(unittest.TestCase):
         self.assertEqual(len(rows), 3)
         # tuple elements
         self.assertEqual(rows[0][0], 'First')
+        # leading space is preserved
         self.assertEqual(rows[2][1], ' 4')
         # attribute accessors
         self.assertEqual(rows[0].first, 'First')
@@ -173,8 +175,8 @@ class TestCSVReader(unittest.TestCase):
     def test_indexed_columns_names_true(self, filename):
         """\
         First, Second
-         1, 2
-         3, 4
+        1, 2
+        3, 4
         """
         class Reader(CSVReader):
             first = Column(0)
@@ -183,7 +185,8 @@ class TestCSVReader(unittest.TestCase):
         rows = list(reader.read(filename))
         self.assertEqual(len(rows), 2)
         # tuple elements
-        self.assertEqual(rows[0][0], ' 1')
+        self.assertEqual(rows[0][0], '1')
+        # leading space is preserved
         self.assertEqual(rows[1][1], ' 4')
         # attribute accessors
         self.assertEqual(rows[0].first, '1')
