@@ -4,7 +4,7 @@ on:
   - pull_request
 jobs:
   test:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
@@ -15,8 +15,10 @@ jobs:
           - '3.10'
           - '3.11'
           - '3.12'
+          - '3.13'
         beancount:
           - '~=2.3.5'
+          - '~=3.0.0'
           - '@git+https://github.com/beancount/beancount.git'
     steps:
       - uses: actions/checkout@v3
