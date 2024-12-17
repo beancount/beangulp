@@ -78,3 +78,40 @@ Here's an example for how you could start with all your files in one directory:
             └── US
                 └── CreditCard
                     └── ...
+
+## How to run this example
+
+The below steps have been tested with Linux and Windows Subsystem for Linux (WSL1/2).
+
+Clone the example from beangulp and cd into the folder:
+
+```bash
+git clone git@github.com:beancount/beangulp.git
+cd beangulp/examples
+```
+
+Install beangulp and beancount in a `.venv`.
+
+```bash
+apt-get install python3-venv # required for virtual env
+python3 -m venv .venv # create in subfolder called ".venv"
+source ./.venv/bin/activate
+pip install beangulp beancount
+```
+
+At this stage, make sure you are not installing fava (`pip install beangulp beancount 
+fava`) because this still has beancount v2.3.6 pinned (if you need fava, install 
+in a different venv).
+
+Also, if you want to run the example folder fully, including pdf2text extraction, 
+install the following dependencies for pdftotext:
+
+```bash
+apt-get install poppler-utils
+```
+
+Now run beancount with the beangulp importer:
+
+```bash
+python import.py extract ./Downloads > tmp.beancount
+```
