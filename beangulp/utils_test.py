@@ -104,3 +104,10 @@ class TestUtils(unittest.TestCase):
             utils.validate_accounts(
                 {'cash': 'Cash account'},
                 {'cash': 42})
+
+    def test_idify(self):
+        self.assertEqual(
+            "A_great_movie_for_us.mp4", utils.idify(" A great movie (for us) .mp4 ")
+        )
+        self.assertEqual("A____B.pdf", utils.idify("A____B_._pdf"))
+
