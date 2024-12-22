@@ -25,7 +25,7 @@ from beancount.core import data
 from beancount.core import flags
 from beancount.core.amount import Amount
 from beancount.core.number import ZERO, D
-from beancount.utils import misc_utils
+from beangulp import utils
 from beangulp import cache
 from beangulp import date_utils
 from beangulp import importer
@@ -524,7 +524,7 @@ class CSVImporter(importer.Importer):
         return self.base.file_date(cache.get_file(filepath))
 
     def filename(self, filepath):
-        return path.basename(misc_utils.idify(filepath))
+        return path.basename(utils.idify(filepath))
 
     def extract(self, filepath, existing=None):
         account = self.account(filepath)

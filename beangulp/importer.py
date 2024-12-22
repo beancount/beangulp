@@ -11,8 +11,8 @@ from typing import Optional
 
 from beancount.core import flags
 from beancount.core import data
-from beancount.utils import misc_utils
 from beangulp import cache
+from beangulp import utils
 from beangulp import extract
 from beangulp import similar
 
@@ -36,7 +36,7 @@ class Importer(abc.ABC):
         not enforced.
 
         """
-        return f'{self.__class__.__module__}.{self.__class__.__name__}'
+        return f"{self.__class__.__module__}.{self.__class__.__name__}"
 
     @abc.abstractmethod
     def identify(self, filepath: str) -> bool:
@@ -179,7 +179,7 @@ class ImporterProtocol:
 
     def name(self):
         """See Importer class name property."""
-        return f'{self.__class__.__module__}.{self.__class__.__name__}'
+        return f"{self.__class__.__module__}.{self.__class__.__name__}"
 
     __str__ = name
 
@@ -225,7 +225,7 @@ class Adapter(Importer):
         # modify the filename returned by the importer. This preserves
         # backward compatibility with the old implementation of the
         # command.
-        return misc_utils.idify(filename) if filename else None
+        return utils.idify(filename) if filename else None
 
     def extract(self, filepath, existing):
         p = inspect.signature(self.importer.extract).parameters

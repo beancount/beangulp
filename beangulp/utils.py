@@ -134,3 +134,15 @@ def validate_accounts(required_accounts: Dict[str, str], provided_accounts: Dict
     for account in provided_accounts.values():
         if not isinstance(account, str):
             raise ValueError(f"Invalid value for account or currency: '{account}'")
+
+def idify(string: str) -> str:
+    """Replace characters objectionable for a filename with underscores.
+    Args:
+      string: Any string.
+    Returns:
+      The input string, with offending characters replaced.
+    """
+    for sfrom, sto in [(r"[ \(\)]+", "_"), (r"_*\._*", ".")]:
+        string = re.sub(sfrom, sto, string)
+    string = string.strip("_")
+    return string
