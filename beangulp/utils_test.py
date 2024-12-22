@@ -5,7 +5,7 @@ import logging
 import os
 import types
 import unittest
-
+from unittest import mock
 from shutil import rmtree
 from tempfile import mkdtemp
 
@@ -111,3 +111,14 @@ class TestUtils(unittest.TestCase):
         )
         self.assertEqual("A____B.pdf", utils.idify("A____B_._pdf"))
 
+
+class TestDefDictWithKey(unittest.TestCase):
+    def test_defdict_with_key(self):
+        factory = mock.MagicMock()
+        testdict = utils.DefaultDictWithKey(factory)
+
+        testdict["a"]
+        testdict["b"]
+        self.assertEqual(2, len(factory.mock_calls))
+        self.assertEqual(("a",), factory.mock_calls[0][1])
+        self.assertEqual(("b",), factory.mock_calls[1][1])

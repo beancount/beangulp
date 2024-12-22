@@ -2,6 +2,7 @@ from decimal import Decimal
 from os import path
 from typing import Iterator, Sequence, Union, Set, Optional, Dict
 import datetime
+import collections
 import decimal
 import hashlib
 import logging
@@ -11,6 +12,17 @@ import re
 import click
 
 from beangulp import mimetypes
+
+
+class DefaultDictWithKey(collections.defaultdict):
+    """A version of defaultdict whose factory accepts the key as an argument.
+    Note: collections.defaultdict would be improved by supporting this directly,
+    this is a common occurrence.
+    """
+
+    def __missing__(self, key):
+        self[key] = value = self.default_factory(key)
+        return value
 
 
 def getmdate(filepath: str) -> datetime.date:
