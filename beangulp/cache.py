@@ -19,8 +19,8 @@ from os import path
 
 import chardet
 
-from beancount.utils import defdict
 from beangulp import mimetypes
+from beangulp import utils
 
 # NOTE: See get_file() at the end of this file to create instances of FileMemo.
 
@@ -155,7 +155,7 @@ def get_file(filename):
     return _CACHE[filename]
 
 
-_CACHE = defdict.DefaultDictWithKey(_FileMemo)
+_CACHE = utils.DefaultDictWithKey(_FileMemo)
 
 
 def cache(func=None, *, key=None):
