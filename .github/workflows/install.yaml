@@ -11,8 +11,9 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v2
         with:
-          # The oldest supported python version
-          python-version: '3.7'
+          # we support >= py37
+          # but beancount trunk only support py>=39
+          python-version: '3.9'
       # Install dependencies for the example importers
       - run: sudo apt install poppler-utils
       # There are no released packages for beancount v3. Install from Git
