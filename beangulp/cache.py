@@ -150,6 +150,8 @@ def get_file(filename):
       A FileMemo instance.
 
     """
+    if isinstance(filename, _FileMemo):
+        filename = filename.name
     assert path.isabs(filename), (
         "Path should be absolute in order to guarantee a single call.")
     return _CACHE[filename]
