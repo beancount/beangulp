@@ -464,7 +464,20 @@ class Importer(_CSVImporterBase, identifier.IdentifyMixin, filing.FilingMixin):
 
         kwds.update(prepare_for_identifier(regexps, kwds.get('matchers')))
         kwds.update(prepare_for_filing(account, kwds.get('prefix', None), institution))
-        super().__init__(config, account, currency, **kwds)
+        super().__init__(config, account, currency,
+            regexps=regexps,
+            skip_lines=skip_lines,
+            last4_map=last4_map,
+            categorizer=categorizer,
+            institution=institution,
+            debug=debug,
+            csv_dialect=csv_dialect,
+            dateutil_kwds=dateutil_kwds,
+            narration_sep=narration_sep,
+            encoding=encoding,
+            invert_sign=invert_sign,
+            **kwds
+        )
 
     def extract(self, file, existing_entries=None):
         account = self.file_account(file)
