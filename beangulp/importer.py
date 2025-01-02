@@ -177,7 +177,7 @@ class ImporterProtocol:
     # you prefer to create your imported transactions with a different flag.
     FLAG = flags.FLAG_OKAY
 
-    def name(self):
+    def name(self) -> str:
         """See Importer class name property."""
         return f"{self.__class__.__module__}.{self.__class__.__name__}"
 
@@ -185,9 +185,15 @@ class ImporterProtocol:
 
     def identify(self, file) -> bool:
         """See Importer class identify() method."""
+        # Type error ignore for backwards compatibility - this should be overridden
+        # and implemented in subclasses
+        return None  # type: ignore
 
     def file_account(self, file) -> data.Account:
         """See Importer class account() method."""
+        # Type error ignore for backwards compatibility - this should be overridden
+        # and implemented in subclasses
+        return None  # type: ignore
 
     def file_date(self, file) -> Optional[datetime.date]:
         """See Importer class date() method."""
@@ -195,19 +201,20 @@ class ImporterProtocol:
     def file_name(self, file) -> Optional[str]:
         """See Importer class filename() method."""
 
-    def extract(self, file, existing_entries: data.Entries = None) -> data.Entries:
+    def extract(self, file, existing_entries: Optional[data.Entries] = None) -> data.Entries:
         """See Importer class extract() method."""
+        return []
 
 
 class Adapter(Importer):
     """Adapter from ImporterProtocol to Importer ABC interface."""
 
-    def __init__(self, importer):
+    def __init__(self, importer: ImporterProtocol) -> None:
         assert isinstance(importer, ImporterProtocol)
         self.importer = importer
 
     @property
-    def name(self):
+    def name(self) -> str:
         return self.importer.name()
 
     def identify(self, filepath):

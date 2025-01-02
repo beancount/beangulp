@@ -12,6 +12,7 @@ __copyright__ = "Copyright (C) 2016  Martin Blais"
 __license__ = "GNU GPLv2"
 
 import warnings
+from typing import Optional
 from beangulp import mimetypes
 
 
@@ -19,10 +20,10 @@ from beangulp import mimetypes
 try:
     import magic
 except (ImportError, OSError):
-    magic = None
+    magic = None  # type: ignore
 
 
-def guess_file_type(filename):
+def guess_file_type(filename: str) -> Optional[str]:
     """Attempt to guess the type of the input file.
 
     Args:

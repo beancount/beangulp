@@ -1,7 +1,7 @@
 import datetime
 import decimal
 import unittest
-import petl
+import petl  # type: ignore
 
 from beancount.parser import cmptest
 from beangulp import petl_utils

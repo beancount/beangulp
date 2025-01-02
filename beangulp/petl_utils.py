@@ -1,11 +1,11 @@
 """Utilities using petl.
 """
 
-from typing import Optional
+from typing import Optional, Set
 import datetime
 import re
 
-import petl
+import petl  # type: ignore
 
 from beancount.core import data
 from beancount.core import amount
@@ -47,32 +47,33 @@ def table_to_directives(
             metas.append((column, match.group(1)))
 
     # Create transactions.
-    entries = []
+    entries: data.Directives = []
     filename = filename or f"<{__file__}>"
     for index, rec in enumerate(table.records()):
         meta = data.new_metadata(filename, index)
         units = amount.Amount(rec.amount, currency)
-        tags, links = set(), set()
-        txn = data.Transaction(
-            meta,
-            rec.date,
-            flags.FLAG_OKAY,
-            getattr(rec, "payee", None),
-            getattr(rec, "narration", ""),
-            tags,
-            links,
-            [data.Posting(rec.account, units, None, None, None, None)],
-        )
-        if hasattr(rec, "other_account") and rec.other_account:
-            txn.postings.append(
-                data.Posting(rec.other_account, None, None, None, None, None)
-            )
+        tags: Set[str] = set()
+        links: Set[str] = set()
         link = getattr(rec, "link", None)
         if link:
             links.add(link)
         tag = getattr(rec, "tag", None)
         if tag:
             tags.add(tag)
+        txn = data.Transaction(
+            meta,
+            rec.date,
+            flags.FLAG_OKAY,
+            getattr(rec, "payee", None),
+            getattr(rec, "narration", ""),
+            frozenset(tags),
+            frozenset(links),
+            [data.Posting(rec.account, units, None, None, None, None)],
+        )
+        if hasattr(rec, "other_account") and rec.other_account:
+            txn.postings.append(
+                data.Posting(rec.other_account, None, None, None, None, None)
+            )
 
         for column, key in metas:
             value = getattr(rec, column, None)

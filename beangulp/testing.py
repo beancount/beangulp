@@ -34,10 +34,10 @@ def write_expected(outfile: TextIO,
       name: The filename for filing, produced by the importer.
       entries: The list of entries extracted by the importer.
     """
-    date = date.isoformat() if date else ''
+    formatted_date = date.isoformat() if date else ''
     name = name or ''
     print(f';; Account: {account}', file=outfile)
-    print(f';; Date: {date}', file=outfile)
+    print(f';; Date: {formatted_date}', file=outfile)
     print(f';; Name: {name}', file=outfile)
     printer.print_entries(entries, file=outfile)
 
@@ -46,7 +46,7 @@ def write_expected_file(filepath: str, *data, force: bool = False):
     """Writes out the expected file."""
     mode = 'w' if force else 'x'
     with open(filepath, mode) as expfile:
-        write_expected(expfile, *data)
+        write_expected(expfile, *data)  # type: ignore
 
 
 def compare_expected(filepath: str, *data) -> List[str]:
