@@ -318,6 +318,8 @@ class Importer(beangulp.Importer, CSVReader):
 
             # Apply user processing to the transaction.
             txn = self.finalize(txn, row)
+            if txn is None:
+                continue
 
             # Add the transaction to the output list.
             entries.append(txn)
@@ -366,12 +368,16 @@ class Importer(beangulp.Importer, CSVReader):
     def finalize(self, txn, row):
         """Post process the transaction.
 
+        Returning None results in the transaction being discarded and
+        in source row to do not contribute to the determination of the
+        balances.
+
         Args:
           txn: The just build Transaction object.
           row: The data row being processed.
 
         Returns:
-          A potentially extended or modified Transaction object.
+          A potentially extended or modified Transaction object or None.
 
         """
         return txn
