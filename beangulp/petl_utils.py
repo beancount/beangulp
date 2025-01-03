@@ -47,7 +47,7 @@ def table_to_directives(
             metas.append((column, match.group(1)))
 
     # Create transactions.
-    entries: data.Directives = []
+    entries: data.Entries = []
     filename = filename or f"<{__file__}>"
     for index, rec in enumerate(table.records()):
         meta = data.new_metadata(filename, index)
