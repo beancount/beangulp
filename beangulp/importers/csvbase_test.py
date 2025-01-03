@@ -481,3 +481,22 @@ class TestImporter(cmptest.TestCase):
           Assets:CSV  -1.00 EUR
           Expenses:Testing  1.00 EUR
         """)
+
+    @docfile
+    def test_extract_finalize_remove(self, filename):
+        """\
+        2021-05-17, Test, -1.00, Testing
+        """
+        class CSVImporter(Base):
+            date = Date(0)
+            narration = Column(1)
+            amount = Amount(2)
+            category = Column(3)
+            names = False
+
+            def finalize(self, txn, row):
+                return None
+
+        importer = CSVImporter('Assets:CSV', 'EUR')
+        entries = importer.extract(filename, [])
+        self.assertTrue(not entries)

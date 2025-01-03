@@ -310,7 +310,8 @@ class Importer(beangulp.Importer, CSVReader):
             txn = self.finalize(txn, row)
 
             # Add the transaction to the output list.
-            entries.append(txn)
+            if txn is not None:
+                entries.append(txn)
 
             # Add balance to balances list.
             balance = getattr(row, 'balance', None)
