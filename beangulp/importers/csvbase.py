@@ -6,11 +6,12 @@ import re
 
 from collections import defaultdict
 from itertools import islice
+from typing import Any, Dict, FrozenSet
 from beancount.core import data
 
 import beangulp
 
-EMPTY = frozenset()
+EMPTY: FrozenSet[str] = frozenset()
 
 
 def _resolve(spec, names):
@@ -181,7 +182,7 @@ class CSVReader(metaclass=CSVMeta):
     """Comment character."""
 
     # This is populated by the CSVMeta metaclass.
-    columns = {}
+    columns: Dict[Any, Any] = {}
 
     def read(self, filepath):
         """Read CSV file according to class defined columns specification.
