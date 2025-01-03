@@ -499,3 +499,4 @@ class TestImporter(cmptest.TestCase):
 
         importer = CSVImporter('Assets:CSV', 'EUR')
         entries = importer.extract(filename, [])
+        self.assertTrue(not entries)
