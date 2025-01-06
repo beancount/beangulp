@@ -2,6 +2,7 @@ import abc
 import csv
 import datetime
 import decimal
+from enum import Enum
 import re
 
 from collections import defaultdict
@@ -168,17 +169,26 @@ class CSVMeta(abc.ABCMeta):
         return super().__new__(mcs, name, bases, others)
 
 
+class Order(Enum):
+    ASCENDING = 1
+    """Entries are listed in chronological order."""
+    DESCENDING = 2
+    """Entries are listed in reverse chronological order."""
+
+
 class CSVReader(metaclass=CSVMeta):
     encoding = 'utf8'
     """File encoding."""
     skiplines = 0
-    """Number of input lines to skip before startign processing."""
+    """Number of input lines to skip before starting processing."""
     names = True
     """Whether the data file contains a row with column names."""
     dialect = None
     """The CSV dialect used in the input file."""
     comments = '#'
     """Comment character."""
+    order = None
+    """Order of entries in the CSV file. If None the order will be inferred from the file content."""
 
     # This is populated by the CSVMeta metaclass.
     columns = {}
@@ -323,13 +333,16 @@ class Importer(beangulp.Importer, CSVReader):
         if not entries:
             return []
 
+        if self.order is None:
+            self.order = Order.ASCENDING if entries[0].date <= entries[-1].date else Order.DESCENDING
+
         # Reverse the list if the file is in descending order.
-        if not entries[0].date <= entries[-1].date:
+        if self.order is Order.DESCENDING:
             entries.reverse()
 
         # Append balances.
         for currency, balances in balances.items():
-            entries.append(max(balances, key=lambda x: x.date))
+            entries.append(balances[-1 if self.order is Order.ASCENDING else 0])
 
         return entries
 
