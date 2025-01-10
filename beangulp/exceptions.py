@@ -13,7 +13,7 @@ class Error(RuntimeError):
 
 
 class ExceptionsTrap(contextlib.AbstractContextManager):
-    """A contect manager to log exceptions.
+    """A context manager to log exceptions.
 
     Works similarly to contextlib.suppress() but logs the exceptions
     instead than simply discarding them. This is used to shorten and
