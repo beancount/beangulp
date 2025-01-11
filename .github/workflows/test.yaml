@@ -9,7 +9,6 @@ jobs:
       fail-fast: false
       matrix:
         python:
-          - '3.7'
           - '3.8'
           - '3.9'
           - '3.10'
@@ -22,8 +21,6 @@ jobs:
           - '@git+https://github.com/beancount/beancount.git'
         exclude:
           # Beancount dev version requires Python 3.9+
-          - beancount: '@git+https://github.com/beancount/beancount.git'
-            python: '3.7'
           - beancount: '@git+https://github.com/beancount/beancount.git'
             python: '3.8'
     steps:
