@@ -26,13 +26,13 @@ from beangulp.testing import main
 class Importer(beangulp.Importer):
     """An importer for UTrade CSV files (an example investment bank)."""
 
-    def __init__(self, currency,
-                 account_root,
-                 account_cash,
-                 account_dividends,
-                 account_gains,
-                 account_fees,
-                 account_external):
+    def __init__(self, currency: str,
+                 account_root: data.Account,
+                 account_cash: data.Account,
+                 account_dividends: data.Account,
+                 account_gains: data.Account,
+                 account_fees: data.Account,
+                 account_external: data.Account) -> None:
         self.currency = currency
         self.account_root = account_root
         self.account_cash = account_cash
@@ -41,7 +41,7 @@ class Importer(beangulp.Importer):
         self.account_fees = account_fees
         self.account_external = account_external
 
-    def identify(self, filepath):
+    def identify(self, filepath: str) -> bool:
         # Match if the filename is as downloaded and the header has the unique
         # fields combination we're looking for.
         if not re.match(r"UTrade\d\d\d\d\d\d\d\d\.csv", path.basename(filepath)):
@@ -52,20 +52,20 @@ class Importer(beangulp.Importer):
             return False
         return True
 
-    def filename(self, filepath):
+    def filename(self, filepath: str) -> str:
         return 'utrade.{}'.format(path.basename(filepath))
 
-    def account(self, filepath):
+    def account(self, filepath: str) -> data.Account:
         return self.account_root
 
-    def date(self, filepath):
+    def date(self, filepath: str) -> datetime.date:
         # Extract the statement date from the filename.
         return datetime.datetime.strptime(path.basename(filepath),
                                           'UTrade%Y%m%d.csv').date()
 
-    def extract(self, filepath, existing):
+    def extract(self, filepath: str, existing: data.Entries) -> data.Entries:
         # Open the CSV file and create directives.
-        entries = []
+        entries: data.Entries = []
         index = 0
         with open(filepath) as infile:
             for index, row in enumerate(csv.DictReader(infile)):
@@ -73,6 +73,7 @@ class Importer(beangulp.Importer):
                 date = parse(row['DATE']).date()
                 rtype = row['TYPE']
                 link = f"ut{row['REF #']}"
+                links = frozenset([link])
                 desc = f"({row['TYPE']}) {row['DESCRIPTION']}"
                 units = amount.Amount(D(row['AMOUNT']), self.currency)
                 fees = amount.Amount(D(row['FEES']), self.currency)
@@ -81,7 +82,7 @@ class Importer(beangulp.Importer):
                 if rtype == 'XFER':
                     assert fees.number == ZERO
                     txn = data.Transaction(
-                        meta, date, flags.FLAG_OKAY, None, desc, data.EMPTY_SET, {link}, [
+                        meta, date, flags.FLAG_OKAY, None, desc, data.EMPTY_SET, links, [
                             data.Posting(self.account_cash, units, None, None, None,
                                          None),
                             data.Posting(self.account_external, -other, None, None, None,
@@ -100,7 +101,7 @@ class Importer(beangulp.Importer):
                     account_dividends = self.account_dividends.format(instrument)
 
                     txn = data.Transaction(
-                        meta, date, flags.FLAG_OKAY, None, desc, data.EMPTY_SET, {link}, [
+                        meta, date, flags.FLAG_OKAY, None, desc, data.EMPTY_SET, links, [
                             data.Posting(self.account_cash, units, None, None, None, None),
                             data.Posting(account_dividends, -other, None, None, None, None),
                         ])
@@ -122,9 +123,9 @@ class Importer(beangulp.Importer):
                     rate = D(match.group(3))
 
                     if rtype == 'BUY':
-                        cost = position.Cost(rate, self.currency, None, None)
+                        cost = position.CostSpec(rate, None, self.currency, None, None, None)
                         txn = data.Transaction(
-                            meta, date, flags.FLAG_OKAY, None, desc, data.EMPTY_SET, {link}, [
+                            meta, date, flags.FLAG_OKAY, None, desc, data.EMPTY_SET, links, [
                                 data.Posting(self.account_cash, units, None, None, None,
                                              None),
                                 data.Posting(self.account_fees, fees, None, None, None,
@@ -143,11 +144,11 @@ class Importer(beangulp.Importer):
                             logging.error("Missing cost basis in '%s'", row['DESCRIPTION'])
                             continue
                         cost_number = D(match.group(1))
-                        cost = position.Cost(cost_number, self.currency, None, None)
+                        cost = position.CostSpec(cost_number, None, self.currency, None, None, None)
                         price = amount.Amount(rate, self.currency)
                         account_gains = self.account_gains.format(instrument)
                         txn = data.Transaction(
-                            meta, date, flags.FLAG_OKAY, None, desc, data.EMPTY_SET, {link}, [
+                            meta, date, flags.FLAG_OKAY, None, desc, data.EMPTY_SET, links, [
                                 data.Posting(self.account_cash, units, None, None, None,
                                              None),
                                 data.Posting(self.account_fees, fees, None, None, None,

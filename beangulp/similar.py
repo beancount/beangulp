@@ -7,7 +7,7 @@ __copyright__ = "Copyright (C) 2016  Martin Blais"
 __license__ = "GNU GPLv2"
 
 from decimal import Decimal
-from typing import Callable, Optional
+from typing import Callable, Optional, FrozenSet, Set, Union
 import collections
 import datetime
 import re
@@ -196,8 +196,8 @@ def same_link_comparator(regex: Optional[str] = None) -> Comparator:
         ):
             return False
 
-        links1 = entry1.links
-        links2 = entry2.links
+        links1: Union[FrozenSet[str], Set[str]] = entry1.links
+        links2: Union[FrozenSet[str], Set[str]] = entry2.links
         if regex:
             links1 = {link for link in links1 if re.match(regex, link)}
             links2 = {link for link in links2 if re.match(regex, link)}
