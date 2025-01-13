@@ -14,3 +14,14 @@ jobs:
           python-version: '3.11'
       - run: pip install ruff
       - run: ruff check beangulp/ examples/
+  mypy:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.9'
+      - run: pip install . mypy types-python-dateutil types-beautifulsoup4 beancount@git+https://github.com/beancount/beancount.git
+      - run: mypy beangulp examples
