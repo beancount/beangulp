@@ -185,15 +185,11 @@ class ImporterProtocol:
 
     def identify(self, file) -> bool:
         """See Importer class identify() method."""
-        # Type error ignore for backwards compatibility - this should be overridden
-        # and implemented in subclasses
-        return None  # type: ignore
+        raise NotImplementedError
 
     def file_account(self, file) -> data.Account:
         """See Importer class account() method."""
-        # Type error ignore for backwards compatibility - this should be overridden
-        # and implemented in subclasses
-        return None  # type: ignore
+        raise NotImplementedError
 
     def file_date(self, file) -> Optional[datetime.date]:
         """See Importer class date() method."""
