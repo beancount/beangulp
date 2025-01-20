@@ -14,7 +14,7 @@ import os
 import sys
 import warnings
 import click
-from typing import Any, Optional, Union, Sequence
+from typing import Callable, Optional, Union, Sequence
 
 from beancount import loader
 
@@ -258,7 +258,9 @@ def _importer(importer):
 
 
 class Ingest:
-    def __init__(self, importers: Sequence[Union[Importer, ImporterProtocol]], hooks: Optional[Sequence[Any]] = None) -> None:
+    def __init__(self,
+                 importers: Sequence[Union[Importer, ImporterProtocol]],
+                 hooks: Optional[Sequence[Callable]] = None) -> None:
         self.importers = [_importer(i) for i in importers]
         self.hooks = list(hooks) if hooks is not None else []
 
