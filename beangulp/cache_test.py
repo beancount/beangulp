@@ -30,6 +30,12 @@ class TestFileMemo(unittest.TestCase):
             self.assertEqual('abc', wrap.convert(converter))
             self.assertEqual(1, converter.call_count)
 
+            # Check that get_file can be called on a _FileMemo.
+            self.assertNotEqual(wrap, cache.get_file(tmpfile.name))
+            self.assertNotEqual(wrap, cache.get_file(wrap))
+            self.assertEqual(wrap.name, cache.get_file(tmpfile.name).name)
+            self.assertEqual(wrap.name, cache.get_file(wrap).name)
+
     def test_cache_head_and_contents(self):
         with tempfile.NamedTemporaryFile(suffix='.py') as tmpfile:
             shutil.copy(__file__, tmpfile.name)
