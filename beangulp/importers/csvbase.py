@@ -305,8 +305,11 @@ class Importer(beangulp.Importer, CSVReader):
         self.flag = flag
 
     def date(self, filepath):
-        """Implement beangulp.Importer::date()"""
-        return max(row.date for row in self.read(filepath))
+        """Implement beangulp.Importer::date()
+
+        Return the last date seen in the source file.
+        """
+        return max(row.date for row in self.read(filepath) if row)
 
     def account(self, filepath):
         """Implement beangulp.Importer::account()"""
