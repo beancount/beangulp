@@ -1,5 +1,6 @@
 import datetime
 import decimal
+import re
 import unittest
 
 from beancount.core import data
@@ -651,3 +652,21 @@ class TestImporter(cmptest.TestCase):
         importer = CSVImporter('Assets:CSV', 'EUR')
         entries = importer.extract(filename, [])
         self.assertEqual(len(entries), 1)
+
+    @docfile
+    def test_report_exception(self, filename):
+        """\
+        2025-01-25, Test, -1.00
+        2025-01-26, Test, invalid
+        """
+        class CSVImporter(Base):
+            date = Date(0)
+            narration = Column(1)
+            amount = Amount(2)
+            names = False
+
+        importer = CSVImporter('Assets:CSV', 'EUR')
+        msg = re.escape(f'Error processing {filename} line 3 with values (\'2025-01-26\', \' Test\', \' invalid\'')
+        with self.assertRaisesRegex(RuntimeError, msg) as ctx:
+            importer.extract(filename, [])
+        self.assertIsInstance(ctx.exception.__cause__, decimal.InvalidOperation)
