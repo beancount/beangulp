@@ -13,6 +13,9 @@ import beangulp
 
 EMPTY = frozenset()
 
+NA = object()
+"""Marker to indicate that a value was not specified."""
+
 
 def _resolve(spec, names):
     """Resolve column specification into column index.
@@ -40,10 +43,12 @@ class Column:
 
     Args:
       name: Column name or index.
-      default: Value to return if the field is empty.
-    """
+      default: Value to return if the field is empty. When a default
+        value is not provided, emty fields are passed to the parser
+        to generate a value.
 
-    def __init__(self, *names, default=None):
+    """
+    def __init__(self, *names, default=NA):
         self.names = names
         self.default = default
 
@@ -70,7 +75,7 @@ class Column:
         idxs = [_resolve(x, names) for x in self.names]
         def func(obj):
             value = tuple(obj[i] for i in idxs)
-            if not all(value) and self.default:
+            if self.default is not NA and not any(value):
                 return self.default
             return self.parse(*value)
         return func
