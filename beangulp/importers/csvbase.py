@@ -99,10 +99,11 @@ class Columns(Column):
     Args:
       name: Column names or indexes.
       sep: Separator to use to join columns.
+      default: Value to return all the fields are empty, if specified.
 
     """
-    def __init__(self, *names, sep=' '):
-        super().__init__(*names)
+    def __init__(self, *names, sep=' ', default=NA):
+        super().__init__(*names, default=default)
         self.sep = sep
 
     def parse(self, *values):
@@ -119,10 +120,11 @@ class Date(Column):
     Args:
       name: Column name or index.
       frmt: Date format specification.
+      default: Value to return if the field is empty, if specified.
 
     """
-    def __init__(self, name, frmt='%Y-%m-%d'):
-        super().__init__(name)
+    def __init__(self, name, frmt='%Y-%m-%d', default=NA):
+        super().__init__(name, default=default)
         self.frmt = frmt
 
     def parse(self, value):
@@ -142,11 +144,11 @@ class Amount(Column):
       subs: Dictionary mapping regular expression patterns to
         replacement strings. Substitutions are performed with
         re.sub() in the order they are specified.
+      default: Value to return if the field is empty, if specified.
 
     """
-
-    def __init__(self, name, subs=None):
-        super().__init__(name)
+    def __init__(self, name, subs=None, default=NA):
+        super().__init__(name, default=default)
         self.subs = subs if subs is not None else {}
 
     def parse(self, value):
