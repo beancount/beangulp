@@ -144,17 +144,22 @@ class Amount(Column):
       subs: Dictionary mapping regular expression patterns to
         replacement strings. Substitutions are performed with
         re.sub() in the order they are specified.
+      negate: If true, negate the amount.
       default: Value to return if the field is empty, if specified.
 
     """
-    def __init__(self, name, subs=None, default=NA):
+    def __init__(self, name, subs=None, negate=False, default=NA):
         super().__init__(name, default=default)
         self.subs = subs if subs is not None else {}
+        self.negate = negate
 
     def parse(self, value):
         for pattern, replacement in self.subs.items():
             value = re.sub(pattern, replacement, value)
-        return decimal.Decimal(value)
+        parsed = decimal.Decimal(value)
+        if self.negate:
+            parsed = -parsed
+        return parsed
 
 
 # The CSV Importer class needs to inherit from beangulp.Importer which
