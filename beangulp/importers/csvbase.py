@@ -162,6 +162,39 @@ class Amount(Column):
         return parsed
 
 
+class CreditOrDebit(Column):
+    """Specialized Column for positive and negative amounts on separate columns.
+
+    Parse and return the amount present in the credit or debit
+    fields. The amount in the debit field is negated before being
+    returned. Only one of the two fields may be populated. The parsing
+    is done as per the Amount column type.
+
+    Args:
+      credit: Column name or index for amount.
+      debit: Column name or index for negated amount.
+      subs: Dictionary mapping regular expression patterns to
+        replacement strings. Substitutions are performed with
+        re.sub() in the order they are specified.
+      default: Value to return if both fields are empty, if specified.
+
+    """
+    def __init__(self, credit, debit, subs=None, default=NA):
+        super().__init__(credit, debit, default=default)
+        self.subs = subs if subs is not None else {}
+
+    def parse(self, credit, debit):
+        if credit and debit:
+            raise ValueError('credit and debit fields cannot be populated ar the same time')
+        if not credit and not debit:
+            raise ValueError('neither credit or debit fields are populated')
+        value = credit if credit else debit
+        for pattern, replacement in self.subs.items():
+            value = re.sub(pattern, replacement, value)
+        parsed = decimal.Decimal(value)
+        return parsed if credit else -parsed
+
+
 # The CSV Importer class needs to inherit from beangulp.Importer which
 # is an abstract base class having abc.ABCMeta as metaclass. To be
 # able to do so out CSV metaclass need to be a sublcass of
