@@ -343,29 +343,40 @@ class Importer(beangulp.Importer, CSVReader):
             if not row:
                 continue
 
-            tag = getattr(row, 'tag', None)
-            tags = {tag} if tag else EMPTY
+            try:
+                tag = getattr(row, 'tag', None)
+                tags = {tag} if tag else EMPTY
 
-            link = getattr(row, 'link', None)
-            links = {link} if link else EMPTY
+                link = getattr(row, 'link', None)
+                links = {link} if link else EMPTY
 
-            # This looks like an exercise in defensive programming
-            # gone too far, but we do not want to depend on any field
-            # being defined other than the essential ones.
-            flag = getattr(row, 'flag', self.flag)
-            payee = getattr(row, 'payee', None)
-            account = getattr(row, 'account', default_account)
-            currency = getattr(row, 'currency', self.currency)
-            units = data.Amount(row.amount, currency)
+                # This looks like an exercise in defensive programming
+                # gone too far, but we do not want to depend on any field
+                # being defined other than the essential ones.
+                flag = getattr(row, 'flag', self.flag)
+                payee = getattr(row, 'payee', None)
+                account = getattr(row, 'account', default_account)
+                currency = getattr(row, 'currency', self.currency)
+                units = data.Amount(row.amount, currency)
 
-            # Create a transaction.
-            txn = data.Transaction(self.metadata(filepath, lineno, row),
-                                   row.date, flag, payee, row.narration, tags, links, [
-                                       data.Posting(account, units, None, None, None, None),
-                                   ])
+                # Create a transaction.
+                txn = data.Transaction(
+                    self.metadata(filepath, lineno, row),
+                    row.date, flag, payee, row.narration, tags, links, [
+                        data.Posting(account, units, None, None, None, None),
+                    ],
+                )
 
-            # Apply user processing to the transaction.
-            txn = self.finalize(txn, row)
+                # Apply user processing to the transaction.
+                txn = self.finalize(txn, row)
+
+            except Exception as ex:
+                # Report input file location of processing errors. This could
+                # use Exception.add_note() instead, but this is available only
+                # with Python 3.11 and later.
+                raise RuntimeError(f'Error processing {filepath} line {lineno + 1} with values {row!r}') from ex
+
+            # Allow finalize() to reject the row extracted from the current row.
             if txn is None:
                 continue
 
