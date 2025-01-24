@@ -151,6 +151,13 @@ class TestAmountColumn(unittest.TestCase):
         value = func(('', ))
         self.assertIsNone(value)
 
+    def test_parse_negate(self):
+        column = Amount(0, negate=True)
+        func = column.getter(None)
+        value = func(('123.45', ))
+        self.assertIsInstance(value, decimal.Decimal)
+        self.assertEqual(value, -decimal.Decimal('123.45'))
+
 
 class TestCSVMeta(unittest.TestCase):
 
