@@ -63,6 +63,18 @@ class TestDateColumn(unittest.TestCase):
         value = func(('16.05.2021', ))
         self.assertEqual(value, datetime.date(2021, 5, 16))
 
+    def test_default_value(self):
+        column = Date(0, default=datetime.date.today())
+        func = column.getter(None)
+        value = func(('', ))
+        self.assertEqual(value, datetime.date.today())
+
+    def test_default_value_none(self):
+        column = Date(0, default=None)
+        func = column.getter(None)
+        value = func(('', ))
+        self.assertIsNone(value)
+
 
 class TestColumnsColumn(unittest.TestCase):
 
@@ -77,6 +89,24 @@ class TestColumnsColumn(unittest.TestCase):
         func = column.getter(None)
         value = func(('0', '1', '2', '3', ))
         self.assertEqual(value, '0: 1')
+
+    def test_default_value(self):
+        column = Columns(0, 1, default='something')
+        func = column.getter(None)
+        value = func(('', '', ))
+        self.assertEqual(value, 'something')
+
+    def test_default_value_none(self):
+        column = Columns(0, 1, default=None)
+        func = column.getter(None)
+        value = func(('', '', ))
+        self.assertIsNone(value)
+
+    def test_some_empty(self):
+        column = Columns(0, 1, default=None)
+        func = column.getter(None)
+        value = func(('this', '', ))
+        self.assertEqual(value, 'this')
 
 
 class TestAmountColumn(unittest.TestCase):
@@ -108,6 +138,18 @@ class TestAmountColumn(unittest.TestCase):
         value = func(('$1,000.00', ))
         self.assertIsInstance(value, decimal.Decimal)
         self.assertEqual(value, decimal.Decimal('1000.00'))
+
+    def test_default_value(self):
+        column = Amount(0, default=decimal.Decimal(42))
+        func = column.getter(None)
+        value = func(('', ))
+        self.assertEqual(value, decimal.Decimal(42))
+
+    def test_default_value_none(self):
+        column = Amount(0, default=None)
+        func = column.getter(None)
+        value = func(('', ))
+        self.assertIsNone(value)
 
 
 class TestCSVMeta(unittest.TestCase):
