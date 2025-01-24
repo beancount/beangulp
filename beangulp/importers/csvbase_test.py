@@ -5,7 +5,7 @@ import unittest
 from beancount.core import data
 from beancount.parser import cmptest
 from beancount.utils.test_utils import docfile
-from beangulp.importers.csvbase import Column, Columns, Date, Amount, CSVMeta, CSVReader, Order, Importer
+from beangulp.importers.csvbase import Column, Columns, Date, Amount, CSVMeta, CSVReader, Order, Importer, CreditOrDebit
 
 
 class TestColumn(unittest.TestCase):
@@ -157,6 +157,52 @@ class TestAmountColumn(unittest.TestCase):
         value = func(('123.45', ))
         self.assertIsInstance(value, decimal.Decimal)
         self.assertEqual(value, -decimal.Decimal('123.45'))
+
+
+class TetsCreditOrDebitColumn(unittest.TestCase):
+
+    def test_parse_credit(self):
+        column = CreditOrDebit(0, 1)
+        func = column.getter(None)
+        value = func(('1.0', ''))
+        self.assertEqual(value, decimal.Decimal('1.0'))
+
+    def test_parse_debit(self):
+        column = CreditOrDebit(0, 1)
+        func = column.getter(None)
+        value = func(('', '1.0'))
+        self.assertEqual(value, -decimal.Decimal('1.0'))
+
+    def test_parse_subs(self):
+        column = CreditOrDebit(0, 1, subs={',': ''})
+        func = column.getter(None)
+        value = func(('1,000.00', ''))
+        self.assertIsInstance(value, decimal.Decimal)
+        self.assertEqual(value, decimal.Decimal('1000.00'))
+
+    def test_default_value(self):
+        column = CreditOrDebit(0, 1, default=decimal.Decimal(42))
+        func = column.getter(None)
+        value = func(('', ''))
+        self.assertEqual(value, decimal.Decimal(42))
+
+    def test_default_value_none(self):
+        column = CreditOrDebit(0, 1, default=None)
+        func = column.getter(None)
+        value = func(('', ''))
+        self.assertIsNone(value)
+
+    def test_both_columns(self):
+        column = CreditOrDebit(0, 1)
+        func = column.getter(None)
+        with self.assertRaisesRegex(ValueError, 'credit and debit fields cannot be populated ar the same time'):
+            func(('1.0', '2.0'))
+
+    def test_neither_columns(self):
+        column = CreditOrDebit(0, 1)
+        func = column.getter(None)
+        with self.assertRaisesRegex(ValueError, 'neither credit or debit fields are populated'):
+            func(('', ''))
 
 
 class TestCSVMeta(unittest.TestCase):
