@@ -36,11 +36,17 @@ class TestColumn(unittest.TestCase):
         value = func((' value ', ))
         self.assertEqual(value, 'value')
 
-    def test_default(self):
+    def test_default_value(self):
         column = Column(0, default=42)
         func = column.getter(None)
         value = func(('', ))
         self.assertEqual(value, 42)
+
+    def test_default_value_none(self):
+        column = Column(0, default=None)
+        func = column.getter(None)
+        value = func(('', ))
+        self.assertIsNone(value)
 
 
 class TestDateColumn(unittest.TestCase):
