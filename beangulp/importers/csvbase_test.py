@@ -439,28 +439,6 @@ class TestImporter(cmptest.TestCase):
     @docfile
     def test_extract_balance(self, filename):
         """\
-        2021-05-18, Test A, 2.00, 3.00
-        2021-05-17, Test B, 1.00, 1.00
-        """
-        class CSVImporter(Base):
-            date = Date(0)
-            narration = Column(1)
-            amount = Amount(2)
-            balance = Amount(3)
-            names = False
-        importer = CSVImporter('Assets:CSV', 'EUR')
-        entries = importer.extract(filename, [])
-        self.assertEqualEntries(entries, """
-        2021-05-17 * "Test B"
-          Assets:CSV  1.00 EUR
-        2021-05-18 * "Test A"
-          Assets:CSV  2.00 EUR
-        2021-05-19 balance Assets:CSV  3.00 EUR
-        """)
-
-    @docfile
-    def test_extract_balance_with_multiple_transactions_per_day_and_ascending_dates(self, filename):
-        """\
         2021-05-17, Test A, 1.00, 1.00
         2021-05-18, Test B, 2.00, 3.00
         2021-05-18, Test C, 1.00, 4.00
@@ -484,7 +462,7 @@ class TestImporter(cmptest.TestCase):
         """)
 
     @docfile
-    def test_extract_balance_with_order_override(self, filename):
+    def test_extract_balance_order(self, filename):
         """\
         2021-05-18, Test B, 2.00, 4.00
         2021-05-18, Test C, 1.00, 2.00
