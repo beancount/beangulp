@@ -185,9 +185,9 @@ class CreditOrDebit(Column):
 
     def parse(self, credit, debit):
         if credit and debit:
-            raise ValueError('credit and debit fields cannot be populated ar the same time')
+            raise ValueError('The credit and debit fields cannot be populated at the same time')
         if not credit and not debit:
-            raise ValueError('neither credit or debit fields are populated')
+            raise ValueError('Neither credit or debit fields are populated')
         value = credit if credit else debit
         for pattern, replacement in self.subs.items():
             value = re.sub(pattern, replacement, value)

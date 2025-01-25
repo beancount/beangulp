@@ -195,13 +195,13 @@ class TetsCreditOrDebitColumn(unittest.TestCase):
     def test_both_columns(self):
         column = CreditOrDebit(0, 1)
         func = column.getter(None)
-        with self.assertRaisesRegex(ValueError, 'credit and debit fields cannot be populated ar the same time'):
+        with self.assertRaisesRegex(ValueError, 'The credit and debit fields cannot be populated at the same time'):
             func(('1.0', '2.0'))
 
     def test_neither_columns(self):
         column = CreditOrDebit(0, 1)
         func = column.getter(None)
-        with self.assertRaisesRegex(ValueError, 'neither credit or debit fields are populated'):
+        with self.assertRaisesRegex(ValueError, 'Neither credit or debit fields are populated'):
             func(('', ''))
 
 
