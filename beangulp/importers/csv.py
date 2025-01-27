@@ -164,7 +164,7 @@ def prepare_for_identifier(regexps: Union[str, List[str]],
     if isinstance(regexps, str):
         regexps = [regexps]
     matchers = matchers or []
-    matchers.append(('mime', 'text/csv'))
+    matchers.append(('mime', '(text/csv)|(application/vnd\\.ms-excel)'))
     if regexps:
         for regexp in regexps:
             matchers.append(('content', regexp))
