@@ -5,7 +5,7 @@ from beangulp.testing import main
 
 
 class Importer(csvbase.Importer):
-    date = csvbase.Date('Posting Date', '%m/%d/%Y')
+    date = csvbase.Date('Posting Date', '%m/%d/%Y')  # type: ignore
     narration = csvbase.Columns('Description', 'Check or Slip #', sep='; ')
     amount = csvbase.Amount('Amount')
     balance = csvbase.Amount('Balance')

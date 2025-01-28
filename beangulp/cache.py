@@ -155,7 +155,7 @@ def get_file(filename):
     return _CACHE[filename]
 
 
-_CACHE = utils.DefaultDictWithKey(_FileMemo)
+_CACHE = utils.DefaultDictWithKey(_FileMemo)  # type: ignore
 
 
 def cache(func=None, *, key=None):

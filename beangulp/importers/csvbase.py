@@ -7,11 +7,12 @@ import re
 
 from collections import defaultdict
 from itertools import islice
+from typing import Any, Dict, FrozenSet
 from beancount.core import data
 
 import beangulp
 
-EMPTY = frozenset()
+EMPTY: FrozenSet[str] = frozenset()
 
 NA = object()
 """Marker to indicate that a value was not specified."""
@@ -236,7 +237,7 @@ class CSVReader(metaclass=CSVMeta):
     """Order of entries in the CSV file. If None the order will be inferred from the file content."""
 
     # This is populated by the CSVMeta metaclass.
-    columns = {}
+    columns: Dict[Any, Any] = {}
 
     def read(self, filepath):
         """Read CSV file according to class defined columns specification.
