@@ -12,10 +12,12 @@ __license__ = "GNU GPLv2"
 
 import os
 import sys
+import io
 import warnings
 import click
 
 from beancount import loader
+from beancount.core import data
 
 from beangulp import archive
 from beangulp import cache  # noqa: F401
@@ -54,7 +56,7 @@ def _walk(file_or_dirs, log):
 @click.option('--quiet', '-q', count=True,
               help='Suppress all output.')
 @click.pass_obj
-def _extract(ctx, src, output, existing, reverse, failfast, quiet):
+def _extract(ctx: 'Ingest', src: str, output: io.TextIOBase, existing: str | None, reverse: bool , failfast: bool, quiet: bool):
     """Extract transactions from documents.
 
     Walk the SRC list of files or directories and extract the ledger
@@ -71,7 +73,7 @@ def _extract(ctx, src, output, existing, reverse, failfast, quiet):
     # Load the ledger, if one is specified.
     existing_entries = loader.load_file(existing)[0] if existing else []
 
-    extracted = []
+    extracted: list[extract.ExtractedEntry] = []
     for filename in _walk(src, log):
         with errors:
             importer = identify.identify(ctx.importers, filename)
@@ -125,7 +127,7 @@ def _extract(ctx, src, output, existing, reverse, failfast, quiet):
 @click.option('--quiet', '-q', count=True,
               help='Suppress all output.')
 @click.pass_obj
-def _archive(ctx, src, destination, dry_run, overwrite, failfast, quiet):
+def _archive(ctx: 'Ingest', src: str, destination: str, dry_run: bool, overwrite: bool, failfast: bool, quiet: bool):
     """Archive documents.
 
     Walk the SRC list of files or directories and move each file
@@ -202,7 +204,7 @@ def _archive(ctx, src, destination, dry_run, overwrite, failfast, quiet):
 @click.option('--verbose', '-v', is_flag=True,
               help='Show account information.')
 @click.pass_obj
-def _identify(ctx, src, failfast, verbose):
+def _identify(ctx: 'Ingest', src: str, failfast: bool, verbose: bool):
     """Identify files for import.
 
     Walk the SRC list of files or directories and report each file
@@ -257,7 +259,7 @@ def _importer(importer):
 
 
 class Ingest:
-    def __init__(self, importers, hooks=None):
+    def __init__(self, importers: list, hooks=None):
         self.importers = [_importer(i) for i in importers]
         self.hooks = list(hooks) if hooks is not None else []
 

@@ -1,6 +1,7 @@
 __copyright__ = "Copyright (C) 2016-2017  Martin Blais"
 __license__ = "GNU GPLv2"
 
+import io
 import bisect
 import datetime
 import operator
@@ -8,11 +9,13 @@ import textwrap
 import warnings
 
 from typing import Callable
+from typing import TYPE_CHECKING
 
 from beancount.core import data
 from beancount.parser import printer
 from beangulp import similar
-
+if TYPE_CHECKING:
+    from beangulp.importer import Importer
 
 # Header for the file where the extracted entries are written.
 HEADER = ';; -*- mode: beancount -*-\n'
@@ -25,8 +28,9 @@ SECTION = '**** {}'
 # Metadata field that indicates the entry is a likely duplicate.
 DUPLICATE = '__duplicate__'
 
+ExtractedEntry = tuple[str, data.Entries, data.Account, 'Importer']
 
-def extract_from_file(importer, filename, existing_entries):
+def extract_from_file(importer: 'Importer', filename: str, existing_entries: data.Directives) -> data.Entries:
     """Import entries from a document.
 
     Args:
@@ -51,7 +55,7 @@ def extract_from_file(importer, filename, existing_entries):
     return entries
 
 
-def sort_extracted_entries(extracted):
+def sort_extracted_entries(extracted: list[ExtractedEntry]) -> None:
     """Sort the extraxted entries.
 
     Sort extracged entries, grouped by source document, in the order
@@ -92,7 +96,7 @@ def sort_extracted_entries(extracted):
     # documents produced earlier in time to take precedence over
     # entries from documents produced later in time.
 
-    def key(element):
+    def key(element: ExtractedEntry):
         filename, entries, account, importer = element
         dates = [entry.date for entry in entries]
         # Sort documents that do not contain any entry last.
@@ -104,7 +108,7 @@ def sort_extracted_entries(extracted):
     extracted.sort(key=key)
 
 
-def find_duplicate_entries(extracted, existing):
+def find_duplicate_entries(extracted: list[ExtractedEntry], existing: data.Entries) -> list[ExtractedEntry]:
     """Flag potentially duplicate entries.
 
     Args:
@@ -198,7 +202,7 @@ def mark_duplicate_entries(
                 entry.meta[DUPLICATE] = target
 
 
-def print_extracted_entries(extracted, output):
+def print_extracted_entries(extracted: list[ExtractedEntry], output: io.TextIOBase) -> None:
     """Print extracted entries.
 
     Entries marked as duplicates are printed as comments.
