@@ -2,6 +2,7 @@ __copyright__ = "Copyright (C) 2016  Martin Blais"
 __license__ = "GNU GPLv2"
 
 from beangulp.exceptions import Error
+from beangulp.importer import Importer
 
 
 # A file size beyond which we will simply ignore the file. This is
@@ -10,7 +11,7 @@ from beangulp.exceptions import Error
 FILE_TOO_LARGE_THRESHOLD = 8*1024*1024
 
 
-def identify(importers, filepath: str):
+def identify(importers: list[Importer], filepath: str):
     """Identify the correct importer to handle a document.
 
     Args:
