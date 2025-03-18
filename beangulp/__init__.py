@@ -17,7 +17,7 @@ import warnings
 import click
 
 from beancount import loader
-from beancount.core import data
+from typing import Optional
 
 from beangulp import archive
 from beangulp import cache  # noqa: F401
@@ -56,7 +56,15 @@ def _walk(file_or_dirs, log):
 @click.option('--quiet', '-q', count=True,
               help='Suppress all output.')
 @click.pass_obj
-def _extract(ctx: 'Ingest', src: str, output: io.TextIOBase, existing: str | None, reverse: bool , failfast: bool, quiet: bool):
+def _extract(
+    ctx: "Ingest",
+    src: str,
+    output: io.TextIOBase,
+    existing: Optional[str],
+    reverse: bool,
+    failfast: bool,
+    quiet: bool,
+):
     """Extract transactions from documents.
 
     Walk the SRC list of files or directories and extract the ledger
