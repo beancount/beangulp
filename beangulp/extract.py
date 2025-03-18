@@ -10,6 +10,7 @@ import warnings
 
 from typing import Callable
 from typing import TYPE_CHECKING
+from typing import Tuple
 
 from beancount.core import data
 from beancount.parser import printer
@@ -28,7 +29,8 @@ SECTION = '**** {}'
 # Metadata field that indicates the entry is a likely duplicate.
 DUPLICATE = '__duplicate__'
 
-ExtractedEntry = tuple[str, data.Entries, data.Account, 'Importer']
+ExtractedEntry = Tuple[str, data.Entries, data.Account, "Importer"]
+
 
 def extract_from_file(importer: 'Importer', filename: str, existing_entries: data.Directives) -> data.Entries:
     """Import entries from a document.
