@@ -395,15 +395,17 @@ class Importer(beangulp.Importer, CSVReader):
             return []
 
         if self.order is None:
-            self.order = Order.ASCENDING if entries[0].date <= entries[-1].date else Order.DESCENDING
+            order = Order.ASCENDING if entries[0].date <= entries[-1].date else Order.DESCENDING
+        else:
+            order = self.order
 
         # Reverse the list if the file is in descending order.
-        if self.order is Order.DESCENDING:
+        if order is Order.DESCENDING:
             entries.reverse()
 
         # Append balances.
         for currency, balances in balances.items():
-            entries.append(balances[-1 if self.order is Order.ASCENDING else 0])
+            entries.append(balances[-1 if order is Order.ASCENDING else 0])
 
         return entries
 
