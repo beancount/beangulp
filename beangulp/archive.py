@@ -6,6 +6,7 @@ import re
 import shutil
 
 from beangulp import utils
+from beangulp.importer import Importer
 from beangulp.exceptions import Error
 
 
@@ -13,7 +14,7 @@ from beangulp.exceptions import Error
 FILENAME = '{date:%Y-%m-%d}.{name}'
 
 
-def filepath(importer, filepath: str) -> str:
+def filepath(importer: Importer, filepath: str) -> str:
     """Compute filing path for a document.
 
     The path mirrors the structure of the accounts associated to the
