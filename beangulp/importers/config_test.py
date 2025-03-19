@@ -21,8 +21,7 @@ class SimpleTestImporter(config.ConfigImporterMixin,
 class TestConfigMixin(unittest.TestCase):
 
     def setUp(self):
-        self.default_config = {key: 'Assets:Something'
-                               for key in SimpleTestImporter.REQUIRED_CONFIG}
+        self.default_config = dict.fromkeys(SimpleTestImporter.REQUIRED_CONFIG, 'Assets:Something')
 
     def test_constructors(self):
         # Test invalid input type.
