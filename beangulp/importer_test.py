@@ -14,8 +14,10 @@ class TestImporterProtocol(unittest.TestCase):
         memo = cache._FileMemo('/tmp/test')
         imp = importer.ImporterProtocol()
         self.assertIsInstance(imp.FLAG, str)
-        self.assertFalse(imp.identify(memo))
+        with self.assertRaises(NotImplementedError):
+            self.assertFalse(imp.identify(memo))
         self.assertFalse(imp.extract(memo))
-        self.assertFalse(imp.file_account(memo))
+        with self.assertRaises(NotImplementedError):
+            self.assertFalse(imp.file_account(memo))
         self.assertFalse(imp.file_date(memo))
         self.assertFalse(imp.file_name(memo))

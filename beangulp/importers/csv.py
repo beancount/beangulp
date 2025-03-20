@@ -11,7 +11,7 @@ __license__ = "GNU GPLv2"
 
 from inspect import signature
 from os import path
-from typing import Callable, Dict, List, Optional, Union
+from typing import Callable, Dict, List, Optional, Union, Tuple
 import collections
 import csv
 import datetime
@@ -159,7 +159,7 @@ def normalize_config(config, head, dialect='excel', skip_lines: int = 0):
 
 
 def prepare_for_identifier(regexps: Union[str, List[str]],
-                           matchers: Optional[List[str]]) -> Dict[str, str]:
+                           matchers: Optional[List[Tuple[str, str]]]) -> Dict[str, List[Tuple[str, str]]]:
     """Prepare data for identifier mixin."""
     if isinstance(regexps, str):
         regexps = [regexps]
