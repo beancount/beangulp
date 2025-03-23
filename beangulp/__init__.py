@@ -18,6 +18,7 @@ import click
 
 from beancount import loader
 from typing import Optional
+from typing import List
 
 from beangulp import archive
 from beangulp import cache  # noqa: F401
@@ -81,7 +82,7 @@ def _extract(
     # Load the ledger, if one is specified.
     existing_entries = loader.load_file(existing)[0] if existing else []
 
-    extracted: list[extract.ExtractedEntry] = []
+    extracted: List[extract.ExtractedEntry] = []
     for filename in _walk(src, log):
         with errors:
             importer = identify.identify(ctx.importers, filename)

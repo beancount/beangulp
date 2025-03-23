@@ -11,6 +11,7 @@ import warnings
 from typing import Callable
 from typing import TYPE_CHECKING
 from typing import Tuple
+from typing import List
 
 from beancount.core import data
 from beancount.parser import printer
@@ -32,7 +33,9 @@ DUPLICATE = '__duplicate__'
 ExtractedEntry = Tuple[str, data.Entries, data.Account, "Importer"]
 
 
-def extract_from_file(importer: 'Importer', filename: str, existing_entries: data.Directives) -> data.Entries:
+def extract_from_file(
+    importer: "Importer", filename: str, existing_entries: "data.Directives"
+) -> data.Entries:
     """Import entries from a document.
 
     Args:
@@ -57,7 +60,7 @@ def extract_from_file(importer: 'Importer', filename: str, existing_entries: dat
     return entries
 
 
-def sort_extracted_entries(extracted: list[ExtractedEntry]) -> None:
+def sort_extracted_entries(extracted: List[ExtractedEntry]) -> None:
     """Sort the extraxted entries.
 
     Sort extracged entries, grouped by source document, in the order
@@ -110,7 +113,7 @@ def sort_extracted_entries(extracted: list[ExtractedEntry]) -> None:
     extracted.sort(key=key)
 
 
-def find_duplicate_entries(extracted: list[ExtractedEntry], existing: data.Entries) -> list[ExtractedEntry]:
+def find_duplicate_entries(extracted: List[ExtractedEntry], existing: data.Entries) -> List[ExtractedEntry]:
     """Flag potentially duplicate entries.
 
     Args:
@@ -204,7 +207,7 @@ def mark_duplicate_entries(
                 entry.meta[DUPLICATE] = target
 
 
-def print_extracted_entries(extracted: list[ExtractedEntry], output: io.TextIOBase) -> None:
+def print_extracted_entries(extracted: List[ExtractedEntry], output: io.TextIOBase) -> None:
     """Print extracted entries.
 
     Entries marked as duplicates are printed as comments.
