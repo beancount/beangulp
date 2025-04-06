@@ -3,6 +3,8 @@
 This object is used in lieu of a file in order to allow the various importers to
 reuse each others' conversion results. Converting file contents, e.g. PDF to
 text, can be expensive.
+
+NOTE: This module is deprecated. Use beangulp.simple_cache instead.
 """
 
 __copyright__ = "Copyright (C) 2016  Martin Blais"
