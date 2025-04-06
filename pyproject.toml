@@ -36,7 +36,7 @@ dependencies = [
     'click >8.0',
     "deprecation>=2.1.0", # Note: 3.13 provides warnings.deprecated().
     'lxml',
-    "petl>=1.7.16",
+    "petl",
     "pytest",
     'python-magic >=0.4.12; sys_platform != "win32"',
 ]
