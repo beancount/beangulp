@@ -31,7 +31,7 @@ def read_or_empty(filename: str) -> str:
         with open(filename) as infile:
             return infile.read().rstrip()
     else:
-        return ''
+        return ""
 
 
 def process_files(filename: str):
@@ -42,9 +42,9 @@ def process_files(filename: str):
     extract = read_or_empty(filename + ".extract")
     with open(filename + ".beancount", "w") as outfile:
         pr = functools.partial(print, file=outfile)
-        pr(';; Account: {}'.format(account or''))
-        pr(';; Date: {}'.format(date or ''))
-        pr(';; Name: {}'.format(name or ''))
+        pr(";; Account: {}".format(account or ""))
+        pr(";; Date: {}".format(date or ""))
+        pr(";; Name: {}".format(name or ""))
         if extract:
             pr(extract)
     for ext in [".file_account", ".file_date", ".file_name", ".extract"]:
@@ -53,7 +53,7 @@ def process_files(filename: str):
 
 
 @click.command()
-@click.argument('directories',type=click.Path(exists=True, resolve_path=True), nargs=-1)
+@click.argument("directories", type=click.Path(exists=True, resolve_path=True), nargs=-1)
 def main(directories: List[str]):
     for directory in directories:
         for root, dirs, files in os.walk(directory):
@@ -68,5 +68,5 @@ def main(directories: List[str]):
                 process_files(afilename)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

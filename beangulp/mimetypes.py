@@ -11,9 +11,9 @@ from mimetypes import *  # noqa: F403
 
 # Register some MIME types used in financial downloads.
 _extra_mime_types = [
-    ('text/beancount', '.beancount', '.beans'), # Beancount ledgers.
-    ('application/vnd.intu.qbo', '.qbo'), # Quicken files.
-    ('application/x-ofx', '.qfx', '.ofx'), # Open Financial Exchange files.
+    ("text/beancount", ".beancount", ".beans"),  # Beancount ledgers.
+    ("application/vnd.intu.qbo", ".qbo"),  # Quicken files.
+    ("application/x-ofx", ".qfx", ".ofx"),  # Open Financial Exchange files.
 ]
 
 for mime, *extensions in _extra_mime_types:

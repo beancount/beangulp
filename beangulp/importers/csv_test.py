@@ -17,7 +17,6 @@ Col = csv.Col
 
 
 class TestCSVFunctions(unittest.TestCase):
-
     def test_normalize_config__with_header(self):
         head = textwrap.dedent("""\
           Details,Posting Date,"Description",Amount,Type,Balance,Check or Slip #,
@@ -25,16 +24,16 @@ class TestCSVFunctions(unittest.TestCase):
           CREDIT,3/15/2016,"EMPLOYER INC    DIRECT DEP                 PPD ID: 1111111111",2590.73,ACH_CREDIT,6090.75,,
           DEBIT,3/14/2016,"INVESTMENT SEC   TRANSFER   A5144608        WEB ID: 1234456789",-150.00,ACH_DEBIT,3500.02,,
         """)
-        iconfig, has_header = csv.normalize_config({Col.DATE: 'Posting Date'}, head)
+        iconfig, has_header = csv.normalize_config({Col.DATE: "Posting Date"}, head)
         self.assertEqual({Col.DATE: 1}, iconfig)
         self.assertTrue(has_header)
 
-        iconfig, _ = csv.normalize_config({Col.NARRATION: 'Description'}, head)
+        iconfig, _ = csv.normalize_config({Col.NARRATION: "Description"}, head)
         self.assertEqual({Col.NARRATION: 2}, iconfig)
 
-        iconfig, _ = csv.normalize_config({Col.DATE: 1,
-                                           Col.NARRATION: 'Check or Slip #'},
-                                          head)
+        iconfig, _ = csv.normalize_config(
+            {Col.DATE: 1, Col.NARRATION: "Check or Slip #"}, head
+        )
         self.assertEqual({Col.DATE: 1, Col.NARRATION: 6}, iconfig)
 
         iconfig, _ = csv.normalize_config({Col.DATE: 1}, head)
@@ -51,18 +50,20 @@ class TestCSVFunctions(unittest.TestCase):
           CREDIT,3/15/2016,"EMPLOYER INC    DIRECT DEP                 PPD ID: 1111111111",2590.73,ACH_CREDIT,6090.75,,
           DEBIT,3/14/2016,"INVESTMENT SEC   TRANSFER   A5144608        WEB ID: 1234456789",-150.00,ACH_DEBIT,3500.02,,
         """)
-        iconfig, has_header = csv.normalize_config({Col.DATE: 'Posting Date'}, head,
-                                                   skip_lines=4)
+        iconfig, has_header = csv.normalize_config(
+            {Col.DATE: "Posting Date"}, head, skip_lines=4
+        )
         self.assertEqual({Col.DATE: 1}, iconfig)
         self.assertTrue(has_header)
 
-        iconfig, _ = csv.normalize_config({Col.NARRATION: 'Description'}, head,
-                                          skip_lines=4)
+        iconfig, _ = csv.normalize_config(
+            {Col.NARRATION: "Description"}, head, skip_lines=4
+        )
         self.assertEqual({Col.NARRATION: 2}, iconfig)
 
-        iconfig, _ = csv.normalize_config({Col.DATE: 1,
-                                           Col.NARRATION: 'Check or Slip #'},
-                                          head, skip_lines=4)
+        iconfig, _ = csv.normalize_config(
+            {Col.DATE: 1, Col.NARRATION: "Check or Slip #"}, head, skip_lines=4
+        )
         self.assertEqual({Col.DATE: 1, Col.NARRATION: 6}, iconfig)
 
         iconfig, _ = csv.normalize_config({Col.DATE: 1}, head, skip_lines=4)
@@ -78,7 +79,7 @@ class TestCSVFunctions(unittest.TestCase):
         self.assertEqual({Col.DATE: 1}, iconfig)
         self.assertFalse(has_header)
         with self.assertRaises(ValueError):
-            csv.normalize_config({Col.DATE: 'Posting Date'}, head)
+            csv.normalize_config({Col.DATE: "Posting Date"}, head)
 
     def test_normalize_config__with_skip_and_without_header(self):
         head = textwrap.dedent("""\
@@ -94,13 +95,12 @@ class TestCSVFunctions(unittest.TestCase):
         self.assertEqual({Col.DATE: 1}, iconfig)
         self.assertFalse(has_header)
         with self.assertRaises(ValueError):
-            csv.normalize_config({Col.DATE: 'Posting Date'}, head, skip_lines=4)
+            csv.normalize_config({Col.DATE: "Posting Date"}, head, skip_lines=4)
 
 
 class TestCSVImporter(cmptest.TestCase):
-
     def setUp(self):
-        warnings.simplefilter('ignore', category=DeprecationWarning)
+        warnings.simplefilter("ignore", category=DeprecationWarning)
 
     @test_utils.docfile
     def test_column_types(self, filename):
@@ -115,19 +115,23 @@ class TestCSVImporter(cmptest.TestCase):
           DEBIT,3/4/2016,"BOOGLE           WALLET     US000NEI9T      WEB ID: C234567890",-1300.00,ACH_DEBIT,3600.02,,
         """
 
-        importer = csv.CSVImporter({Col.DATE: 'Posting Date',
-                                    Col.NARRATION1: 'Description',
-                                    Col.NARRATION2: 'Check or Slip #',
-                                    Col.AMOUNT: 'Amount',
-                                    Col.BALANCE: 'Balance',
-                                    Col.DRCR: 'Details'},
-                                   'Assets:Bank',
-                                   'USD',
-                                   ('Details,Posting Date,"Description",Amount,'
-                                    'Type,Balance,Check or Slip #,'),
-                                   institution='chafe')
+        importer = csv.CSVImporter(
+            {
+                Col.DATE: "Posting Date",
+                Col.NARRATION1: "Description",
+                Col.NARRATION2: "Check or Slip #",
+                Col.AMOUNT: "Amount",
+                Col.BALANCE: "Balance",
+                Col.DRCR: "Details",
+            },
+            "Assets:Bank",
+            "USD",
+            ('Details,Posting Date,"Description",Amount,Type,Balance,Check or Slip #,'),
+            institution="chafe",
+        )
         entries = importer.extract(filename)
-        self.assertEqualEntries(r"""
+        self.assertEqualEntries(
+            r"""
 
           2016-03-18 * "Payment to Chafe card ending in 1234 03/18"
             Assets:Bank  -2680.89 USD
@@ -149,7 +153,9 @@ class TestCSVImporter(cmptest.TestCase):
 
           2016-03-19 balance Assets:Bank                                     3409.86 USD
 
-        """, entries)
+        """,
+            entries,
+        )
 
     @test_utils.docfile
     def test_date_formats(self, filename):
@@ -159,13 +165,16 @@ class TestCSVImporter(cmptest.TestCase):
           12/7/2016,B,3
           13/7/2016,C,4
         """
-        importer = csv.CSVImporter({Col.DATE: 'Posting',
-                                    Col.NARRATION: 'Description',
-                                    Col.AMOUNT: 'Amount'},
-                                   'Assets:Bank', 'EUR', [],
-                                   dateutil_kwds={'dayfirst': True})
+        importer = csv.CSVImporter(
+            {Col.DATE: "Posting", Col.NARRATION: "Description", Col.AMOUNT: "Amount"},
+            "Assets:Bank",
+            "EUR",
+            [],
+            dateutil_kwds={"dayfirst": True},
+        )
         entries = importer.extract(filename)
-        self.assertEqualEntries(r"""
+        self.assertEqualEntries(
+            r"""
 
           2016-07-11 * "A"
             Assets:Bank  2 EUR
@@ -176,8 +185,9 @@ class TestCSVImporter(cmptest.TestCase):
           2016-07-13 * "C"
             Assets:Bank  4 EUR
 
-        """, entries)
-
+        """,
+            entries,
+        )
 
     @test_utils.docfile
     def test_links(self, filename):
@@ -186,21 +196,29 @@ class TestCSVImporter(cmptest.TestCase):
           2020-07-03,A,2,
           2020-07-03,B,3,123
         """
-        importer = csv.CSVImporter({Col.DATE: 'Date',
-                                    Col.NARRATION: 'Description',
-                                    Col.AMOUNT: 'Amount',
-                                    Col.REFERENCE_ID: 'Link'},
-                                   'Assets:Bank', 'EUR', [])
+        importer = csv.CSVImporter(
+            {
+                Col.DATE: "Date",
+                Col.NARRATION: "Description",
+                Col.AMOUNT: "Amount",
+                Col.REFERENCE_ID: "Link",
+            },
+            "Assets:Bank",
+            "EUR",
+            [],
+        )
         entries = importer.extract(filename)
-        self.assertEqualEntries(r"""
+        self.assertEqualEntries(
+            r"""
 
           2020-07-03 * "A"
             Assets:Bank  2 EUR
 
           2020-07-03 * "B" ^123
             Assets:Bank  3 EUR
-        """, entries)
-
+        """,
+            entries,
+        )
 
     @test_utils.docfile
     def test_tags(self, filename):
@@ -209,21 +227,29 @@ class TestCSVImporter(cmptest.TestCase):
           2020-07-03,A,2,
           2020-07-03,B,3,foo
         """
-        importer = csv.CSVImporter({Col.DATE: 'Date',
-                                    Col.NARRATION: 'Description',
-                                    Col.AMOUNT: 'Amount',
-                                    Col.TAG: 'Tag'},
-                                   'Assets:Bank', 'EUR', [])
+        importer = csv.CSVImporter(
+            {
+                Col.DATE: "Date",
+                Col.NARRATION: "Description",
+                Col.AMOUNT: "Amount",
+                Col.TAG: "Tag",
+            },
+            "Assets:Bank",
+            "EUR",
+            [],
+        )
         entries = importer.extract(filename)
-        self.assertEqualEntries(r"""
+        self.assertEqualEntries(
+            r"""
 
           2020-07-03 * "A"
             Assets:Bank  2 EUR
 
           2020-07-03 * "B" #foo
             Assets:Bank  3 EUR
-        """, entries)
-
+        """,
+            entries,
+        )
 
     @test_utils.docfile
     def test_zero_balance_produces_assertion(self, filename):
@@ -231,29 +257,37 @@ class TestCSVImporter(cmptest.TestCase):
           Details,Posting Date,"Description",Amount,Type,Balance,Check or Slip #,
           DEBIT,3/18/2016,"Payment to Chafe card ending in 1234 03/18",-2680.89,ACCT_XFER,0,,
         """
-        importer = csv.CSVImporter({Col.DATE: 'Posting Date',
-                                    Col.NARRATION1: 'Description',
-                                    Col.NARRATION2: 'Check or Slip #',
-                                    Col.AMOUNT: 'Amount',
-                                    Col.BALANCE: 'Balance',
-                                    Col.DRCR: 'Details'},
-                                   'Assets:Bank',
-                                   'USD',
-                                   ('Details,Posting Date,"Description",Amount,'
-                                    'Type,Balance,Check or Slip #,'),
-                                   institution='chafe')
+        importer = csv.CSVImporter(
+            {
+                Col.DATE: "Posting Date",
+                Col.NARRATION1: "Description",
+                Col.NARRATION2: "Check or Slip #",
+                Col.AMOUNT: "Amount",
+                Col.BALANCE: "Balance",
+                Col.DRCR: "Details",
+            },
+            "Assets:Bank",
+            "USD",
+            ('Details,Posting Date,"Description",Amount,Type,Balance,Check or Slip #,'),
+            institution="chafe",
+        )
         entries = importer.extract(filename)
-        self.assertEqualEntries(r"""
+        self.assertEqualEntries(
+            r"""
 
           2016-03-18 * "Payment to Chafe card ending in 1234 03/18"
             Assets:Bank  -2680.89 USD
 
           2016-03-19 balance Assets:Bank                                     0 USD
 
-        """, entries)
+        """,
+            entries,
+        )
 
     @test_utils.docfile
-    def test_currency_and_balances_where_there_are_multiple_currency_transactions(self, filename):
+    def test_currency_and_balances_where_there_are_multiple_currency_transactions(
+        self, filename
+    ):
         """\
           Posting Date,"Description",Amount,Currency,Balance
           3/18/2016,"1st Payment in GBP",-1.00,GBP,-1
@@ -263,15 +297,20 @@ class TestCSVImporter(cmptest.TestCase):
           3/19/2016,"2nd Payment in Main Currency",-2.00,,-3
           3/20/2016,"3rd Payment in GBP",-3,GBP,-6
         """
-        importer = csv.CSVImporter({Col.DATE: 'Posting Date',
-                                    Col.NARRATION1: 'Description',
-                                    Col.AMOUNT: 'Amount',
-                                    Col.CURRENCY: 'Currency',
-                                    Col.BALANCE: 'Balance'},
-                                   'Assets:Bank',
-                                   'PLN')
+        importer = csv.CSVImporter(
+            {
+                Col.DATE: "Posting Date",
+                Col.NARRATION1: "Description",
+                Col.AMOUNT: "Amount",
+                Col.CURRENCY: "Currency",
+                Col.BALANCE: "Balance",
+            },
+            "Assets:Bank",
+            "PLN",
+        )
         entries = importer.extract(filename)
-        self.assertEqualEntries(r"""
+        self.assertEqualEntries(
+            r"""
 
            2016-03-18 * "1st Payment in GBP"
              Assets:Bank  -1.00 GBP
@@ -297,7 +336,9 @@ class TestCSVImporter(cmptest.TestCase):
 
            2016-03-21 balance Assets:Bank  -6 GBP
 
-        """, entries)
+        """,
+            entries,
+        )
 
     @test_utils.docfile
     def test_zero_balance_assertion_is_added_with_currency_field(self, filename):
@@ -311,15 +352,20 @@ class TestCSVImporter(cmptest.TestCase):
           3/20/2016,"3rd Payment in GBP",-3,GBP,-6
           3/21/2016,"4th Payment in GBP",6,GBP,0
         """
-        importer = csv.CSVImporter({Col.DATE: 'Posting Date',
-                                    Col.NARRATION1: 'Description',
-                                    Col.AMOUNT: 'Amount',
-                                    Col.CURRENCY: 'Currency',
-                                    Col.BALANCE: 'Balance'},
-                                   'Assets:Bank',
-                                   'PLN')
+        importer = csv.CSVImporter(
+            {
+                Col.DATE: "Posting Date",
+                Col.NARRATION1: "Description",
+                Col.AMOUNT: "Amount",
+                Col.CURRENCY: "Currency",
+                Col.BALANCE: "Balance",
+            },
+            "Assets:Bank",
+            "PLN",
+        )
         entries = importer.extract(filename)
-        self.assertEqualEntries(r"""
+        self.assertEqualEntries(
+            r"""
 
            2016-03-18 * "1st Payment in GBP"
              Assets:Bank  -1.00 GBP
@@ -348,8 +394,9 @@ class TestCSVImporter(cmptest.TestCase):
 
            2016-03-22 balance Assets:Bank  0 GBP
 
-        """, entries)
-
+        """,
+            entries,
+        )
 
     @test_utils.docfile
     def test_currency_and_balances_when_none_are_in_the_main_currency(self, filename):
@@ -360,15 +407,20 @@ class TestCSVImporter(cmptest.TestCase):
           3/19/2016,"2nd Payment in GBP",-2,GBP,-3
           3/20/2016,"3rd Payment in GBP",-3,GBP,-6
         """
-        importer = csv.CSVImporter({Col.DATE: 'Posting Date',
-                                    Col.NARRATION1: 'Description',
-                                    Col.AMOUNT: 'Amount',
-                                    Col.CURRENCY: 'Currency',
-                                    Col.BALANCE: 'Balance'},
-                                   'Assets:Bank',
-                                   'PLN')
+        importer = csv.CSVImporter(
+            {
+                Col.DATE: "Posting Date",
+                Col.NARRATION1: "Description",
+                Col.AMOUNT: "Amount",
+                Col.CURRENCY: "Currency",
+                Col.BALANCE: "Balance",
+            },
+            "Assets:Bank",
+            "PLN",
+        )
         entries = importer.extract(filename)
-        self.assertEqualEntries(r"""
+        self.assertEqualEntries(
+            r"""
 
            2016-03-18 * "1st Payment in GBP"
              Assets:Bank  -1.00 GBP
@@ -386,7 +438,9 @@ class TestCSVImporter(cmptest.TestCase):
 
            2016-03-21 balance Assets:Bank  -6 GBP
 
-        """, entries)
+        """,
+            entries,
+        )
 
     @test_utils.docfile
     def test_main_currency_should_be_used_when_no_currency_is_specified(self, filename):
@@ -397,15 +451,20 @@ class TestCSVImporter(cmptest.TestCase):
           3/19/2016,"3rd Payment",-2,,-4
           3/20/2016,"4th Payment",-3,,-7
         """
-        importer = csv.CSVImporter({Col.DATE: 'Posting Date',
-                                    Col.NARRATION1: 'Description',
-                                    Col.AMOUNT: 'Amount',
-                                    Col.CURRENCY: 'Currency',
-                                    Col.BALANCE: 'Balance'},
-                                   'Assets:Bank',
-                                   'PLN')
+        importer = csv.CSVImporter(
+            {
+                Col.DATE: "Posting Date",
+                Col.NARRATION1: "Description",
+                Col.AMOUNT: "Amount",
+                Col.CURRENCY: "Currency",
+                Col.BALANCE: "Balance",
+            },
+            "Assets:Bank",
+            "PLN",
+        )
         entries = importer.extract(filename)
-        self.assertEqualEntries(r"""
+        self.assertEqualEntries(
+            r"""
 
            2016-03-18 * "1st Payment"
              Assets:Bank  -1.00 PLN
@@ -421,7 +480,9 @@ class TestCSVImporter(cmptest.TestCase):
 
            2016-03-21 balance Assets:Bank  -7 PLN
 
-        """, entries)
+        """,
+            entries,
+        )
 
     @test_utils.docfile
     def test_categorizer_one_argument(self, filename):
@@ -430,25 +491,28 @@ class TestCSVImporter(cmptest.TestCase):
           6/2/2020,30.00,"Payee here","Description"
           7/2/2020,-25.00,"Supermarket","Groceries"
         """
+
         def categorizer(txn):
             if txn.narration == "Groceries":
                 txn.postings.append(
-                    data.Posting("Expenses:Groceries",
-                                 -txn.postings[0].units,
-                                 None, None, None, None))
+                    data.Posting(
+                        "Expenses:Groceries", -txn.postings[0].units, None, None, None, None
+                    )
+                )
 
             return txn
 
-        importer = csv.CSVImporter({Col.DATE: 'Date',
-                                    Col.NARRATION: 'Description',
-                                    Col.AMOUNT: 'Amount'},
-                                   'Assets:Bank',
-                                   'EUR',
-                                   ('Date,Amount,Payee,Description'),
-                                   categorizer=categorizer,
-                                   institution='foobar')
+        importer = csv.CSVImporter(
+            {Col.DATE: "Date", Col.NARRATION: "Description", Col.AMOUNT: "Amount"},
+            "Assets:Bank",
+            "EUR",
+            ("Date,Amount,Payee,Description"),
+            categorizer=categorizer,
+            institution="foobar",
+        )
         entries = importer.extract(filename)
-        self.assertEqualEntries(r"""
+        self.assertEqualEntries(
+            r"""
 
           2020-06-02 * "Description"
             Assets:Bank  30.00 EUR
@@ -456,7 +520,9 @@ class TestCSVImporter(cmptest.TestCase):
           2020-07-02 * "Groceries"
             Assets:Bank  -25.00 EUR
             Expenses:Groceries  25.00 EUR
-        """, entries)
+        """,
+            entries,
+        )
 
     @test_utils.docfile
     def test_categorizer_two_arguments(self, filename):
@@ -465,21 +531,23 @@ class TestCSVImporter(cmptest.TestCase):
           6/2/2020,30.00,"Payee here","Description"
           7/2/2020,-25.00,"Supermarket","Groceries"
         """
+
         def categorizer(txn, row):
             txn = txn._replace(payee=row[2])
-            txn.meta['source'] = pformat(row)
+            txn.meta["source"] = pformat(row)
             return txn
 
-        importer = csv.CSVImporter({Col.DATE: 'Date',
-                                    Col.NARRATION: 'Description',
-                                    Col.AMOUNT: 'Amount'},
-                                   'Assets:Bank',
-                                   'EUR',
-                                   ('Date,Amount,Payee,Description'),
-                                   categorizer=categorizer,
-                                   institution='foobar')
+        importer = csv.CSVImporter(
+            {Col.DATE: "Date", Col.NARRATION: "Description", Col.AMOUNT: "Amount"},
+            "Assets:Bank",
+            "EUR",
+            ("Date,Amount,Payee,Description"),
+            categorizer=categorizer,
+            institution="foobar",
+        )
         entries = importer.extract(filename)
-        self.assertEqualEntries(r"""
+        self.assertEqualEntries(
+            r"""
 
           2020-06-02 * "Payee here" "Description"
             source: "['6/2/2020', '30.00', 'Supermarket', 'Groceries']"
@@ -488,7 +556,9 @@ class TestCSVImporter(cmptest.TestCase):
           2020-07-02 * "Supermarket" "Groceries"
             source: "['7/2/2020', '-25.00', 'Supermarket', 'Groceries']"
             Assets:Bank  -25.00 EUR
-        """, entries)
+        """,
+            entries,
+        )
 
     @test_utils.docfile
     def test_explict_encoding_utf8(self, filename):
@@ -496,18 +566,23 @@ class TestCSVImporter(cmptest.TestCase):
           Posting,Description,Amount
           2020/08/08,🍏,2
         """
-        importer = csv.CSVImporter({Col.DATE: 'Posting',
-                                    Col.NARRATION: 'Description',
-                                    Col.AMOUNT: 'Amount'},
-                                   'Assets:Bank', 'EUR', [],
-                                   encoding='utf-8')
+        importer = csv.CSVImporter(
+            {Col.DATE: "Posting", Col.NARRATION: "Description", Col.AMOUNT: "Amount"},
+            "Assets:Bank",
+            "EUR",
+            [],
+            encoding="utf-8",
+        )
         entries = importer.extract(filename)
-        self.assertEqualEntries(r"""
+        self.assertEqualEntries(
+            r"""
 
           2020-08-08 * "🍏"
             Assets:Bank  2 EUR
 
-        """, entries)
+        """,
+            entries,
+        )
 
     def test_newlines(self):
         content = textwrap.dedent("""\
@@ -515,22 +590,27 @@ class TestCSVImporter(cmptest.TestCase):
           2020-07-03,A,2
           2020-07-03,B,3
         """)
-        importer = csv.CSVImporter({Col.DATE: 'Date',
-                                    Col.NARRATION: 'Description',
-                                    Col.AMOUNT: 'Amount'},
-                                   'Assets:Bank', 'EUR', [])
-        for nl in '\n', '\r\n', '\r':
-            with tempfile.NamedTemporaryFile('w') as temp:
-                temp.write(content.replace('\n', nl))
+        importer = csv.CSVImporter(
+            {Col.DATE: "Date", Col.NARRATION: "Description", Col.AMOUNT: "Amount"},
+            "Assets:Bank",
+            "EUR",
+            [],
+        )
+        for nl in "\n", "\r\n", "\r":
+            with tempfile.NamedTemporaryFile("w") as temp:
+                temp.write(content.replace("\n", nl))
                 temp.flush()
                 entries = importer.extract(temp.name)
-                self.assertEqualEntries("""
+                self.assertEqualEntries(
+                    """
                   2020-07-03 * "A"
                     Assets:Bank  2 EUR
 
                   2020-07-03 * "B"
                     Assets:Bank  3 EUR
-                """, entries)
+                """,
+                    entries,
+                )
 
 
 # TODO: Test things out with/without payee and with/without narration.

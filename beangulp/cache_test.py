@@ -14,7 +14,6 @@ from beangulp import utils
 
 
 class TestFileMemo(unittest.TestCase):
-
     def test_cache(self):
         with tempfile.NamedTemporaryFile() as tmpfile:
             shutil.copy(__file__, tmpfile.name)
@@ -24,14 +23,14 @@ class TestFileMemo(unittest.TestCase):
             self.assertEqual(tmpfile.name, wrap.name)
 
             # Check that caching works.
-            converter = mock.MagicMock(return_value='abc')
-            self.assertEqual('abc', wrap.convert(converter))
-            self.assertEqual('abc', wrap.convert(converter))
-            self.assertEqual('abc', wrap.convert(converter))
+            converter = mock.MagicMock(return_value="abc")
+            self.assertEqual("abc", wrap.convert(converter))
+            self.assertEqual("abc", wrap.convert(converter))
+            self.assertEqual("abc", wrap.convert(converter))
             self.assertEqual(1, converter.call_count)
 
     def test_cache_head_and_contents(self):
-        with tempfile.NamedTemporaryFile(suffix='.py') as tmpfile:
+        with tempfile.NamedTemporaryFile(suffix=".py") as tmpfile:
             shutil.copy(__file__, tmpfile.name)
             wrap = cache._FileMemo(tmpfile.name)
 
@@ -47,33 +46,33 @@ class TestFileMemo(unittest.TestCase):
             self.assertEqual(128, len(head))
 
             mimetype = wrap.convert(cache.mimetype)
-            self.assertIn(mimetype, {'text/plain',
-                                     'text/x-python',
-                                     'text/x-script.python',
-                                     'text/c++'})
+            self.assertIn(
+                mimetype,
+                {"text/plain", "text/x-python", "text/x-script.python", "text/c++"},
+            )
 
     def test_cache_head_obeys_explict_utf8_encoding_avoids_chardet_exception(self):
-        data = b'asciiHeader1,\xf0\x9f\x8d\x8fHeader1,asciiHeader2'
-        with mock.patch('builtins.open', mock.mock_open(read_data=data)):
-            string = cache._FileMemo('filepath').head(encoding='utf-8')
-            self.assertEqual(string, data.decode('utf8'))
+        data = b"asciiHeader1,\xf0\x9f\x8d\x8fHeader1,asciiHeader2"
+        with mock.patch("builtins.open", mock.mock_open(read_data=data)):
+            string = cache._FileMemo("filepath").head(encoding="utf-8")
+            self.assertEqual(string, data.decode("utf8"))
 
     def test_cache_head_encoding(self):
-        data = b'asciiHeader1,\xf0\x9f\x8d\x8fHeader1,asciiHeader2'
+        data = b"asciiHeader1,\xf0\x9f\x8d\x8fHeader1,asciiHeader2"
         # The 15th bytes is in the middle of the unicode character.
         num_bytes = 15
-        with mock.patch('builtins.open', mock.mock_open(read_data=data)):
-            string = cache._FileMemo('filepath').head(num_bytes, encoding='utf-8')
-            self.assertEqual(string, 'asciiHeader1,')
+        with mock.patch("builtins.open", mock.mock_open(read_data=data)):
+            string = cache._FileMemo("filepath").head(num_bytes, encoding="utf-8")
+            self.assertEqual(string, "asciiHeader1,")
 
 
 class CacheTestCase(unittest.TestCase):
     def setUp(self):
         self.tempdir = tempfile.mkdtemp()
-        cache.CACHEDIR = os.path.join(self.tempdir, 'cache')
+        cache.CACHEDIR = os.path.join(self.tempdir, "cache")
         os.mkdir(cache.CACHEDIR)
-        self.filename = os.path.join(self.tempdir, 'test.txt')
-        with open(self.filename, 'w'):
+        self.filename = os.path.join(self.tempdir, "test.txt")
+        with open(self.filename, "w"):
             pass
 
     def tearDown(self):
@@ -84,7 +83,7 @@ class CacheTestCase(unittest.TestCase):
 
         def func(filename):
             nonlocal counter
-            counter +=1
+            counter += 1
             return counter
 
         r = func(self.filename)
@@ -99,7 +98,7 @@ class CacheTestCase(unittest.TestCase):
         @cache.cache
         def func(filename):
             nonlocal counter
-            counter +=1
+            counter += 1
             return counter
 
         r = func(self.filename)
@@ -114,7 +113,7 @@ class CacheTestCase(unittest.TestCase):
         @cache.cache
         def func(filename):
             nonlocal counter
-            counter +=1
+            counter += 1
             return counter
 
         r = func(self.filename)
@@ -138,7 +137,7 @@ class CacheTestCase(unittest.TestCase):
         @cache.cache
         def func(filename, arg):
             nonlocal counter
-            counter +=1
+            counter += 1
             return counter
 
         r = func(self.filename, 1)
@@ -156,7 +155,7 @@ class CacheTestCase(unittest.TestCase):
         @cache.cache
         def func(filename):
             nonlocal counter
-            counter +=1
+            counter += 1
             return counter
 
         r = func(self.filename)
@@ -183,15 +182,15 @@ class CacheTestCase(unittest.TestCase):
         @cache.cache
         def func(filename):
             nonlocal counter
-            counter +=1
+            counter += 1
             return counter
 
         r = func(self.filename)
         self.assertEqual(r, 1)
 
         t = os.stat(self.filename).st_mtime_ns
-        with open(self.filename, 'w') as f:
-            f.write('baz')
+        with open(self.filename, "w") as f:
+            f.write("baz")
         os.utime(self.filename, ns=(t, t))
 
         r = func(self.filename)
@@ -203,11 +202,11 @@ class CacheTestCase(unittest.TestCase):
         @cache.cache(key=utils.sha1sum)
         def func(filename):
             nonlocal counter
-            counter +=1
+            counter += 1
             return counter
 
-        with open(self.filename, 'w') as f:
-            f.write('test')
+        with open(self.filename, "w") as f:
+            f.write("test")
 
         r = func(self.filename)
         self.assertEqual(r, 1)
@@ -222,8 +221,8 @@ class CacheTestCase(unittest.TestCase):
         self.assertEqual(r, 1)
 
         t = os.stat(self.filename).st_mtime_ns
-        with open(self.filename, 'w') as f:
-            f.write('baz')
+        with open(self.filename, "w") as f:
+            f.write("baz")
         os.utime(self.filename, ns=(t, t))
 
         r = func(self.filename)

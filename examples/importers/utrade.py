@@ -1,5 +1,5 @@
-"""Example importer for example broker UTrade.
-"""
+"""Example importer for example broker UTrade."""
+
 __copyright__ = "Copyright (C) 2016  Martin Blais"
 __license__ = "GNU GPLv2"
 
@@ -26,13 +26,16 @@ from beangulp.testing import main
 class Importer(beangulp.Importer):
     """An importer for UTrade CSV files (an example investment bank)."""
 
-    def __init__(self, currency,
-                 account_root,
-                 account_cash,
-                 account_dividends,
-                 account_gains,
-                 account_fees,
-                 account_external):
+    def __init__(
+        self,
+        currency,
+        account_root,
+        account_cash,
+        account_dividends,
+        account_gains,
+        account_fees,
+        account_external,
+    ):
         self.currency = currency
         self.account_root = account_root
         self.account_cash = account_cash
@@ -46,22 +49,23 @@ class Importer(beangulp.Importer):
         # fields combination we're looking for.
         if not re.match(r"UTrade\d\d\d\d\d\d\d\d\.csv", path.basename(filepath)):
             return False
-        with open(filepath, 'r') as fd:
+        with open(filepath, "r") as fd:
             head = fd.read(13)
         if head != "DATE,TYPE,REF":
             return False
         return True
 
     def filename(self, filepath):
-        return 'utrade.{}'.format(path.basename(filepath))
+        return "utrade.{}".format(path.basename(filepath))
 
     def account(self, filepath):
         return self.account_root
 
     def date(self, filepath):
         # Extract the statement date from the filename.
-        return datetime.datetime.strptime(path.basename(filepath),
-                                          'UTrade%Y%m%d.csv').date()
+        return datetime.datetime.strptime(
+            path.basename(filepath), "UTrade%Y%m%d.csv"
+        ).date()
 
     def extract(self, filepath, existing):
         # Open the CSV file and create directives.
@@ -70,93 +74,130 @@ class Importer(beangulp.Importer):
         with open(filepath) as infile:
             for index, row in enumerate(csv.DictReader(infile)):
                 meta = data.new_metadata(filepath, index)
-                date = parse(row['DATE']).date()
-                rtype = row['TYPE']
+                date = parse(row["DATE"]).date()
+                rtype = row["TYPE"]
                 link = f"ut{row['REF #']}"
                 desc = f"({row['TYPE']}) {row['DESCRIPTION']}"
-                units = amount.Amount(D(row['AMOUNT']), self.currency)
-                fees = amount.Amount(D(row['FEES']), self.currency)
+                units = amount.Amount(D(row["AMOUNT"]), self.currency)
+                fees = amount.Amount(D(row["FEES"]), self.currency)
                 other = amount.add(units, fees)
 
-                if rtype == 'XFER':
+                if rtype == "XFER":
                     assert fees.number == ZERO
                     txn = data.Transaction(
-                        meta, date, flags.FLAG_OKAY, None, desc, data.EMPTY_SET, {link}, [
-                            data.Posting(self.account_cash, units, None, None, None,
-                                         None),
-                            data.Posting(self.account_external, -other, None, None, None,
-                                         None),
-                        ])
+                        meta,
+                        date,
+                        flags.FLAG_OKAY,
+                        None,
+                        desc,
+                        data.EMPTY_SET,
+                        {link},
+                        [
+                            data.Posting(self.account_cash, units, None, None, None, None),
+                            data.Posting(
+                                self.account_external, -other, None, None, None, None
+                            ),
+                        ],
+                    )
 
-                elif rtype == 'DIV':
+                elif rtype == "DIV":
                     assert fees.number == ZERO
 
                     # Extract the instrument name from its description.
-                    match = re.search(r'~([A-Z]+)$', row['DESCRIPTION'])
+                    match = re.search(r"~([A-Z]+)$", row["DESCRIPTION"])
                     if not match:
-                        logging.error("Missing instrument name in '%s'", row['DESCRIPTION'])
+                        logging.error("Missing instrument name in '%s'", row["DESCRIPTION"])
                         continue
                     instrument = match.group(1)
                     account_dividends = self.account_dividends.format(instrument)
 
                     txn = data.Transaction(
-                        meta, date, flags.FLAG_OKAY, None, desc, data.EMPTY_SET, {link}, [
+                        meta,
+                        date,
+                        flags.FLAG_OKAY,
+                        None,
+                        desc,
+                        data.EMPTY_SET,
+                        {link},
+                        [
                             data.Posting(self.account_cash, units, None, None, None, None),
                             data.Posting(account_dividends, -other, None, None, None, None),
-                        ])
+                        ],
+                    )
 
-                elif rtype in ('BUY', 'SELL'):
-
+                elif rtype in ("BUY", "SELL"):
                     # Extract the instrument name, number of units, and price from
                     # the description. That's just what we're provided with (this is
                     # actually realistic of some data from some institutions, you
                     # have to figure out a way in your parser).
-                    match = re.search(r'\+([A-Z]+)\b +([0-9.]+)\b +@([0-9.]+)',
-                                      row['DESCRIPTION'])
+                    match = re.search(
+                        r"\+([A-Z]+)\b +([0-9.]+)\b +@([0-9.]+)", row["DESCRIPTION"]
+                    )
                     if not match:
-                        logging.error("Missing purchase infos in '%s'", row['DESCRIPTION'])
+                        logging.error("Missing purchase infos in '%s'", row["DESCRIPTION"])
                         continue
                     instrument = match.group(1)
                     account_inst = account.join(self.account_root, instrument)
                     units_inst = amount.Amount(D(match.group(2)), instrument)
                     rate = D(match.group(3))
 
-                    if rtype == 'BUY':
+                    if rtype == "BUY":
                         cost = position.Cost(rate, self.currency, None, None)
                         txn = data.Transaction(
-                            meta, date, flags.FLAG_OKAY, None, desc, data.EMPTY_SET, {link}, [
-                                data.Posting(self.account_cash, units, None, None, None,
-                                             None),
-                                data.Posting(self.account_fees, fees, None, None, None,
-                                             None),
-                                data.Posting(account_inst, units_inst, cost, None, None,
-                                             None),
-                            ])
+                            meta,
+                            date,
+                            flags.FLAG_OKAY,
+                            None,
+                            desc,
+                            data.EMPTY_SET,
+                            {link},
+                            [
+                                data.Posting(
+                                    self.account_cash, units, None, None, None, None
+                                ),
+                                data.Posting(
+                                    self.account_fees, fees, None, None, None, None
+                                ),
+                                data.Posting(
+                                    account_inst, units_inst, cost, None, None, None
+                                ),
+                            ],
+                        )
 
-                    elif rtype == 'SELL':
+                    elif rtype == "SELL":
                         # Extract the lot. In practice this information not be there
                         # and you will have to identify the lots manually by editing
                         # the resulting output. You can leave the cost.number slot
                         # set to None if you like.
-                        match = re.search(r'\(LOT ([0-9.]+)\)', row['DESCRIPTION'])
+                        match = re.search(r"\(LOT ([0-9.]+)\)", row["DESCRIPTION"])
                         if not match:
-                            logging.error("Missing cost basis in '%s'", row['DESCRIPTION'])
+                            logging.error("Missing cost basis in '%s'", row["DESCRIPTION"])
                             continue
                         cost_number = D(match.group(1))
                         cost = position.Cost(cost_number, self.currency, None, None)
                         price = amount.Amount(rate, self.currency)
                         account_gains = self.account_gains.format(instrument)
                         txn = data.Transaction(
-                            meta, date, flags.FLAG_OKAY, None, desc, data.EMPTY_SET, {link}, [
-                                data.Posting(self.account_cash, units, None, None, None,
-                                             None),
-                                data.Posting(self.account_fees, fees, None, None, None,
-                                             None),
-                                data.Posting(account_inst, units_inst, cost, price, None,
-                                             None),
-                                data.Posting(account_gains, None, None, None, None,
-                                             None),
-                            ])
+                            meta,
+                            date,
+                            flags.FLAG_OKAY,
+                            None,
+                            desc,
+                            data.EMPTY_SET,
+                            {link},
+                            [
+                                data.Posting(
+                                    self.account_cash, units, None, None, None, None
+                                ),
+                                data.Posting(
+                                    self.account_fees, fees, None, None, None, None
+                                ),
+                                data.Posting(
+                                    account_inst, units_inst, cost, price, None, None
+                                ),
+                                data.Posting(account_gains, None, None, None, None, None),
+                            ],
+                        )
 
                 else:
                     logging.error("Unknown row type: %s; skipping", rtype)
@@ -167,10 +208,15 @@ class Importer(beangulp.Importer):
         # Insert a final balance check.
         if index:
             entries.append(
-                data.Balance(meta, date + datetime.timedelta(days=1),
-                             self.account_cash,
-                             amount.Amount(D(row['BALANCE']), self.currency),
-                             None, None))
+                data.Balance(
+                    meta,
+                    date + datetime.timedelta(days=1),
+                    self.account_cash,
+                    amount.Amount(D(row["BALANCE"]), self.currency),
+                    None,
+                    None,
+                )
+            )
 
         return entries
 
@@ -186,13 +232,13 @@ class Importer(beangulp.Importer):
             return False
 
         # Get all the links with the expected ut$ID format.
-        aids = [link for link in a.links if re.match(r'ut\d{8}', link)]
+        aids = [link for link in a.links if re.match(r"ut\d{8}", link)]
         if not aids:
             # If there are no matching links, stop here.
             return False
 
         # Get all the links with the expected ut$ID format.
-        bids = [link for link in b.links if re.match(r'ut\d{8}', link)]
+        bids = [link for link in b.links if re.match(r"ut\d{8}", link)]
         if not bids:
             # If there are no matching links, stop here.
             return False
@@ -207,7 +253,7 @@ class Importer(beangulp.Importer):
         return False
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     importer = Importer(
         "USD",
         "Assets:US:UTrade",
@@ -215,5 +261,6 @@ if __name__ == '__main__':
         "Income:US:UTrade:{}:Dividend",
         "Income:US:UTrade:{}:Gains",
         "Expenses:Financial:Fees",
-        "Assets:US:BofA:Checking")
+        "Assets:US:BofA:Checking",
+    )
     main(importer)

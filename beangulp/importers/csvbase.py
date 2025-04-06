@@ -30,11 +30,11 @@ def _resolve(spec, names):
     if isinstance(spec, int):
         return spec
     if names is None:
-        raise KeyError(f'Column {spec!r} cannot be found in file without column names')
+        raise KeyError(f"Column {spec!r} cannot be found in file without column names")
     col = names.get(spec)
     if col is None:
-        cols = ', '.join(repr(name) for name in names.keys())
-        raise KeyError(f'Cannot find column {spec!r} in column names: {cols}')
+        cols = ", ".join(repr(name) for name in names.keys())
+        raise KeyError(f"Cannot find column {spec!r} in column names: {cols}")
     return col
 
 
@@ -48,13 +48,14 @@ class Column:
         to generate a value.
 
     """
+
     def __init__(self, *names, default=NA):
         self.names = names
         self.default = default
 
     def __repr__(self):
-        names = ', '.join(repr(i) for i in self.names)
-        return f'{self.__class__.__module__}.{self.__class__.__name__}({names})'
+        names = ", ".join(repr(i) for i in self.names)
+        return f"{self.__class__.__module__}.{self.__class__.__name__}({names})"
 
     def getter(self, names):
         """Generate an attribute accessor for the column specification.
@@ -73,11 +74,13 @@ class Column:
 
         """
         idxs = [_resolve(x, names) for x in self.names]
+
         def func(obj):
             value = tuple(obj[i] for i in idxs)
             if self.default is not NA and not any(value):
                 return self.default
             return self.parse(*value)
+
         return func
 
     def parse(self, value):
@@ -102,7 +105,8 @@ class Columns(Column):
       default: Value to return all the fields are empty, if specified.
 
     """
-    def __init__(self, *names, sep=' ', default=NA):
+
+    def __init__(self, *names, sep=" ", default=NA):
         super().__init__(*names, default=default)
         self.sep = sep
 
@@ -123,7 +127,8 @@ class Date(Column):
       default: Value to return if the field is empty, if specified.
 
     """
-    def __init__(self, name, frmt='%Y-%m-%d', default=NA):
+
+    def __init__(self, name, frmt="%Y-%m-%d", default=NA):
         super().__init__(name, default=default)
         self.frmt = frmt
 
@@ -148,6 +153,7 @@ class Amount(Column):
       default: Value to return if the field is empty, if specified.
 
     """
+
     def __init__(self, name, subs=None, negate=False, default=NA):
         super().__init__(name, default=default)
         self.subs = subs if subs is not None else {}
@@ -179,15 +185,18 @@ class CreditOrDebit(Column):
       default: Value to return if both fields are empty, if specified.
 
     """
+
     def __init__(self, credit, debit, subs=None, default=NA):
         super().__init__(credit, debit, default=default)
         self.subs = subs if subs is not None else {}
 
     def parse(self, credit, debit):
         if credit and debit:
-            raise ValueError('The credit and debit fields cannot be populated at the same time')
+            raise ValueError(
+                "The credit and debit fields cannot be populated at the same time"
+            )
         if not credit and not debit:
-            raise ValueError('Neither credit or debit fields are populated')
+            raise ValueError("Neither credit or debit fields are populated")
         value = credit if credit else debit
         for pattern, replacement in self.subs.items():
             value = re.sub(pattern, replacement, value)
@@ -202,6 +211,7 @@ class CreditOrDebit(Column):
 class CSVMeta(abc.ABCMeta):
     """A metaclass that extracts column specifications from class members
     and stores them in a columns dictionary keyed by the member name."""
+
     def __new__(mcs, name, bases, dct):
         columns = {}
         others = {}
@@ -210,7 +220,7 @@ class CSVMeta(abc.ABCMeta):
                 columns[key] = value
                 continue
             others[key] = value
-        others['columns'] = columns
+        others["columns"] = columns
         return super().__new__(mcs, name, bases, others)
 
 
@@ -222,7 +232,7 @@ class Order(Enum):
 
 
 class CSVReader(metaclass=CSVMeta):
-    encoding = 'utf8'
+    encoding = "utf8"
     """File encoding."""
     skiplines = 0
     """Number of input lines to skip before starting processing."""
@@ -230,7 +240,7 @@ class CSVReader(metaclass=CSVMeta):
     """Whether the data file contains a row with column names."""
     dialect = None
     """The CSV dialect used in the input file."""
-    comments = '#'
+    comments = "#"
     """Comment character."""
     order = None
     """Order of entries in the CSV file. If None the order will be inferred from the file content."""
@@ -269,7 +279,7 @@ class CSVReader(metaclass=CSVMeta):
             if self.names:
                 headers = next(reader, None)
                 if headers is None:
-                    raise IndexError('The input file does not contain an header line')
+                    raise IndexError("The input file does not contain an header line")
                 names = {name.strip(): index for index, name in enumerate(headers)}
 
             # Construct a class with attribute accessors for the
@@ -277,7 +287,7 @@ class CSVReader(metaclass=CSVMeta):
             attrs = {}
             for name, column in self.columns.items():
                 attrs[name] = property(column.getter(names))
-            row = type('Row', (tuple, ), attrs)
+            row = type("Row", (tuple,), attrs)
 
             # Return data rows.
             for x in reader:
@@ -299,7 +309,8 @@ class Importer(beangulp.Importer, CSVReader):
       flag: Importer default flag for new transactions.
 
     """
-    def __init__(self, account, currency, flag='*'):
+
+    def __init__(self, account, currency, flag="*"):
         self.importer_account = account
         self.currency = currency
         self.flag = flag
@@ -344,25 +355,31 @@ class Importer(beangulp.Importer, CSVReader):
                 continue
 
             try:
-                tag = getattr(row, 'tag', None)
+                tag = getattr(row, "tag", None)
                 tags = {tag} if tag else EMPTY
 
-                link = getattr(row, 'link', None)
+                link = getattr(row, "link", None)
                 links = {link} if link else EMPTY
 
                 # This looks like an exercise in defensive programming
                 # gone too far, but we do not want to depend on any field
                 # being defined other than the essential ones.
-                flag = getattr(row, 'flag', self.flag)
-                payee = getattr(row, 'payee', None)
-                account = getattr(row, 'account', default_account)
-                currency = getattr(row, 'currency', self.currency)
+                flag = getattr(row, "flag", self.flag)
+                payee = getattr(row, "payee", None)
+                account = getattr(row, "account", default_account)
+                currency = getattr(row, "currency", self.currency)
                 units = data.Amount(row.amount, currency)
 
                 # Create a transaction.
                 txn = data.Transaction(
                     self.metadata(filepath, lineno, row),
-                    row.date, flag, payee, row.narration, tags, links, [
+                    row.date,
+                    flag,
+                    payee,
+                    row.narration,
+                    tags,
+                    links,
+                    [
                         data.Posting(account, units, None, None, None, None),
                     ],
                 )
@@ -374,7 +391,9 @@ class Importer(beangulp.Importer, CSVReader):
                 # Report input file location of processing errors. This could
                 # use Exception.add_note() instead, but this is available only
                 # with Python 3.11 and later.
-                raise RuntimeError(f'Error processing {filepath} line {lineno + 1} with values {row!r}') from ex
+                raise RuntimeError(
+                    f"Error processing {filepath} line {lineno + 1} with values {row!r}"
+                ) from ex
 
             # Allow finalize() to reject the row extracted from the current row.
             if txn is None:
@@ -384,18 +403,22 @@ class Importer(beangulp.Importer, CSVReader):
             entries.append(txn)
 
             # Add balance to balances list.
-            balance = getattr(row, 'balance', None)
+            balance = getattr(row, "balance", None)
             if balance is not None:
                 date = row.date + datetime.timedelta(days=1)
                 units = data.Amount(balance, currency)
                 meta = data.new_metadata(filepath, lineno)
-                balances[currency].append(data.Balance(meta, date, account, units, None, None))
+                balances[currency].append(
+                    data.Balance(meta, date, account, units, None, None)
+                )
 
         if not entries:
             return []
 
         if self.order is None:
-            order = Order.ASCENDING if entries[0].date <= entries[-1].date else Order.DESCENDING
+            order = (
+                Order.ASCENDING if entries[0].date <= entries[-1].date else Order.DESCENDING
+            )
         else:
             order = self.order
 

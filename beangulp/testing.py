@@ -20,11 +20,13 @@ from beangulp import extract
 from beangulp import utils
 
 
-def write_expected(outfile: TextIO,
-                   account: data.Account,
-                   date: Optional[datetime.date],
-                   name: Optional[str],
-                   entries: data.Entries):
+def write_expected(
+    outfile: TextIO,
+    account: data.Account,
+    date: Optional[datetime.date],
+    name: Optional[str],
+    entries: data.Entries,
+):
     """Produce the expected output file.
 
     Args:
@@ -34,17 +36,17 @@ def write_expected(outfile: TextIO,
       name: The filename for filing, produced by the importer.
       entries: The list of entries extracted by the importer.
     """
-    date = date.isoformat() if date else ''
-    name = name or ''
-    print(f';; Account: {account}', file=outfile)
-    print(f';; Date: {date}', file=outfile)
-    print(f';; Name: {name}', file=outfile)
+    date = date.isoformat() if date else ""
+    name = name or ""
+    print(f";; Account: {account}", file=outfile)
+    print(f";; Date: {date}", file=outfile)
+    print(f";; Name: {name}", file=outfile)
     printer.print_entries(entries, file=outfile)
 
 
 def write_expected_file(filepath: str, *data, force: bool = False):
     """Writes out the expected file."""
-    mode = 'w' if force else 'x'
+    mode = "w" if force else "x"
     with open(filepath, mode) as expfile:
         write_expected(expfile, *data)
 
@@ -57,20 +59,21 @@ def compare_expected(filepath: str, *data) -> List[str]:
         buffer.seek(0)
         lines_imported = buffer.readlines()
 
-    with open(filepath, 'r') as infile:
+    with open(filepath, "r") as infile:
         lines_expected = infile.readlines()
 
-    diff = difflib.unified_diff(lines_expected, lines_imported,
-                                tofile='expected.beancount',
-                                fromfile='imported.beancount')
+    diff = difflib.unified_diff(
+        lines_expected,
+        lines_imported,
+        tofile="expected.beancount",
+        fromfile="imported.beancount",
+    )
     return list(diff)
 
 
-def run_importer(importer: Importer,
-                 document: str) -> Tuple[data.Account,
-                                         Optional[datetime.date],
-                                         Optional[str],
-                                         data.Entries]:
+def run_importer(
+    importer: Importer, document: str
+) -> Tuple[data.Account, Optional[datetime.date], Optional[str], data.Entries]:
     """Run the various importer methods on the given cached file."""
     account = importer.account(document)
     date = importer.date(document)
@@ -79,25 +82,22 @@ def run_importer(importer: Importer,
     return account, date, name, entries
 
 
-@click.command('test')
-@click.argument('documents', nargs=-1,
-                type=click.Path(exists=True, resolve_path=True))
-@click.option('--expected', '-e', metavar='DIR',
-              type=click.Path(file_okay=False, resolve_path=True),
-              help="Directory containing the expecrted output files.")
-@click.option('--verbose', '-v', count=True,
-              help="Enable verbose output.")
-@click.option('--quiet', '-q', count=True,
-              help="Suppress all output.")
-@click.option('--failfast', '-x', is_flag=True,
-              help="Stop at the first test failure.")
+@click.command("test")
+@click.argument("documents", nargs=-1, type=click.Path(exists=True, resolve_path=True))
+@click.option(
+    "--expected",
+    "-e",
+    metavar="DIR",
+    type=click.Path(file_okay=False, resolve_path=True),
+    help="Directory containing the expecrted output files.",
+)
+@click.option("--verbose", "-v", count=True, help="Enable verbose output.")
+@click.option("--quiet", "-q", count=True, help="Suppress all output.")
+@click.option("--failfast", "-x", is_flag=True, help="Stop at the first test failure.")
 @click.pass_obj
-def _test(ctx,
-          documents: List[str],
-          expected: str,
-          verbose: int,
-          quiet: int,
-          failfast: bool):
+def _test(
+    ctx, documents: List[str], expected: str, verbose: int, quiet: int, failfast: bool
+):
     """Test the importer.
 
     Run the importer on all DOCUMENTS and verify that it produces the
@@ -120,25 +120,22 @@ def _test(ctx,
     return _run(ctx, documents, expected, verbose, quiet, failfast=failfast)
 
 
-@click.command('generate')
-@click.argument('documents', nargs=-1,
-                type=click.Path(exists=True, resolve_path=True))
-@click.option('--expected', '-e', metavar='DIR',
-              type=click.Path(file_okay=False, resolve_path=True),
-              help="Directory containing the expecrted output files.")
-@click.option('--verbose', '-v', count=True,
-              help="Enable verbose output.")
-@click.option('--quiet', '-q', count=True,
-              help="Suppress all output.")
-@click.option('--force', '-f', is_flag=True,
-              help='Alow to overwrite existing files.')
+@click.command("generate")
+@click.argument("documents", nargs=-1, type=click.Path(exists=True, resolve_path=True))
+@click.option(
+    "--expected",
+    "-e",
+    metavar="DIR",
+    type=click.Path(file_okay=False, resolve_path=True),
+    help="Directory containing the expecrted output files.",
+)
+@click.option("--verbose", "-v", count=True, help="Enable verbose output.")
+@click.option("--quiet", "-q", count=True, help="Suppress all output.")
+@click.option("--force", "-f", is_flag=True, help="Alow to overwrite existing files.")
 @click.pass_obj
-def _generate(ctx,
-              documents: List[str],
-              expected: str,
-              verbose: int,
-              quiet: int,
-              force: bool):
+def _generate(
+    ctx, documents: List[str], expected: str, verbose: int, quiet: int, force: bool
+):
     """Generate expected files for tests.
 
     Run the importer on all DOCUMENTS and save the import results in
@@ -159,14 +156,16 @@ def _generate(ctx,
     return _run(ctx, documents, expected, verbose, quiet, generate=True, force=force)
 
 
-def _run(ctx,
-         documents: List[str],
-         expected: str,
-         verbose: int,
-         quiet: int,
-         generate: bool = False,
-         failfast: bool = False,
-         force: bool = False):
+def _run(
+    ctx,
+    documents: List[str],
+    expected: str,
+    verbose: int,
+    quiet: int,
+    generate: bool = False,
+    failfast: bool = False,
+    force: bool = False,
+):
     """Implement the test and generate commands."""
 
     assert len(ctx.importers) == 1
@@ -177,13 +176,13 @@ def _run(ctx,
     failures = 0
 
     for doc in utils.walk(documents):
-        if doc.endswith('.beancount'):
+        if doc.endswith(".beancount"):
             continue
 
         # Unless verbose mode is enabled, do not output a newline so
         # the test result is printed on the same line as the test
         # document filename.
-        log(f'* {doc}', nl=verbosity > 0)
+        log(f"* {doc}", nl=verbosity > 0)
 
         # Compute the path to the expected output file.
         expected_filename = f"{doc}.beancount"
@@ -193,26 +192,31 @@ def _run(ctx,
         # Run the importer's identify() method.
         if importer.identify(doc):
             account, date, name, entries = run_importer(importer, doc)
-            log(f'  {expected_filename}', 1)
+            log(f"  {expected_filename}", 1)
             if account is None:
                 failures += 1
-                log('  ERROR', fg='red')
-                log('  ValueError: account() should not return None')
+                log("  ERROR", fg="red")
+                log("  ValueError: account() should not return None")
                 continue
-            log('  {}/{:%Y-%m-%d}-{}'.format(
-                account.replace(":", "/"),
-                date or utils.getmdate(doc),
-                name or path.basename(doc)), 1)
+            log(
+                "  {}/{:%Y-%m-%d}-{}".format(
+                    account.replace(":", "/"),
+                    date or utils.getmdate(doc),
+                    name or path.basename(doc),
+                ),
+                1,
+            )
             if generate:
                 try:
-                    write_expected_file(expected_filename, account, date, name, entries,
-                        force=force)
+                    write_expected_file(
+                        expected_filename, account, date, name, entries, force=force
+                    )
                 except FileExistsError as ex:
                     failures += 1
-                    log('  ERROR', fg='red')
-                    log('  FileExistsError: {}'.format(ex.filename))
+                    log("  ERROR", fg="red")
+                    log("  FileExistsError: {}".format(ex.filename))
                     continue
-                log('  OK', fg='green')
+                log("  OK", fg="green")
                 continue
             try:
                 diff = compare_expected(expected_filename, account, date, name, entries)
@@ -220,29 +224,29 @@ def _run(ctx,
                 # The importer has positively identified a document
                 # for which there is no expecred output file.
                 failures += 1
-                log('  ERROR', fg='red')
-                log('  ExpectedOutputFileNotFound')
+                log("  ERROR", fg="red")
+                log("  ExpectedOutputFileNotFound")
                 continue
             if diff:
                 # Test failure. Log an error.
                 failures += 1
-                log('  ERROR', fg='red')
+                log("  ERROR", fg="red")
                 if verbosity >= 0:
                     sys.stdout.writelines(diff)
                     sys.stdout.write(os.linesep)
                     continue
-            log('  PASSED', fg='green')
+            log("  PASSED", fg="green")
 
         elif path.exists(expected_filename):
             # The importer has not identified a document it should have.
             failures += 1
-            log('  ERROR', fg='red')
-            log('  DocumentNotIdentified')
+            log("  ERROR", fg="red")
+            log("  DocumentNotIdentified")
 
         else:
             # Ignore files that are not positively identified by the
             # importer and for which there is no expected output file.
-            log('  IGNORED')
+            log("  IGNORED")
 
         if failfast and failures:
             break
@@ -266,6 +270,6 @@ def main(importer: Union[Importer, ImporterProtocol]):
         # Even if DeprecationWarnings are ignored by default print
         # them anyway unless other warnings settings are specified by
         # the -W Python command line flag.
-        warnings.simplefilter('default')
+        warnings.simplefilter("default")
     main = wrap(importer)
     main()

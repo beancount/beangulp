@@ -6,6 +6,7 @@ downloaded file, extract transactions from them and file away these
 files under a clean and rigidly named hierarchy for preservation.
 
 """
+
 __copyright__ = "Copyright (C) 2016,2018  Martin Blais"
 __license__ = "GNU GPLv2"
 
@@ -37,25 +38,25 @@ def _walk(file_or_dirs, log):
 
     """
     for filename in utils.walk(file_or_dirs):
-        log(f'* {filename:}', nl=False)
+        log(f"* {filename:}", nl=False)
         if os.path.getsize(filename) > identify.FILE_TOO_LARGE_THRESHOLD:
-            log(' ... SKIP')
+            log(" ... SKIP")
             continue
         yield filename
 
 
-@click.command('extract')
-@click.argument('src', nargs=-1, type=click.Path(exists=True, resolve_path=True))
-@click.option('--output', '-o', type=click.File('w'), default='-',
-              help='Output file.')
-@click.option('--existing', '-e', type=click.Path(exists=True),
-              help='Existing Beancount ledger for de-duplication.')
-@click.option('--reverse', '-r', is_flag=True,
-              help='Sort entries in reverse order.')
-@click.option('--failfast', '-x', is_flag=True,
-              help='Stop processing at the first error.')
-@click.option('--quiet', '-q', count=True,
-              help='Suppress all output.')
+@click.command("extract")
+@click.argument("src", nargs=-1, type=click.Path(exists=True, resolve_path=True))
+@click.option("--output", "-o", type=click.File("w"), default="-", help="Output file.")
+@click.option(
+    "--existing",
+    "-e",
+    type=click.Path(exists=True),
+    help="Existing Beancount ledger for de-duplication.",
+)
+@click.option("--reverse", "-r", is_flag=True, help="Sort entries in reverse order.")
+@click.option("--failfast", "-x", is_flag=True, help="Stop processing at the first error.")
+@click.option("--quiet", "-q", count=True, help="Suppress all output.")
 @click.pass_obj
 def _extract(
     ctx: "Ingest",
@@ -87,18 +88,18 @@ def _extract(
         with errors:
             importer = identify.identify(ctx.importers, filename)
             if not importer:
-                log('') # Newline.
+                log("")  # Newline.
                 continue
 
             # Signal processing of this document.
-            log(' ...', nl=False)
+            log(" ...", nl=False)
 
             # Extract entries.
             entries = extract.extract_from_file(importer, filename, existing_entries)
             account = importer.account(filename)
 
             extracted.append((filename, entries, account, importer))
-            log(' OK', fg='green')
+            log(" OK", fg="green")
 
         if failfast and errors:
             break
@@ -122,21 +123,36 @@ def _extract(
         sys.exit(1)
 
 
-@click.command('archive')
-@click.argument('src', nargs=-1, type=click.Path(exists=True, resolve_path=True))
-@click.option('--destination', '-o', metavar='DIR',
-              type=click.Path(exists=True, file_okay=False, resolve_path=True),
-              help='The destination documents tree root directory.')
-@click.option('--overwrite', '-f', is_flag=True,
-              help='Overwrite destination files with the same name.')
-@click.option('--dry-run', '-n', is_flag=True,
-              help='Just print where the files would be moved.')
-@click.option('--failfast', '-x', is_flag=True,
-              help='Stop processing at the first error.')
-@click.option('--quiet', '-q', count=True,
-              help='Suppress all output.')
+@click.command("archive")
+@click.argument("src", nargs=-1, type=click.Path(exists=True, resolve_path=True))
+@click.option(
+    "--destination",
+    "-o",
+    metavar="DIR",
+    type=click.Path(exists=True, file_okay=False, resolve_path=True),
+    help="The destination documents tree root directory.",
+)
+@click.option(
+    "--overwrite",
+    "-f",
+    is_flag=True,
+    help="Overwrite destination files with the same name.",
+)
+@click.option(
+    "--dry-run", "-n", is_flag=True, help="Just print where the files would be moved."
+)
+@click.option("--failfast", "-x", is_flag=True, help="Stop processing at the first error.")
+@click.option("--quiet", "-q", count=True, help="Suppress all output.")
 @click.pass_obj
-def _archive(ctx: 'Ingest', src: str, destination: str, dry_run: bool, overwrite: bool, failfast: bool, quiet: bool):
+def _archive(
+    ctx: "Ingest",
+    src: str,
+    destination: str,
+    dry_run: bool,
+    overwrite: bool,
+    failfast: bool,
+    quiet: bool,
+):
     """Archive documents.
 
     Walk the SRC list of files or directories and move each file
@@ -158,6 +174,7 @@ def _archive(ctx: 'Ingest', src: str, destination: str, dry_run: bool, overwrite
     # seems better than using a required option.
     if destination is None:
         import __main__
+
         destination = os.path.dirname(os.path.abspath(__main__.__file__))
 
     verbosity = -quiet
@@ -169,11 +186,11 @@ def _archive(ctx: 'Ingest', src: str, destination: str, dry_run: bool, overwrite
         with errors:
             importer = identify.identify(ctx.importers, filename)
             if not importer:
-                log('') # Newline.
+                log("")  # Newline.
                 continue
 
             # Signal processing of this document.
-            log(' ...', nl=False)
+            log(" ...", nl=False)
 
             destpath = archive.filepath(importer, filename)
 
@@ -183,22 +200,22 @@ def _archive(ctx: 'Ingest', src: str, destination: str, dry_run: bool, overwrite
             # Check for destination filename collisions.
             collisions = [src for src, dst in renames if dst == destpath]
             if collisions:
-                raise exceptions.Error('Collision in destination file path.', destpath)
+                raise exceptions.Error("Collision in destination file path.", destpath)
 
             # Check if the destination file already exists.
             if not overwrite and os.path.exists(destpath):
-                raise exceptions.Error('Destination file already exists.', destpath)
+                raise exceptions.Error("Destination file already exists.", destpath)
 
             renames.append((filename, destpath))
-            log(' OK', fg='green')
-            log(f'  {destpath:}')
+            log(" OK", fg="green")
+            log(f"  {destpath:}")
 
         if failfast and errors:
             break
 
     # If there are any errors, stop here.
     if errors:
-        log('# Errors detected: documents will not be filed.')
+        log("# Errors detected: documents will not be filed.")
         sys.exit(1)
 
     if not dry_run:
@@ -206,14 +223,12 @@ def _archive(ctx: 'Ingest', src: str, destination: str, dry_run: bool, overwrite
             archive.move(filename, destpath)
 
 
-@click.command('identify')
-@click.argument('src', nargs=-1, type=click.Path(exists=True, resolve_path=True))
-@click.option('--failfast', '-x', is_flag=True,
-              help='Stop processing at the first error.')
-@click.option('--verbose', '-v', is_flag=True,
-              help='Show account information.')
+@click.command("identify")
+@click.argument("src", nargs=-1, type=click.Path(exists=True, resolve_path=True))
+@click.option("--failfast", "-x", is_flag=True, help="Stop processing at the first error.")
+@click.option("--verbose", "-v", is_flag=True, help="Show account information.")
 @click.pass_obj
-def _identify(ctx: 'Ingest', src: str, failfast: bool, verbose: bool):
+def _identify(ctx: "Ingest", src: str, failfast: bool, verbose: bool):
     """Identify files for import.
 
     Walk the SRC list of files or directories and report each file
@@ -229,18 +244,18 @@ def _identify(ctx: 'Ingest', src: str, failfast: bool, verbose: bool):
         with errors:
             importer = identify.identify(ctx.importers, filename)
             if not importer:
-                log('') # Newline.
+                log("")  # Newline.
                 continue
 
             # Signal processing of this document.
-            log(' ...', nl=False)
+            log(" ...", nl=False)
 
             # When verbose output is requested, get the associated account.
             account = importer.account(filename) if verbose else None
 
-            log(' OK', fg='green')
-            log(f'  {importer.name:}')
-            log(f'  {account:}', 1)
+            log(" OK", fg="green")
+            log(f"  {importer.name:}")
+            log(f"  {account:}", 1)
 
         if failfast and errors:
             break
@@ -258,13 +273,15 @@ def _importer(importer):
     if isinstance(importer, Importer):
         return importer
     if isinstance(importer, ImporterProtocol):
-        warnings.warn('The beangulp.importer.ImporterProtocol interface for '
-                      'importers has been replaced by the beangulp.Importer '
-                      'interface and is therefore deprecated. Please update '
-                      'your importer {} to the new interface.'.format(importer),
-                      stacklevel=3)
+        warnings.warn(
+            "The beangulp.importer.ImporterProtocol interface for "
+            "importers has been replaced by the beangulp.Importer "
+            "interface and is therefore deprecated. Please update "
+            "your importer {} to the new interface.".format(importer),
+            stacklevel=3,
+        )
         return Adapter(importer)
-    raise TypeError(f'expected bengulp.Importer not {type(importer):}')
+    raise TypeError(f"expected bengulp.Importer not {type(importer):}")
 
 
 class Ingest:
@@ -274,12 +291,15 @@ class Ingest:
 
         while extract.find_duplicate_entries in self.hooks:
             self.hooks.remove(extract.find_duplicate_entries)
-            warnings.warn('beangulp.extract.find_duplicate_entries has been removed '
-                          'from the import hooks. Deduplication is now integral part '
-                          'of the extract processing and can be customized by the '
-                          'importers. See beangulp.importer.Importer.', stacklevel=2)
+            warnings.warn(
+                "beangulp.extract.find_duplicate_entries has been removed "
+                "from the import hooks. Deduplication is now integral part "
+                "of the extract processing and can be customized by the "
+                "importers. See beangulp.importer.Importer.",
+                stacklevel=2,
+            )
 
-        @click.group('beangulp')
+        @click.group("beangulp")
         @click.version_option()
         @click.pass_context
         def cli(ctx):
