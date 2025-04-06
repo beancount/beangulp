@@ -54,6 +54,7 @@ lint.select = ['E', 'F', 'W', 'UP', 'B', 'C4', 'PL', 'RUF']
 lint.ignore = [
     'B007',
     'B020',
+    'E501',
     'E731',
     'PLR0911',
     'PLR0912',
