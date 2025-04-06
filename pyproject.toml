@@ -49,7 +49,7 @@ issues = 'https://github.com/beancount/beangulp/issues'
 find = {}
 
 [tool.ruff]
-line-length = 128
+line-length = 92  # Same as Beancount's.
 lint.select = ['E', 'F', 'W', 'UP', 'B', 'C4', 'PL', 'RUF']
 lint.ignore = [
     'B007',
