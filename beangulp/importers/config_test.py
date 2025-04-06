@@ -2,6 +2,7 @@ __copyright__ = "Copyright (C) 2016  Martin Blais"
 __license__ = "GNU GPLv2"
 
 import unittest
+import warnings
 
 from beangulp import importer
 from beangulp.importers import config
@@ -22,6 +23,7 @@ class TestConfigMixin(unittest.TestCase):
 
     def setUp(self):
         self.default_config = dict.fromkeys(SimpleTestImporter.REQUIRED_CONFIG, 'Assets:Something')
+        warnings.filterwarnings("ignore", category=DeprecationWarning)
 
     def test_constructors(self):
         # Test invalid input type.

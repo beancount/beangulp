@@ -2,6 +2,7 @@ __copyright__ = "Copyright (C) 2016  Martin Blais"
 __license__ = "GNU GPLv2"
 
 import unittest
+import warnings
 
 from beancount.utils import test_utils
 from beangulp.importers import fileonly
@@ -10,6 +11,9 @@ from beangulp import file_type
 
 
 class TestFileOnly(unittest.TestCase):
+
+    def setUp(self):
+        warnings.filterwarnings("ignore", category=DeprecationWarning)
 
     def test_constructors(self):
         fileonly.Importer(matchers=[('filename', '.csv'),

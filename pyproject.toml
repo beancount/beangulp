@@ -28,12 +28,16 @@ classifiers = [
     'Topic :: Office/Business :: Financial :: Accounting',
     'Topic :: Text Processing :: General',
 ]
+requires-python = ">=3.7"
 dependencies = [
-    'beancount >=2.3.5',
+    "beancount>=2.3.5",
     'beautifulsoup4',
     'chardet',
     'click >8.0',
+    "deprecation>=2.1.0", # Note: 3.13 provides warnings.deprecated().
     'lxml',
+    "petl>=1.7.16",
+    "pytest",
     'python-magic >=0.4.12; sys_platform != "win32"',
 ]
 
@@ -46,7 +50,6 @@ find = {}
 
 [tool.ruff]
 line-length = 128
-target-version = 'py37'
 lint.select = ['E', 'F', 'W', 'UP', 'B', 'C4', 'PL', 'RUF']
 lint.ignore = [
     'B007',

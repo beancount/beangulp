@@ -6,8 +6,9 @@ __license__ = "GNU GPLv2"
 import abc
 import datetime
 import inspect
-
 from typing import Optional
+
+from deprecation import deprecated
 
 from beancount.core import flags
 from beancount.core import data
@@ -177,6 +178,10 @@ class ImporterProtocol:
     # you prefer to create your imported transactions with a different flag.
     FLAG = flags.FLAG_OKAY
 
+    @deprecated(details="Use the Importer ABC instead")
+    def __init__(self):
+        pass
+
     def name(self):
         """See Importer class name property."""
         return f"{self.__class__.__module__}.{self.__class__.__name__}"
@@ -202,6 +207,7 @@ class ImporterProtocol:
 class Adapter(Importer):
     """Adapter from ImporterProtocol to Importer ABC interface."""
 
+    @deprecated(details="Use the Importer ABC instead")
     def __init__(self, importer):
         assert isinstance(importer, ImporterProtocol)
         self.importer = importer
