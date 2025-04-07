@@ -27,7 +27,6 @@ some point.
 import os
 import pickle
 import sys
-import time
 from os import path
 from datetime import datetime, timedelta
 

@@ -1,7 +1,6 @@
 import os
 import tempfile
 import unittest
-import time
 from unittest import mock
 from datetime import datetime, timedelta
 
