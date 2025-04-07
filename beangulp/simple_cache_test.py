@@ -1,7 +1,9 @@
 import os
 import tempfile
 import unittest
+import time
 from unittest import mock
+from datetime import datetime, timedelta
 
 from beangulp import simple_cache
 
@@ -100,3 +102,56 @@ class SimpleCacheTest(unittest.TestCase):
 
             # Verify it's in the cache directory
             self.assertEqual(cache_file, simple_cache.CACHEDIR)
+
+    def test_sentinel_file_creation(self):
+        """Test that the sentinel file is created."""
+
+        def converter(filename):
+            return "result"
+
+        # Make sure the sentinel file doesn't exist
+        sentinel_path = os.path.join(
+            simple_cache.CACHEDIR, simple_cache.GC_SENTINEL_FILENAME
+        )
+        if os.path.exists(sentinel_path):
+            os.remove(sentinel_path)
+
+        # Call convert, which should create the sentinel file
+        simple_cache.convert(self.test_file, converter)
+
+        # Check that the sentinel file was created
+        self.assertTrue(os.path.exists(sentinel_path))
+
+    def test_cleanup_old_files(self):
+        """Test that old cache files are cleaned up."""
+
+        # Create some fake old cache files
+        os.makedirs(simple_cache.CACHEDIR, exist_ok=True)
+        old_file = os.path.join(simple_cache.CACHEDIR, "old_file.pickle")
+        with open(old_file, "w") as f:
+            f.write("old content")
+
+        # Set the modification time to be older than the threshold
+        old_time = datetime.now() - timedelta(days=simple_cache.GC_THRESHOLD_DAYS + 1)
+        os.utime(old_file, (old_time.timestamp(), old_time.timestamp()))
+
+        # Create a sentinel file with an old timestamp
+        sentinel_path = os.path.join(
+            simple_cache.CACHEDIR, simple_cache.GC_SENTINEL_FILENAME
+        )
+        with open(sentinel_path, "w") as f:
+            f.write(str(old_time.timestamp()))
+        os.utime(sentinel_path, (old_time.timestamp(), old_time.timestamp()))
+
+        # Call convert, which should trigger cleanup
+        def converter(filename):
+            return "result"
+
+        with mock.patch("os.remove") as mock_remove:
+            simple_cache.convert(self.test_file, converter)
+
+            # Check that os.remove was called for the old file
+            mock_remove.assert_called()
+
+        # Check that the sentinel file was updated (newer timestamp)
+        self.assertGreater(os.path.getmtime(sentinel_path), old_time.timestamp())
