@@ -51,7 +51,8 @@ class Importer(beangulp.Importer):
     """An importer for Open Financial Exchange files."""
 
     def __init__(
-        self, acctid_regexp, account, basename=None, balance_type=BalanceType.DECLARED
+        self, acctid_regexp, account, basename=None, balance_type=BalanceType.DECLARED,
+        currency_override=None
     ):
         """Create a new importer posting to the given account.
 
@@ -61,11 +62,13 @@ class Importer(beangulp.Importer):
           acctid_regexp: A regexp, to match against the <ACCTID> tag of the OFX file.
           basename: An optional string, the name of the new files.
           balance_type: An enum of type BalanceType.
+          currency_override : currency to use instead of the one specified in the OFX file
         """
         self.acctid_regexp = acctid_regexp
         self.importer_account = account
         self.basename = basename
         self.balance_type = balance_type
+        self.currency_override = currency_override
 
     def identify(self, filepath):
         # Match for a compatible MIME type.
@@ -109,10 +112,11 @@ class Importer(beangulp.Importer):
             self.importer_account,
             flags.FLAG_OKAY,
             self.balance_type,
+            self.currency_override,
         )
 
 
-def extract(soup, filename, acctid_regexp, account, flag, balance_type):
+def extract(soup, filename, acctid_regexp, account, flag, balance_type, currency_override = None):
     """Extract transactions from an OFX file.
 
     Args:
@@ -121,6 +125,7 @@ def extract(soup, filename, acctid_regexp, account, flag, balance_type):
       account: An account string onto which to post the amounts found in the file.
       flag: A single-character string.
       balance_type: An enum of type BalanceType.
+      currency_override : currency to use instead of the one specified in the OFX file
     Returns:
       A sorted list of entries.
     """
@@ -129,6 +134,10 @@ def extract(soup, filename, acctid_regexp, account, flag, balance_type):
     for acctid, currency, transactions, balance in find_statement_transactions(soup):
         if not re.match(acctid_regexp, acctid):
             continue
+
+        # override currency
+        if currency_override:
+            currency = currency_override
 
         # Create Transaction directives.
         stmt_entries = []
