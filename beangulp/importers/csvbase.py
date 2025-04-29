@@ -10,6 +10,7 @@ from itertools import islice
 from beancount.core import data
 
 import beangulp
+from beangulp import utils
 
 EMPTY = frozenset()
 
@@ -162,7 +163,7 @@ class Amount(Column):
     def parse(self, value):
         for pattern, replacement in self.subs.items():
             value = re.sub(pattern, replacement, value)
-        parsed = decimal.Decimal(value)
+        parsed = decimal.Decimal(utils.parse_amount(value))
         if self.negate:
             parsed = -parsed
         return parsed
@@ -200,7 +201,7 @@ class CreditOrDebit(Column):
         value = credit if credit else debit
         for pattern, replacement in self.subs.items():
             value = re.sub(pattern, replacement, value)
-        parsed = decimal.Decimal(value)
+        parsed = decimal.Decimal(utils.parse_amount(value))
         return parsed if credit else -parsed
 
 
