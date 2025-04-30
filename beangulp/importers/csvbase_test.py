@@ -209,7 +209,7 @@ class TestAmountColumn(unittest.TestCase):
         self.assertEqual(value, -decimal.Decimal("123.45"))
 
 
-class TetsCreditOrDebitColumn(unittest.TestCase):
+class TestCreditOrDebitColumn(unittest.TestCase):
     def test_parse_credit(self):
         column = CreditOrDebit(0, 1)
         func = column.getter(None)
