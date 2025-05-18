@@ -295,7 +295,7 @@ def _importer(importer):
             stacklevel=3,
         )
         return Adapter(importer)
-    raise TypeError(f"expected bengulp.Importer not {type(importer):}")
+    raise TypeError(f"expected beangulp.Importer not {type(importer):}")
 
 
 class Ingest:
