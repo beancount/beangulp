@@ -53,8 +53,8 @@ test = [
     'pytest',
 ]
 
-[tool.setuptools.packages]
-find = {}
+[tool.setuptools.packages.find]
+include = ['beangulp*']
 
 [tool.ruff]
 line-length = 92  # Same as Beancount's.
