@@ -45,8 +45,8 @@ dependencies = [
 homepage = 'https://github.com/beancount/beangulp'
 issues = 'https://github.com/beancount/beangulp/issues'
 
-[tool.setuptools.packages]
-find = {}
+[tool.setuptools.packages.find]
+exclude = ["examples*", "tools*"]
 
 [tool.ruff]
 line-length = 92  # Same as Beancount's.
