@@ -4,9 +4,9 @@ import datetime
 import decimal
 from enum import Enum
 import re
-
-from collections import defaultdict
+from collections import defaultdict, deque
 from itertools import islice
+
 from beancount.core import data
 
 import beangulp
@@ -236,6 +236,8 @@ class CSVReader(metaclass=CSVMeta):
     """File encoding."""
     skiplines = 0
     """Number of input lines to skip before starting processing."""
+    skiplastlines = 0
+    """Number of input lines to skip at the end before starting processing."""
     names = True
     """Whether the data file contains a row with column names."""
     dialect = None
@@ -247,6 +249,20 @@ class CSVReader(metaclass=CSVMeta):
 
     # This is populated by the CSVMeta metaclass.
     columns = {}
+
+    def skip_last_n_lines(self, iterable, n):
+        """
+        Skips the last n items of an iterable and yields the remaining items.
+        This method is memory-efficient for large iterables.
+        """
+        if n < 0:
+            raise ValueError("n must be a non-negative integer")
+
+        buffer = deque()
+        for item in iterable:
+            buffer.append(item)
+            if len(buffer) > n:
+                yield buffer.popleft()
 
     def read(self, filepath):
         """Read CSV file according to class defined columns specification.
@@ -267,6 +283,9 @@ class CSVReader(metaclass=CSVMeta):
         with open(filepath, encoding=self.encoding) as fd:
             # Skip header lines.
             lines = islice(fd, self.skiplines, None)
+
+            # skip lines at the tail
+            lines = self.skip_last_n_lines(lines, self.skiplastlines)
 
             # Filter out comment lines.
             if self.comments:
