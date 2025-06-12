@@ -7,6 +7,7 @@ from beancount.core import data
 from beancount.parser import cmptest
 from beancount.utils.test_utils import docfile
 from beangulp.importers.csvbase import (
+    _chomp,
     Column,
     Columns,
     Date,
@@ -429,6 +430,27 @@ class TestCSVReader(unittest.TestCase):
         self.assertEqual(len(rows), 1)
         self.assertEqual(rows[0][0], "a")
 
+    @docfile
+    def test_footer(self, filename):
+        """\
+        Header
+        First, Second
+        a, b
+        Footer
+        Footer
+        """
+
+        class Reader(CSVReader):
+            first = Column(0)
+            second = Column(1)
+            header = 1
+            footer = 2
+
+        reader = Reader()
+        rows = list(reader.read(filename))
+        self.assertEqual(len(rows), 1)
+        self.assertEqual(rows[0][0], "a")
+
 
 class Base(Importer):
     def identify(self, filepath):
@@ -772,3 +794,18 @@ class TestImporter(cmptest.TestCase):
         with self.assertRaisesRegex(RuntimeError, msg) as ctx:
             importer.extract(filename, [])
         self.assertIsInstance(ctx.exception.__cause__, decimal.InvalidOperation)
+
+
+class TestChomp(unittest.TestCase):
+
+    def test_header(self):
+        self.assertEqual(list(_chomp(range(10), 2, 0)), [2, 3, 4, 5, 6, 7, 8, 9])
+
+    def test_footer(self):
+        self.assertEqual(list(_chomp(range(10), 0, 3)), [0, 1, 2, 3, 4, 5, 6])
+
+    def test_header_and_footer(self):
+        self.assertEqual(list(_chomp(range(10), 2, 3)), [2, 3, 4, 5, 6])
+
+    def test_short(self):
+        self.assertEqual(list(_chomp(range(1), 2, 3)), [])

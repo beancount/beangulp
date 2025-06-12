@@ -6,7 +6,7 @@ from enum import Enum
 import re
 
 from collections import defaultdict
-from itertools import islice
+from itertools import islice, tee
 from beancount.core import data
 
 import beangulp
@@ -15,6 +15,26 @@ EMPTY = frozenset()
 
 NA = object()
 """Marker to indicate that a value was not specified."""
+
+
+def _chomp(iterable, head, tail):
+    """Return an iterator that yields selected values from an iterable.
+
+    Args:
+      iterable: The iterable to iterate.
+      head: Number of initial elements to skip.
+      tail: Number of trailing elements to skip.
+
+    >>> list(_chomp(range(10), 2, 3))
+    [2, 3, 4, 5, 6]
+
+    """
+    iterator = islice(iterable, head, None)
+    if not tail:
+        yield from iterator
+    iterator, sentinel = tee(iterator)
+    for _ in islice(sentinel, tail, None):
+        yield next(iterator)
 
 
 def _resolve(spec, names):
@@ -234,8 +254,10 @@ class Order(Enum):
 class CSVReader(metaclass=CSVMeta):
     encoding = "utf8"
     """File encoding."""
-    skiplines = 0
-    """Number of input lines to skip before starting processing."""
+    header = 0
+    """Number of header lines to skip."""
+    footer = 0
+    """Number of footer lines to ignore."""
     names = True
     """Whether the data file contains a row with column names."""
     dialect = None
@@ -247,6 +269,12 @@ class CSVReader(metaclass=CSVMeta):
 
     # This is populated by the CSVMeta metaclass.
     columns = {}
+
+    def __init__(self):
+        if hasattr(self, 'skiplines'):
+            # Warn about use of deprecated class attribute, eventually.
+            # warnings.warn('skiplines is deprecated, use header instead', DeprecationWarning)
+            self.header = self.skiplines
 
     def read(self, filepath):
         """Read CSV file according to class defined columns specification.
@@ -265,8 +293,8 @@ class CSVReader(metaclass=CSVMeta):
         """
 
         with open(filepath, encoding=self.encoding) as fd:
-            # Skip header lines.
-            lines = islice(fd, self.skiplines, None)
+            # Skip header and footer lines.
+            lines = _chomp(fd, self.header, self.footer)
 
             # Filter out comment lines.
             if self.comments:
@@ -311,6 +339,7 @@ class Importer(beangulp.Importer, CSVReader):
     """
 
     def __init__(self, account, currency, flag="*"):
+        super().__init__()
         self.importer_account = account
         self.currency = currency
         self.flag = flag
@@ -347,7 +376,7 @@ class Importer(beangulp.Importer, CSVReader):
         default_account = self.account(filepath)
 
         # Compute the line number of the first data line.
-        offset = int(self.skiplines) + bool(self.names) + 1
+        offset = int(self.header) + bool(self.names) + 1
 
         for lineno, row in enumerate(self.read(filepath), offset):
             # Skip empty lines.
