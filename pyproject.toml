@@ -36,7 +36,6 @@ dependencies = [
     'click >8.0',
     'deprecation >=2.1.0', # Python 3.13 provides warnings.deprecated().
     'lxml',
-    'pytest',
     'python-magic >=0.4.12; sys_platform != "win32"',
 ]
 
@@ -48,6 +47,11 @@ petl = [
 [project.urls]
 homepage = 'https://github.com/beancount/beangulp'
 issues = 'https://github.com/beancount/beangulp/issues'
+
+[dependency-groups]
+test = [
+    'pytest',
+]
 
 [tool.setuptools.packages]
 find = {}
