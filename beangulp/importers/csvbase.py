@@ -190,18 +190,23 @@ class CreditOrDebit(Column):
         super().__init__(credit, debit, default=default)
         self.subs = subs if subs is not None else {}
 
+    def parse_column(self, value):
+        if not value:
+            return 0
+        for pattern, replacement in self.subs.items():
+            value = re.sub(pattern, replacement, value)
+        return decimal.Decimal(value)
+
     def parse(self, credit, debit):
-        if credit and debit:
+        credit_value = self.parse_column(credit)
+        debit_value = self.parse_column(debit)
+        if credit_value != 0 and debit_value != 0:
             raise ValueError(
                 "The credit and debit fields cannot be populated at the same time"
             )
-        if not credit and not debit:
+        if credit_value == 0 and debit_value == 0:
             raise ValueError("Neither credit or debit fields are populated")
-        value = credit if credit else debit
-        for pattern, replacement in self.subs.items():
-            value = re.sub(pattern, replacement, value)
-        parsed = decimal.Decimal(value)
-        return parsed if credit else -parsed
+        return credit_value if credit_value != 0 else -debit_value
 
 
 # The CSV Importer class needs to inherit from beangulp.Importer which
