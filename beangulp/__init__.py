@@ -196,6 +196,9 @@ def _archive(
     errors = exceptions.ExceptionsTrap(log)
     renames = []
 
+    if not src:
+        log("No source files specified!")
+
     for filename in _walk(src, log):
         with errors:
             importer = identify.identify(ctx.importers, filename)
