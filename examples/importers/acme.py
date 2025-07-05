@@ -13,15 +13,15 @@ __license__ = "GNU GPLv2"
 import re
 import subprocess
 
+from cachier import cachier
 from dateutil.parser import parse as parse_datetime
 
 import beangulp
 from beangulp import mimetypes
-from beangulp.cache import cache
 from beangulp.testing import main
 
 
-@cache
+@cachier()
 def pdf_to_text(filename):
     """Convert a PDF document to a text equivalent."""
     r = subprocess.run(["pdftotext", filename, "-"], stdout=subprocess.PIPE, check=True)
