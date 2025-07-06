@@ -55,7 +55,7 @@ Test with an empty downloads directory:
 
   >>> r = run('identify', downloads)
   >>> r.exit_code
-  0
+  100
   >>> print(r.output)
 
 Add some documents:
