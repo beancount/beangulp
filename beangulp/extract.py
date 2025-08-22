@@ -212,8 +212,9 @@ def mark_duplicate_entries(
 
     for entry in entries:
         for target in entries_date_window_iterator(type(entry), entry.date):
-            if compare(entry, target):
-                entry.meta[DUPLICATE] = target
+            if type(entry) == type(target):
+                if compare(entry, target):
+                    entry.meta[DUPLICATE] = target
 
 
 def print_extracted_entries(extracted: List[ExtractedEntry], output: io.TextIOBase) -> None:
