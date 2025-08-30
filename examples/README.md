@@ -99,10 +99,6 @@ source ./.venv/bin/activate
 pip install beangulp beancount
 ```
 
-At this stage, make sure you are not installing fava (`pip install beangulp beancount 
-fava`) because this still has beancount v2.3.6 pinned (if you need fava, install 
-in a different venv).
-
 Also, if you want to run the example folder fully, including pdf2text extraction, 
 install the following dependencies for pdftotext:
 
