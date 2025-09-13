@@ -1,5 +1,4 @@
-"""Utilities using petl.
-"""
+"""Utilities using petl."""
 
 from typing import Optional
 import datetime

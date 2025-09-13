@@ -15,6 +15,7 @@ please consider either writing one or contributing changes. Also, this importer
 does its own very basic parsing; a better one would probably use (and depend on)
 the ofxparse module (see https://sites.google.com/site/ofxparse/).
 """
+
 __copyright__ = "Copyright (C) 2016  Martin Blais"
 __license__ = "GNU GPLv2"
 
@@ -39,17 +40,20 @@ from beangulp import mimetypes
 
 class BalanceType(enum.Enum):
     """Type of Balance directive to be inserted."""
-    NONE = 0     # Don't insert a Balance directive.
-    DECLARED = 1 # Insert a Balance directive at the declared date.
-    LAST = 2     # Insert a Balance directive at the date following the last
-                 # extracted transaction.
+
+    NONE = 0  # Don't insert a Balance directive.
+    DECLARED = 1  # Insert a Balance directive at the declared date.
+    LAST = 2  # Insert a Balance directive at the date following the last
+    # extracted transaction.
 
 
 class Importer(beangulp.Importer):
     """An importer for Open Financial Exchange files."""
 
-    def __init__(self, acctid_regexp, account, basename=None,
-                 balance_type=BalanceType.DECLARED):
+    def __init__(
+        self, acctid_regexp, account, basename=None, balance_type=BalanceType.DECLARED,
+        currency_override=None
+    ):
         """Create a new importer posting to the given account.
 
         Args:
@@ -58,24 +62,29 @@ class Importer(beangulp.Importer):
           acctid_regexp: A regexp, to match against the <ACCTID> tag of the OFX file.
           basename: An optional string, the name of the new files.
           balance_type: An enum of type BalanceType.
+          currency_override : currency to use instead of the one specified in the OFX file
         """
         self.acctid_regexp = acctid_regexp
         self.importer_account = account
         self.basename = basename
         self.balance_type = balance_type
+        self.currency_override = currency_override
 
     def identify(self, filepath):
         # Match for a compatible MIME type.
-        if mimetypes.guess_type(filepath, strict=False)[0] not in {'application/x-ofx',
-                                                  'application/vnd.intu.qbo',
-                                                  'application/vnd.intu.qfx'}:
+        if mimetypes.guess_type(filepath, strict=False)[0] not in {
+            "application/x-ofx",
+            "application/vnd.intu.qbo",
+            "application/vnd.intu.qfx",
+        }:
             return False
 
         # Match the account id.
         with open(filepath) as fd:
             contents = fd.read()
-        return any(re.match(self.acctid_regexp, acctid)
-                   for acctid in find_acctids(contents))
+        return any(
+            re.match(self.acctid_regexp, acctid) for acctid in find_acctids(contents)
+        )
 
     def account(self, filepath):
         """Return the account against which we post transactions."""
@@ -95,12 +104,19 @@ class Importer(beangulp.Importer):
     def extract(self, filepath, existing):
         """Extract a list of partially complete transactions from the file."""
         with open(filepath) as fd:
-            soup = bs4.BeautifulSoup(fd, 'lxml')
-        return extract(soup, filepath, self.acctid_regexp, self.importer_account,
-                       flags.FLAG_OKAY, self.balance_type)
+            soup = bs4.BeautifulSoup(fd, "lxml")
+        return extract(
+            soup,
+            filepath,
+            self.acctid_regexp,
+            self.importer_account,
+            flags.FLAG_OKAY,
+            self.balance_type,
+            self.currency_override,
+        )
 
 
-def extract(soup, filename, acctid_regexp, account, flag, balance_type):
+def extract(soup, filename, acctid_regexp, account, flag, balance_type, currency_override = None):
     """Extract transactions from an OFX file.
 
     Args:
@@ -109,6 +125,7 @@ def extract(soup, filename, acctid_regexp, account, flag, balance_type):
       account: An account string onto which to post the amounts found in the file.
       flag: A single-character string.
       balance_type: An enum of type BalanceType.
+      currency_override : currency to use instead of the one specified in the OFX file
     Returns:
       A sorted list of entries.
     """
@@ -117,6 +134,10 @@ def extract(soup, filename, acctid_regexp, account, flag, balance_type):
     for acctid, currency, transactions, balance in find_statement_transactions(soup):
         if not re.match(acctid_regexp, acctid):
             continue
+
+        # override currency
+        if currency_override:
+            currency = currency_override
 
         # Create Transaction directives.
         stmt_entries = []
@@ -138,9 +159,9 @@ def extract(soup, filename, acctid_regexp, account, flag, balance_type):
             date += datetime.timedelta(days=1)
 
             meta = data.new_metadata(filename, next(counter))
-            balance_entry = data.Balance(meta, date, account,
-                                         amount.Amount(number, currency),
-                                         None, None)
+            balance_entry = data.Balance(
+                meta, date, account, amount.Amount(number, currency), None, None
+            )
             new_entries.append(balance_entry)
 
     return data.sorted(new_entries)
@@ -155,8 +176,8 @@ def parse_ofx_time(date_str):
       A datetime.datetime instance.
     """
     if len(date_str) < 14:
-        return datetime.datetime.strptime(date_str[:8], '%Y%m%d')
-    return datetime.datetime.strptime(date_str[:14], '%Y%m%d%H%M%S')
+        return datetime.datetime.strptime(date_str[:8], "%Y%m%d")
+    return datetime.datetime.strptime(date_str[:14], "%Y%m%d%H%M%S")
 
 
 def find_acctids(contents):
@@ -169,16 +190,16 @@ def find_acctids(contents):
     """
     # Match the account id. Don't bother parsing the entire thing as XML, just
     # match the tag for this purpose. This'll work fine enough.
-    for match in re.finditer('<ACCTID>([^<]*)', contents):
+    for match in re.finditer("<ACCTID>([^<]*)", contents):
         yield match.group(1)
 
 
 def find_max_date(contents):
     """Extract the report date from the file."""
-    soup = bs4.BeautifulSoup(contents, 'lxml')
+    soup = bs4.BeautifulSoup(contents, "lxml")
     dates = []
-    for ledgerbal in soup.find_all('ledgerbal'):
-        dtasof = ledgerbal.find('dtasof')
+    for ledgerbal in soup.find_all("ledgerbal"):
+        dtasof = ledgerbal.find("dtasof")
         dates.append(parse_ofx_time(dtasof.contents[0]).date())
     if dates:
         return max(dates)
@@ -193,8 +214,8 @@ def find_currency(soup):
       A string, the first currency found in the file. Returns None if no currency
       is found.
     """
-    for stmtrs in soup.find_all(re.compile('.*stmtrs$')):
-        for currency_node in stmtrs.find_all('curdef'):
+    for stmtrs in soup.find_all(re.compile(".*stmtrs$")):
+        for currency_node in stmtrs.find_all("curdef"):
             currency = currency_node.contents[0]
             if currency is not None:
                 return currency
@@ -213,30 +234,30 @@ def find_statement_transactions(soup):
         A (date, balance amount) for the <LEDGERBAL>.
     """
     # Process STMTTRNRS and CCSTMTTRNRS tags.
-    for stmtrs in soup.find_all(re.compile('.*stmtrs$')):
+    for stmtrs in soup.find_all(re.compile(".*stmtrs$")):
         # For each CURDEF tag.
-        for currency_node in stmtrs.find_all('curdef'):
+        for currency_node in stmtrs.find_all("curdef"):
             currency = currency_node.contents[0].strip()
 
             # Extract ACCTID account information.
-            acctid_node = stmtrs.find('acctid')
+            acctid_node = stmtrs.find("acctid")
             if acctid_node:
                 acctid = next(acctid_node.children).strip()
             else:
-                acctid = ''
+                acctid = ""
 
             # Get the LEDGERBAL node. There appears to be a single one for all
             # transaction lists.
-            ledgerbal = stmtrs.find('ledgerbal')
+            ledgerbal = stmtrs.find("ledgerbal")
             balance = None
             if ledgerbal:
-                dtasof = find_child(ledgerbal, 'dtasof', parse_ofx_time).date()
-                balamt = find_child(ledgerbal, 'balamt', D)
+                dtasof = find_child(ledgerbal, "dtasof", parse_ofx_time).date()
+                balamt = find_child(ledgerbal, "balamt", D)
                 balance = (dtasof, balamt)
 
             # Process transaction lists (regular or credit-card).
-            for tranlist in stmtrs.find_all(re.compile('(|bank|cc)tranlist')):
-                yield acctid, currency, tranlist.find_all('stmttrn'), balance
+            for tranlist in stmtrs.find_all(re.compile("(|bank|cc)tranlist")):
+                yield acctid, currency, tranlist.find_all("stmttrn"), balance
 
 
 def find_child(node, name, conversion=None):
@@ -270,33 +291,34 @@ def build_transaction(stmttrn, flag, account, currency):
       A Transaction instance.
     """
     # Find the date.
-    date = parse_ofx_time(find_child(stmttrn, 'dtposted')).date()
+    date = parse_ofx_time(find_child(stmttrn, "dtposted")).date()
 
     # There's no distinct payee.
     payee = None
 
     # Construct a description that represents all the text content in the node.
-    name = find_child(stmttrn, 'name', saxutils.unescape)
-    memo = find_child(stmttrn, 'memo', saxutils.unescape)
+    name = find_child(stmttrn, "name", saxutils.unescape)
+    memo = find_child(stmttrn, "memo", saxutils.unescape)
 
     # Remove memos duplicated from the name.
     if memo == name:
         memo = None
 
     # Add the transaction type to the description, unless it's not useful.
-    trntype = find_child(stmttrn, 'trntype', saxutils.unescape)
-    if trntype in ('DEBIT', 'CREDIT'):
+    trntype = find_child(stmttrn, "trntype", saxutils.unescape)
+    if trntype in ("DEBIT", "CREDIT"):
         trntype = None
 
-    narration = ' / '.join(filter(None, [name, memo, trntype]))
+    narration = " / ".join(filter(None, [name, memo, trntype]))
 
     # Create a single posting for it; the user will have to manually categorize
     # the other side.
-    number = find_child(stmttrn, 'trnamt', D)
+    number = find_child(stmttrn, "trnamt", D)
     units = amount.Amount(number, currency)
     posting = data.Posting(account, units, None, None, None, None)
 
     # Build the transaction with a single leg.
-    fileloc = data.new_metadata('<build_transaction>', 0)
-    return data.Transaction(fileloc, date, flag, payee, narration,
-                            data.EMPTY_SET, data.EMPTY_SET, [posting])
+    fileloc = data.new_metadata("<build_transaction>", 0)
+    return data.Transaction(
+        fileloc, date, flag, payee, narration, data.EMPTY_SET, data.EMPTY_SET, [posting]
+    )

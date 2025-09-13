@@ -9,7 +9,6 @@ jobs:
       fail-fast: false
       matrix:
         python:
-          - '3.7'
           - '3.8'
           - '3.9'
           - '3.10'
@@ -20,9 +19,13 @@ jobs:
           - '~=2.3.5'
           - '~=3.0.0'
           - '@git+https://github.com/beancount/beancount.git'
+        exclude:
+          # Beancount dev version requires Python 3.9+
+          - beancount: '@git+https://github.com/beancount/beancount.git'
+            python: '3.8'
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-python@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python }}
       - run: pip install 'beancount ${{ matrix.beancount }}'

@@ -2,6 +2,7 @@ __copyright__ = "Copyright (C) 2016  Martin Blais"
 __license__ = "GNU GPLv2"
 
 import unittest
+import warnings
 
 from beancount.utils import test_utils
 from beangulp.importers import fileonly
@@ -10,14 +11,17 @@ from beangulp import file_type
 
 
 class TestFileOnly(unittest.TestCase):
+    def setUp(self):
+        warnings.filterwarnings("ignore", category=DeprecationWarning)
 
     def test_constructors(self):
-        fileonly.Importer(matchers=[('filename', '.csv'),
-                                    ('mime', 'text/plain')],
-                          filing='Assets:BofA:Checking',
-                          prefix='bofa')
+        fileonly.Importer(
+            matchers=[("filename", ".csv"), ("mime", "text/plain")],
+            filing="Assets:BofA:Checking",
+            prefix="bofa",
+        )
 
-    @unittest.skipIf(not file_type.magic, 'python-magic is not installed')
+    @unittest.skipIf(not file_type.magic, "python-magic is not installed")
     @test_utils.docfile
     def test_match(self, filename):
         """\
@@ -26,11 +30,14 @@ class TestFileOnly(unittest.TestCase):
         2014-05-08,BUY,12040838,BOUGHT +HOOL 121 @79.11,7.95,-9580.26,16094.37
         """
         importer = fileonly.Importer(
-            matchers=[('filename', 'te?mp'),
-                      ('content', 'DATE,TYPE,REF #,DESCRIPTION,FEES,AMOUNT')],
-            filing='Assets:BofA:Checking',
-            prefix='bofa')
+            matchers=[
+                ("filename", "te?mp"),
+                ("content", "DATE,TYPE,REF #,DESCRIPTION,FEES,AMOUNT"),
+            ],
+            filing="Assets:BofA:Checking",
+            prefix="bofa",
+        )
         file = cache._FileMemo(filename)
         self.assertTrue(importer.identify(file))
 
-        assert importer.file_name(file).startswith('bofa.')
+        assert importer.file_name(file).startswith("bofa.")

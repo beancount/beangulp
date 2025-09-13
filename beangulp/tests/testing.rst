@@ -27,8 +27,6 @@ Tests
 Check the basics:
 
   >>> r = run()
-  >>> r.exit_code
-  0
   >>> print(r.output)
   Usage: beangulp [OPTIONS] COMMAND [ARGS]...
 

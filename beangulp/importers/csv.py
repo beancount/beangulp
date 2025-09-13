@@ -25,7 +25,7 @@ from beancount.core import data
 from beancount.core import flags
 from beancount.core.amount import Amount
 from beancount.core.number import ZERO, D
-from beancount.utils import misc_utils
+from beangulp import utils
 from beangulp import cache
 from beangulp import date_utils
 from beangulp import importer
@@ -36,56 +36,56 @@ class Col(enum.Enum):
     """The set of interpretable columns."""
 
     # The settlement date, the date we should create the posting at.
-    DATE = '[DATE]'
+    DATE = "[DATE]"
 
     # The date at which the transaction took place.
-    TXN_DATE = '[TXN_DATE]'
+    TXN_DATE = "[TXN_DATE]"
 
     # The time at which the transaction took place.
     # Beancount does not support time field -- just add it to metadata.
-    TXN_TIME = '[TXN_TIME]'
+    TXN_TIME = "[TXN_TIME]"
 
     # The payee field.
-    PAYEE = '[PAYEE]'
+    PAYEE = "[PAYEE]"
 
     # The narration fields. Use multiple fields to combine them together.
-    NARRATION = NARRATION1 = '[NARRATION1]'
-    NARRATION2 = '[NARRATION2]'
-    NARRATION3 = '[NARRATION3]'
+    NARRATION = NARRATION1 = "[NARRATION1]"
+    NARRATION2 = "[NARRATION2]"
+    NARRATION3 = "[NARRATION3]"
 
     # The amount being posted.
-    AMOUNT = '[AMOUNT]'
+    AMOUNT = "[AMOUNT]"
 
     # Debits and credits being posted in separate, dedicated columns.
-    AMOUNT_DEBIT = '[DEBIT]'
-    AMOUNT_CREDIT = '[CREDIT]'
+    AMOUNT_DEBIT = "[DEBIT]"
+    AMOUNT_CREDIT = "[CREDIT]"
 
     # The balance amount, after the row has posted.
-    BALANCE = '[BALANCE]'
+    BALANCE = "[BALANCE]"
 
     # A field to use as a tag name.
-    TAG = '[TAG]'
+    TAG = "[TAG]"
 
     # A field to use as a unique reference id or number.
-    REFERENCE_ID = '[REF]'
+    REFERENCE_ID = "[REF]"
 
     # A column which says DEBIT or CREDIT (generally ignored).
-    DRCR = '[DRCR]'
+    DRCR = "[DRCR]"
 
     # Last 4 digits of the card.
-    LAST4 = '[LAST4]'
+    LAST4 = "[LAST4]"
 
     # An account name.
-    ACCOUNT = '[ACCOUNT]'
+    ACCOUNT = "[ACCOUNT]"
 
     # Categorization, if the institution supports it. You could, in theory,
     # specialize your importer to use this automatically assign a good expenses
     # account.
-    CATEGORY = '[CATEGORY]'
+    CATEGORY = "[CATEGORY]"
 
     # A column that indicates the amount currency for the current row which may
     # be different to the base currency.
-    CURRENCY = '[CURRENCY]'
+    CURRENCY = "[CURRENCY]"
 
 
 def get_amounts(iconfig, row, allow_zero_amounts, parse_amount):
@@ -108,16 +108,19 @@ def get_amounts(iconfig, row, allow_zero_amounts, parse_amount):
         credit = row[iconfig[Col.AMOUNT_CREDIT]] if Col.AMOUNT_CREDIT in iconfig else None
 
     # If zero amounts aren't allowed, return null value.
-    is_zero_amount = ((credit is not None and parse_amount(credit) == ZERO) and
-                      (debit is not None and parse_amount(debit) == ZERO))
+    is_zero_amount = (credit is not None and parse_amount(credit) == ZERO) and (
+        debit is not None and parse_amount(debit) == ZERO
+    )
     if not allow_zero_amounts and is_zero_amount:
         return (None, None)
 
-    return (-parse_amount(debit) if debit else None,
-            parse_amount(credit) if credit else None)
+    return (
+        -parse_amount(debit) if debit else None,
+        parse_amount(credit) if credit else None,
+    )
 
 
-def normalize_config(config, head, dialect='excel', skip_lines: int = 0):
+def normalize_config(config, head, dialect="excel", skip_lines: int = 0):
     """Using the header line, convert the configuration field name lookups to int indexes.
 
     Args:
@@ -140,7 +143,7 @@ def normalize_config(config, head, dialect='excel', skip_lines: int = 0):
     head = io.StringIO(head, newline=None)
     lines = list(head)[skip_lines:]
 
-    has_header = csv.Sniffer().has_header('\n'.join(lines))
+    has_header = csv.Sniffer().has_header("\n".join(lines))
     if has_header:
         header = next(csv.reader(lines, dialect=dialect))
         field_map = {name.strip(): index for index, name in enumerate(header)}
@@ -150,35 +153,37 @@ def normalize_config(config, head, dialect='excel', skip_lines: int = 0):
                 field = field_map[field]
             index_config[field_type] = field
     else:
-        if any(not isinstance(field, int)
-               for field_type, field in config.items()):
-            raise ValueError("CSV config without header has non-index fields: "
-                             "{}".format(config))
+        if any(not isinstance(field, int) for field_type, field in config.items()):
+            raise ValueError(
+                "CSV config without header has non-index fields: {}".format(config)
+            )
         index_config = config
     return index_config, has_header
 
 
-def prepare_for_identifier(regexps: Union[str, List[str]],
-                           matchers: Optional[List[str]]) -> Dict[str, str]:
+def prepare_for_identifier(
+    regexps: Union[str, List[str]], matchers: Optional[List[str]]
+) -> Dict[str, str]:
     """Prepare data for identifier mixin."""
     if isinstance(regexps, str):
         regexps = [regexps]
     matchers = matchers or []
-    matchers.append(('mime', 'text/csv'))
+    matchers.append(("mime", "text/csv"))
     if regexps:
         for regexp in regexps:
-            matchers.append(('content', regexp))
-    return {'matchers': matchers}
+            matchers.append(("content", regexp))
+    return {"matchers": matchers}
 
 
-def prepare_for_filing(account: str, institution: Optional[str],
-                       prefix: Optional[str]) -> Dict[str, str]:
+def prepare_for_filing(
+    account: str, institution: Optional[str], prefix: Optional[str]
+) -> Dict[str, str]:
     """Prepare kwds for filing mixin."""
-    kwds = {'filing': account}
+    kwds = {"filing": account}
     if institution:
-        prefix = kwds.get('prefix', None)
+        prefix = kwds.get("prefix", None)
         assert prefix is None
-        kwds['prefix'] = institution
+        kwds["prefix"] = institution
     return kwds
 
 
@@ -189,23 +194,29 @@ class _CSVImporterBase:
     modification of the attribute names and types. See concrete implementations
     below.
     """
+
     # pylint: disable=too-many-instance-attributes
 
     FLAG = flags.FLAG_OKAY
 
-    def __init__(self, config, account, currency,
-                 regexps=None,
-                 skip_lines: int = 0,
-                 last4_map: Optional[Dict] = None,
-                 categorizer: Optional[Callable] = None,
-                 institution: Optional[str] = None,
-                 debug: bool = False,
-                 csv_dialect: Union[str, csv.Dialect] = 'excel',
-                 dateutil_kwds: Optional[Dict] = None,
-                 narration_sep: str = '; ',
-                 encoding: Optional[str] = None,
-                 invert_sign: Optional[bool] = False,
-                 **kwds):
+    def __init__(
+        self,
+        config,
+        account,
+        currency,
+        regexps=None,
+        skip_lines: int = 0,
+        last4_map: Optional[Dict] = None,
+        categorizer: Optional[Callable] = None,
+        institution: Optional[str] = None,
+        debug: bool = False,
+        csv_dialect: Union[str, csv.Dialect] = "excel",
+        dateutil_kwds: Optional[Dict] = None,
+        narration_sep: str = "; ",
+        encoding: Optional[str] = None,
+        invert_sign: Optional[bool] = False,
+        **kwds,
+    ):
         """Constructor.
 
         Args:
@@ -239,7 +250,7 @@ class _CSVImporterBase:
         self.dateutil_kwds = dateutil_kwds
         self.csv_dialect = csv_dialect
         self.narration_sep = narration_sep
-        self.encoding = encoding or 'utf-8'
+        self.encoding = encoding or "utf-8"
         self.invert_sign = invert_sign
         self.categorizer = categorizer
         super().__init__(**kwds)
@@ -263,7 +274,7 @@ class _CSVImporterBase:
                 for row in reader:
                     if not row:
                         continue
-                    if row[0].startswith('#'):
+                    if row[0].startswith("#"):
                         continue
                     date_str = row[iconfig[Col.DATE]]
                     date = date_utils.parse_date(date_str, self.dateutil_kwds)
@@ -304,7 +315,7 @@ class _CSVImporterBase:
             for index, row in enumerate(reader, 1):
                 if not row:
                     continue
-                if row[0].startswith('#'):
+                if row[0].startswith("#"):
                     continue
 
                 # If debugging, print out the rows.
@@ -324,12 +335,16 @@ class _CSVImporterBase:
                 if payee:
                     payee = payee.strip()
 
-                fields = filter(None, [get(row, field)
-                                       for field in (Col.NARRATION1,
-                                                     Col.NARRATION2,
-                                                     Col.NARRATION3)])
+                fields = filter(
+                    None,
+                    [
+                        get(row, field)
+                        for field in (Col.NARRATION1, Col.NARRATION2, Col.NARRATION3)
+                    ],
+                )
                 narration = self.narration_sep.join(
-                    field.strip() for field in fields).replace('\n', '; ')
+                    field.strip() for field in fields
+                ).replace("\n", "; ")
 
                 tag = get(row, Col.TAG)
                 tags = {tag} if tag else data.EMPTY_SET
@@ -346,22 +361,23 @@ class _CSVImporterBase:
                 # Create a transaction
                 meta = data.new_metadata(file.name, index)
                 if txn_date is not None:
-                    meta['date'] = date_utils.parse_date(txn_date,
-                                                         self.dateutil_kwds)
+                    meta["date"] = date_utils.parse_date(txn_date, self.dateutil_kwds)
                 if txn_time is not None:
-                    meta['time'] = str(dateutil.parser.parse(txn_time).time())
+                    meta["time"] = str(dateutil.parser.parse(txn_time).time())
                 if balance is not None:
-                    meta['balance'] = Amount(self.parse_amount(balance), currency)
+                    meta["balance"] = Amount(self.parse_amount(balance), currency)
                 if last4:
                     last4_friendly = self.last4_map.get(last4.strip())
-                    meta['card'] = last4_friendly if last4_friendly else last4
+                    meta["card"] = last4_friendly if last4_friendly else last4
                 date = date_utils.parse_date(date, self.dateutil_kwds)
-                txn = data.Transaction(meta, date, self.FLAG, payee, narration,
-                                       tags, links, [])
+                txn = data.Transaction(
+                    meta, date, self.FLAG, payee, narration, tags, links, []
+                )
 
                 # Attach one posting to the transaction
-                amount_debit, amount_credit = self.get_amounts(iconfig, row,
-                                                               False, self.parse_amount)
+                amount_debit, amount_credit = self.get_amounts(
+                    iconfig, row, False, self.parse_amount
+                )
 
                 # Skip empty transactions
                 if amount_debit is None and amount_credit is None:
@@ -374,7 +390,8 @@ class _CSVImporterBase:
                         amount = -amount
                     units = Amount(amount, currency)
                     txn.postings.append(
-                        data.Posting(account, units, None, None, None, None))
+                        data.Posting(account, units, None, None, None, None)
+                    )
 
                 # Attach the other posting(s) to the transaction.
                 txn = self.call_categorizer(txn, row)
@@ -383,10 +400,8 @@ class _CSVImporterBase:
                 entries.append(txn)
 
         # Figure out if the file is in ascending or descending order.
-        first_date = date_utils.parse_date(get(first_row, Col.DATE),
-                                           self.dateutil_kwds)
-        last_date = date_utils.parse_date(get(last_row, Col.DATE),
-                                          self.dateutil_kwds)
+        first_date = date_utils.parse_date(get(first_row, Col.DATE), self.dateutil_kwds)
+        last_date = date_utils.parse_date(get(last_row, Col.DATE), self.dateutil_kwds)
         is_ascending = first_date < last_date
 
         # Reverse the list if the file is in descending order
@@ -399,7 +414,7 @@ class _CSVImporterBase:
             balances = set()
             for entry in reversed(entries):
                 # Remove the 'balance' metadata.
-                balance = entry.meta.pop('balance', None)
+                balance = entry.meta.pop("balance", None)
                 if balance is None:
                     continue
                 # Only add the newest entry for each currency in the file
@@ -445,26 +460,50 @@ class Importer(_CSVImporterBase, identifier.IdentifyMixin, filing.FilingMixin):
 
     """
 
-    def __init__(self, config, account, currency,
-                 regexps=None,
-                 skip_lines: int = 0,
-                 last4_map: Optional[Dict] = None,
-                 categorizer: Optional[Callable] = None,
-                 institution: Optional[str] = None,
-                 debug: bool = False,
-                 csv_dialect: Union[str, csv.Dialect] = 'excel',
-                 dateutil_kwds: Optional[Dict] = None,
-                 narration_sep: str = '; ',
-                 encoding: Optional[str] = None,
-                 invert_sign: Optional[bool] = False,
-                 **kwds):
-        warnings.warn('beangulp.importers.csv.Importer is deprecated. '
-                      'Base your importer on beangulp.importers.csvbase.Importer instead.',
-                      DeprecationWarning, stacklevel=2)
+    def __init__(
+        self,
+        config,
+        account,
+        currency,
+        regexps=None,
+        skip_lines: int = 0,
+        last4_map: Optional[Dict] = None,
+        categorizer: Optional[Callable] = None,
+        institution: Optional[str] = None,
+        debug: bool = False,
+        csv_dialect: Union[str, csv.Dialect] = "excel",
+        dateutil_kwds: Optional[Dict] = None,
+        narration_sep: str = "; ",
+        encoding: Optional[str] = None,
+        invert_sign: Optional[bool] = False,
+        **kwds,
+    ):
+        warnings.warn(
+            "beangulp.importers.csv.Importer is deprecated. "
+            "Base your importer on beangulp.importers.csvbase.Importer instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
 
-        kwds.update(prepare_for_identifier(regexps, kwds.get('matchers')))
-        kwds.update(prepare_for_filing(account, kwds.get('prefix', None), institution))
-        super().__init__(config, account, currency, **kwds)
+        kwds.update(prepare_for_identifier(regexps, kwds.get("matchers")))
+        kwds.update(prepare_for_filing(account, kwds.get("prefix", None), institution))
+        super().__init__(
+            config,
+            account,
+            currency,
+            regexps=regexps,
+            skip_lines=skip_lines,
+            last4_map=last4_map,
+            categorizer=categorizer,
+            institution=institution,
+            debug=debug,
+            csv_dialect=csv_dialect,
+            dateutil_kwds=dateutil_kwds,
+            narration_sep=narration_sep,
+            encoding=encoding,
+            invert_sign=invert_sign,
+            **kwds,
+        )
 
     def extract(self, file, existing_entries=None):
         account = self.file_account(file)
@@ -480,38 +519,47 @@ class CSVImporter(importer.Importer):
 
     """
 
-    def __init__(self, config, account, currency,
-                 regexps=None,
-                 skip_lines: int = 0,
-                 last4_map: Optional[Dict] = None,
-                 categorizer: Optional[Callable] = None,
-                 institution: Optional[str] = None,
-                 debug: bool = False,
-                 csv_dialect: Union[str, csv.Dialect] = 'excel',
-                 dateutil_kwds: Optional[Dict] = None,
-                 narration_sep: str = '; ',
-                 encoding: Optional[str] = None,
-                 invert_sign: Optional[bool] = False,
-                 **kwds):
+    def __init__(
+        self,
+        config,
+        account,
+        currency,
+        regexps=None,
+        skip_lines: int = 0,
+        last4_map: Optional[Dict] = None,
+        categorizer: Optional[Callable] = None,
+        institution: Optional[str] = None,
+        debug: bool = False,
+        csv_dialect: Union[str, csv.Dialect] = "excel",
+        dateutil_kwds: Optional[Dict] = None,
+        narration_sep: str = "; ",
+        encoding: Optional[str] = None,
+        invert_sign: Optional[bool] = False,
+        **kwds,
+    ):
         """See _CSVImporterBase."""
 
-        self.base = _CSVImporterBase(config, account, currency,
-                                     regexps,
-                                     skip_lines,
-                                     last4_map,
-                                     categorizer,
-                                     institution,
-                                     debug,
-                                     csv_dialect,
-                                     dateutil_kwds,
-                                     narration_sep,
-                                     encoding,
-                                     invert_sign)
+        self.base = _CSVImporterBase(
+            config,
+            account,
+            currency,
+            regexps,
+            skip_lines,
+            last4_map,
+            categorizer,
+            institution,
+            debug,
+            csv_dialect,
+            dateutil_kwds,
+            narration_sep,
+            encoding,
+            invert_sign,
+        )
 
-        filing_kwds = prepare_for_filing(account, kwds.get('prefix', None), institution)
+        filing_kwds = prepare_for_filing(account, kwds.get("prefix", None), institution)
         self.filing = filing.FilingMixin(**filing_kwds)
 
-        ident_kwds = prepare_for_identifier(regexps, kwds.get('matchers'))
+        ident_kwds = prepare_for_identifier(regexps, kwds.get("matchers"))
         self.ident = identifier.IdentifyMixin(**ident_kwds)
 
     def identify(self, filepath):
@@ -524,7 +572,7 @@ class CSVImporter(importer.Importer):
         return self.base.file_date(cache.get_file(filepath))
 
     def filename(self, filepath):
-        return path.basename(misc_utils.idify(filepath))
+        return path.basename(utils.idify(filepath))
 
     def extract(self, filepath, existing=None):
         account = self.account(filepath)

@@ -1,7 +1,9 @@
 beancount >=2.3.5
 beautifulsoup4
 chardet
-click >7.0
+click >8.0
+deprecation >=2.1.0
 lxml
-python-magic >=0.4.12; sys_platform != 'win32'
 petl
+pytest
+python-magic >=0.4.12; sys_platform != 'win32'

@@ -9,11 +9,11 @@ class Error(RuntimeError):
         self.args = args
 
     def __str__(self):
-        return '\n'.join((*self.args, self.message))
+        return "\n".join((*self.args, self.message))
 
 
 class ExceptionsTrap(contextlib.AbstractContextManager):
-    """A contect manager to log exceptions.
+    """A context manager to log exceptions.
 
     Works similarly to contextlib.suppress() but logs the exceptions
     instead than simply discarding them. This is used to shorten and
@@ -22,6 +22,7 @@ class ExceptionsTrap(contextlib.AbstractContextManager):
     interface.
 
     """
+
     def __init__(self, func):
         self.log = func
         self.errors = 0
@@ -30,16 +31,16 @@ class ExceptionsTrap(contextlib.AbstractContextManager):
         if exctype is None:
             return True
         self.errors += 1
-        self.log('  ERROR', fg='red')
+        self.log("  ERROR", fg="red")
         if issubclass(exctype, Error):
             # Beangulp validation error.
-            self.log(textwrap.indent(str(excinst), '  '))
+            self.log(textwrap.indent(str(excinst), "  "))
             return True
         if issubclass(exctype, Exception):
             # Unexpected exception.
-            self.log('  Exception in importer code.')
-            exc = ''.join(traceback.format_exception(exctype, excinst, exctb))
-            self.log(textwrap.indent(exc, '  ').rstrip())
+            self.log("  Exception in importer code.")
+            exc = "".join(traceback.format_exception(exctype, excinst, exctb))
+            self.log(textwrap.indent(exc, "  ").rstrip())
             return True
         return False
 

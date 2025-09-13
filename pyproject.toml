@@ -1,11 +1,12 @@
 [build-system]
-requires = ['setuptools >= 60.0']
+requires = ['setuptools >= 77.0.3']
 build-backend = 'setuptools.build_meta'
 
 [project]
 name = 'beangulp'
-version = '0.2.0.dev0'
-license = { file = 'LICENSE' }
+version = '0.3.0.dev0'
+license = 'GPL-2.0-only'
+license-files = ['LICENSE']
 description = 'Importers Framework for Beancount'
 readme = 'README.rst'
 authors = [
@@ -17,9 +18,7 @@ maintainers = [
 ]
 keywords = ['accounting', 'ledger', 'beancount', 'importer', 'import', 'converter', 'conversion']
 classifiers = [
-    'License :: OSI Approved :: GNU General Public License v2 (GPLv2)',
     'Programming Language :: Python :: 3 :: Only',
-    'Programming Language :: Python :: 3.7',
     'Programming Language :: Python :: 3.8',
     'Programming Language :: Python :: 3.9',
     'Programming Language :: Python :: 3.10',
@@ -29,29 +28,41 @@ classifiers = [
     'Topic :: Office/Business :: Financial :: Accounting',
     'Topic :: Text Processing :: General',
 ]
+requires-python = '>=3.7'
 dependencies = [
     'beancount >=2.3.5',
     'beautifulsoup4',
     'chardet',
     'click >8.0',
+    'deprecation >=2.1.0', # Python 3.13 provides warnings.deprecated().
     'lxml',
     'python-magic >=0.4.12; sys_platform != "win32"',
+]
+
+[project.optional-dependencies]
+petl = [
+    'petl',
 ]
 
 [project.urls]
 homepage = 'https://github.com/beancount/beangulp'
 issues = 'https://github.com/beancount/beangulp/issues'
 
-[tool.setuptools.packages]
-find = {}
+[dependency-groups]
+test = [
+    'pytest',
+]
+
+[tool.setuptools.packages.find]
+include = ['beangulp*']
 
 [tool.ruff]
-line-length = 128
-target-version = 'py37'
+line-length = 92  # Same as Beancount's.
 lint.select = ['E', 'F', 'W', 'UP', 'B', 'C4', 'PL', 'RUF']
 lint.ignore = [
     'B007',
     'B020',
+    'E501',
     'E731',
     'PLR0911',
     'PLR0912',

@@ -1,6 +1,7 @@
 __copyright__ = "Copyright (C) 2016-2017  Martin Blais"
 __license__ = "GNU GPLv2"
 
+import io
 import bisect
 import datetime
 import operator
@@ -8,25 +9,34 @@ import textwrap
 import warnings
 
 from typing import Callable
+from typing import TYPE_CHECKING
+from typing import Tuple
+from typing import List
 
 from beancount.core import data
 from beancount.parser import printer
 from beangulp import similar
 
+if TYPE_CHECKING:
+    from beangulp.importer import Importer
 
 # Header for the file where the extracted entries are written.
-HEADER = ';; -*- mode: beancount -*-\n'
+HEADER = ";; -*- mode: beancount -*-\n"
 
 # Format for the section titles separating entries extracted from
 # different documents. This is used as a format sting passing the
 # document filesystem path as argument.
-SECTION = '**** {}'
+SECTION = "**** {}"
 
 # Metadata field that indicates the entry is a likely duplicate.
-DUPLICATE = '__duplicate__'
+DUPLICATE = "__duplicate__"
+
+ExtractedEntry = Tuple[str, data.Entries, data.Account, "Importer"]
 
 
-def extract_from_file(importer, filename, existing_entries):
+def extract_from_file(
+    importer: "Importer", filename: str, existing_entries: "data.Directives"
+) -> data.Entries:
     """Import entries from a document.
 
     Args:
@@ -51,7 +61,7 @@ def extract_from_file(importer, filename, existing_entries):
     return entries
 
 
-def sort_extracted_entries(extracted):
+def sort_extracted_entries(extracted: List[ExtractedEntry]) -> None:
     """Sort the extraxted entries.
 
     Sort extracged entries, grouped by source document, in the order
@@ -92,7 +102,7 @@ def sort_extracted_entries(extracted):
     # documents produced earlier in time to take precedence over
     # entries from documents produced later in time.
 
-    def key(element):
+    def key(element: ExtractedEntry):
         filename, entries, account, importer = element
         dates = [entry.date for entry in entries]
         # Sort documents that do not contain any entry last.
@@ -104,7 +114,9 @@ def sort_extracted_entries(extracted):
     extracted.sort(key=key)
 
 
-def find_duplicate_entries(extracted, existing):
+def find_duplicate_entries(
+    extracted: List[ExtractedEntry], existing: data.Entries
+) -> List[ExtractedEntry]:
     """Flag potentially duplicate entries.
 
     Args:
@@ -119,20 +131,22 @@ def find_duplicate_entries(extracted, existing):
 
     """
     # This function is kept only for backwards compatibility.
-    warnings.warn('The find_duplicate_entries() function is kept only for '
-                  'backwards compatibility with import scripts that explicitly '
-                  'added it to the import hooks. It does not conform to the '
-                  'current way of implementing deduplication and it is not to '
-                  'be used.', stacklevel=2)
+    warnings.warn(
+        "The find_duplicate_entries() function is kept only for "
+        "backwards compatibility with import scripts that explicitly "
+        "added it to the import hooks. It does not conform to the "
+        "current way of implementing deduplication and it is not to "
+        "be used.",
+        stacklevel=2,
+    )
 
     ret = []
     for filepath, entries, account, importer in extracted:
-
         # Sort the existing entries by date: find_similar_entries()
         # uses bisection to reduce the list of existing entries to the
         # set in a narrow date interval around the date of each entry
         # in the set it is comparing against.
-        existing.sort(key=operator.attrgetter('date'))
+        existing.sort(key=operator.attrgetter("date"))
 
         # Find duplicates.
         pairs = similar.find_similar_entries(entries, existing)
@@ -140,7 +154,7 @@ def find_duplicate_entries(extracted, existing):
         # We could do something smarter than throwing away the
         # information about which entry is the source of the possible
         # duplication.
-        duplicates = { id(duplicate) for duplicate, source in pairs }
+        duplicates = {id(duplicate) for duplicate, source in pairs}
         marked = []
         for entry in entries:
             if id(entry) in duplicates:
@@ -159,10 +173,11 @@ def find_duplicate_entries(extracted, existing):
 
 
 def mark_duplicate_entries(
-        entries: data.Entries,
-        existing: data.Entries,
-        window: datetime.timedelta,
-        compare: Callable[[data.Directive, data.Directive], bool]) -> None:
+    entries: data.Entries,
+    existing: data.Entries,
+    window: datetime.timedelta,
+    compare: Callable[[data.Directive, data.Directive], bool],
+) -> None:
     """Mark duplicate entries.
 
     Compare newly extracted entries to the existing entries. Only
@@ -183,7 +198,7 @@ def mark_duplicate_entries(
     # list that have dates within a given window around the date
     # of each newly extracted entry requires the existing entries
     # to be sorted by date.
-    existing.sort(key=operator.attrgetter('date'))
+    existing.sort(key=operator.attrgetter("date"))
     dates = [entry.date for entry in existing]
 
     def entries_date_window_iterator(date):
@@ -198,7 +213,7 @@ def mark_duplicate_entries(
                 entry.meta[DUPLICATE] = target
 
 
-def print_extracted_entries(extracted, output):
+def print_extracted_entries(extracted: List[ExtractedEntry], output: io.TextIOBase) -> None:
     """Print extracted entries.
 
     Entries marked as duplicates are printed as comments.
@@ -212,10 +227,10 @@ def print_extracted_entries(extracted, output):
 
     """
     if extracted and HEADER:
-        output.write(HEADER + '\n')
+        output.write(HEADER + "\n")
 
     for filepath, entries, account, importer in extracted:
-        output.write(SECTION.format(filepath) + '\n\n')
+        output.write(SECTION.format(filepath) + "\n\n")
 
         for entry in entries:
             duplicate = entry.meta.pop(DUPLICATE, False)
@@ -224,12 +239,12 @@ def print_extracted_entries(extracted, output):
             # of which other entry this is a duplicate.
             if duplicate:
                 if isinstance(duplicate, type(entry)):
-                    filename = duplicate.meta.get('filename')
-                    lineno = duplicate.meta.get('lineno')
+                    filename = duplicate.meta.get("filename")
+                    lineno = duplicate.meta.get("lineno")
                     if filename and lineno:
-                        output.write(f'; duplicate of {filename}:{lineno}\n')
-                string = textwrap.indent(string, '; ')
+                        output.write(f"; duplicate of {filename}:{lineno}\n")
+                string = textwrap.indent(string, "; ")
             output.write(string)
-            output.write('\n')
+            output.write("\n")
 
-        output.write('\n')
+        output.write("\n")

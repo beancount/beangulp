@@ -3,6 +3,7 @@ __license__ = "GNU GPLv2"
 
 from beangulp import Ingest
 
+
 def ingest(importers, hooks=None):
     # This function is provided for backward compatibility with the
     # ``beancount.ingest`` framework. It will be removed eventually.

@@ -14,7 +14,6 @@ from beangulp import similar
 
 
 class TestDups(cmptest.TestCase):
-
     @loader.load_doc()
     def test_find_similar_entries(self, entries, _, __):
         """
@@ -134,7 +133,6 @@ class TestDups(cmptest.TestCase):
 
 
 class TestHeuristicComparator(cmptest.TestCase):
-
     def setUp(self):
         self.comparator = similar.heuristic_comparator(datetime.timedelta(days=2))
 
@@ -184,7 +182,6 @@ class TestHeuristicComparator(cmptest.TestCase):
 
 
 class TestSamelinkComparator(cmptest.TestCase):
-
     def setUp(self):
         self.comparator = similar.same_link_comparator(regex=r"\d+$")
 

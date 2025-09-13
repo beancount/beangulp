@@ -10,20 +10,17 @@ import beangulp
 
 
 importers = [
-    utrade.Importer("USD",
-                    "Assets:US:UTrade",
-                    "Assets:US:UTrade:Cash",
-                    "Income:US:UTrade:{}:Dividend",
-                    "Income:US:UTrade:{}:Gains",
-                    "Expenses:Financial:Fees",
-                    "Assets:US:BofA:Checking"),
-
-    ofx.Importer("379700001111222",
-                 "Liabilities:US:CreditCard",
-                 "bofa"),
-
+    utrade.Importer(
+        "USD",
+        "Assets:US:UTrade",
+        "Assets:US:UTrade:Cash",
+        "Income:US:UTrade:{}:Dividend",
+        "Income:US:UTrade:{}:Gains",
+        "Expenses:Financial:Fees",
+        "Assets:US:BofA:Checking",
+    ),
+    ofx.Importer("379700001111222", "Liabilities:US:CreditCard", "bofa"),
     acme.Importer("Assets:US:ACMEBank"),
-
     csvbank.Importer("Assets:US:CSVBank", "USD"),
 ]
 
@@ -63,13 +60,15 @@ def process_extracted_entries(extracted_entries_list, ledger_entries):
       A possibly different version of extracted_entries_list, a list of
       (filename, entries), to be printed.
     """
-    return [(filename, clean_up_descriptions(entries), account, importer)
-            for filename, entries, account, importer in extracted_entries_list]
+    return [
+        (filename, clean_up_descriptions(entries), account, importer)
+        for filename, entries, account, importer in extracted_entries_list
+    ]
 
 
 hooks = [process_extracted_entries]
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     ingest = beangulp.Ingest(importers, hooks)
     ingest()

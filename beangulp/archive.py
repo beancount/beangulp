@@ -6,14 +6,15 @@ import re
 import shutil
 
 from beangulp import utils
+from beangulp.importer import Importer
 from beangulp.exceptions import Error
 
 
 # Template for the documents archival name.
-FILENAME = '{date:%Y-%m-%d}.{name}'
+FILENAME = "{date:%Y-%m-%d}.{name}"
 
 
-def filepath(importer, filepath: str) -> str:
+def filepath(importer: Importer, filepath: str) -> str:
     """Compute filing path for a document.
 
     The path mirrors the structure of the accounts associated to the
@@ -42,11 +43,13 @@ def filepath(importer, filepath: str) -> str:
     if os.sep in filename:
         raise Error("The filename contains path separator character.")
 
-    if re.match(r'\d\d\d\d-\d\d-\d\d\.', filename):
+    if re.match(r"\d\d\d\d-\d\d-\d\d\.", filename):
         raise Error("The filename contains what looks like a date.")
 
     # Prepend account directory and date prefix.
-    filename = os.path.join(account.replace(':', os.sep), FILENAME.format(date=date, name=filename))
+    filename = os.path.join(
+        account.replace(":", os.sep), FILENAME.format(date=date, name=filename)
+    )
 
     return filename
 

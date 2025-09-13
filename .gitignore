@@ -1,1 +1,9 @@
 __pycache__
+*.egg-info
+build/
+\.aider.*
+.python-version
+uv.lock
+.idea/
+.vscode/
+

@@ -3,7 +3,10 @@
 This object is used in lieu of a file in order to allow the various importers to
 reuse each others' conversion results. Converting file contents, e.g. PDF to
 text, can be expensive.
+
+NOTE: This module is deprecated. Use beangulp.simple_cache instead.
 """
+
 __copyright__ = "Copyright (C) 2016  Martin Blais"
 __license__ = "GNU GPLv2"
 
@@ -19,16 +22,18 @@ from os import path
 
 import chardet
 
-from beancount.utils import defdict
 from beangulp import mimetypes
+from beangulp import utils
 
 # NOTE: See get_file() at the end of this file to create instances of FileMemo.
 
 
 # Default location of cache directories.
-CACHEDIR = (path.expandvars('%LOCALAPPDATA%\\Beangulp')
-            if sys.platform == 'win32'
-            else path.expanduser('~/.cache/beangulp'))
+CACHEDIR = (
+    path.expandvars("%LOCALAPPDATA%\\Beangulp")
+    if sys.platform == "win32"
+    else path.expanduser("~/.cache/beangulp")
+)
 
 
 # Maximum number of bytes to read in order to detect the encoding of a file.
@@ -103,14 +108,16 @@ def head(num_bytes=8192, encoding=None):
     Returns:
       A converter function.
     """
+
     def head_reader(filename):
-        with open(filename, 'rb') as fd:
+        with open(filename, "rb") as fd:
             data = fd.read(num_bytes)
-            enc = encoding or chardet.detect(data)['encoding']
+            enc = encoding or chardet.detect(data)["encoding"]
             # A little trick to handle an encoded byte array that
             # terminates with an incomplete unicode character.
             decoder = codecs.iterdecode(iter([data]), enc)
             return next(decoder)
+
     return head_reader
 
 
@@ -124,14 +131,14 @@ def contents(filename):
     """
     # Attempt to detect the input encoding automatically, using chardet and a
     # decent amount of input.
-    with open(filename, 'rb') as infile:
+    with open(filename, "rb") as infile:
         rawdata = infile.read(HEAD_DETECT_MAX_BYTES)
     detected = chardet.detect(rawdata)
-    encoding = detected['encoding']
+    encoding = detected["encoding"]
 
     # Ignore encoding errors for reading the contents because input files
     # routinely break this assumption.
-    errors = 'ignore'
+    errors = "ignore"
 
     with open(filename, encoding=encoding, errors=errors) as file:
         return file.read()
@@ -151,11 +158,12 @@ def get_file(filename):
 
     """
     assert path.isabs(filename), (
-        "Path should be absolute in order to guarantee a single call.")
+        "Path should be absolute in order to guarantee a single call."
+    )
     return _CACHE[filename]
 
 
-_CACHE = defdict.DefaultDictWithKey(_FileMemo)
+_CACHE = utils.DefaultDictWithKey(_FileMemo)
 
 
 def cache(func=None, *, key=None):
@@ -166,7 +174,7 @@ def cache(func=None, *, key=None):
         def wrapper(filename, *args, cache=None, **kwargs):
             # Compute the cache filename.
             input_key = key(filename) if key else filename
-            name = sha1(pickle.dumps((input_key, args, kwargs))).hexdigest() + '.pickle'
+            name = sha1(pickle.dumps((input_key, args, kwargs))).hexdigest() + ".pickle"
             cache_fname = path.join(CACHEDIR, name)
 
             # We inspect the modified time of the input file and the cache.
@@ -183,7 +191,7 @@ def cache(func=None, *, key=None):
                 cache = cache_mtime != 0 if key else cache_mtime >= input_mtime
 
             if cache:
-                with open(cache_fname, 'rb') as f:
+                with open(cache_fname, "rb") as f:
                     return pickle.load(f)
 
             # Invoke the potentially expensive function.
@@ -194,13 +202,14 @@ def cache(func=None, *, key=None):
                 # To populate the cache atomically write the cache entry in a
                 # temporary file and move it to the right place with the
                 # complete content and the right modification time.
-                cache_temp = cache_fname + '~'
-                with open(cache_temp, 'wb') as f:
+                cache_temp = cache_fname + "~"
+                with open(cache_temp, "wb") as f:
                     pickle.dump(ret, f)
                 os.utime(cache_temp, ns=(input_mtime, input_mtime))
                 os.replace(cache_temp, cache_fname)
 
             return ret
+
         return wrapper
 
     if func is None:
