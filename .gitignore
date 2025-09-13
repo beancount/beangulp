@@ -4,3 +4,6 @@ build/
 \.aider.*
 .python-version
 uv.lock
+.idea/
+.vscode/
+
