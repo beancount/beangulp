@@ -187,9 +187,9 @@ def _archive(
     # root where the import script is located. Providing this default
     # seems better than using a required option.
     if destination is None:
-        import __main__
-
-        destination = os.path.dirname(os.path.abspath(__main__.__file__))
+        # sys.argv[0] will be the main file path,
+        # even it's called with `python -m package.subpackage`
+        destination = os.path.dirname(os.path.abspath(sys.argv[0]))
 
     verbosity = -quiet
     log = utils.logger(verbosity, err=True)
