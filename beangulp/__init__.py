@@ -138,7 +138,7 @@ def _extract(
 
 
 @click.command("archive")
-@click.argument("src", nargs=-1, type=click.Path(exists=True, resolve_path=True))
+@click.argument("src", nargs=-1, type=click.Path(exists=True, resolve_path=True), default=None)
 @click.option(
     "--destination",
     "-o",
@@ -195,6 +195,9 @@ def _archive(
     log = utils.logger(verbosity, err=True)
     errors = exceptions.ExceptionsTrap(log)
     renames = []
+
+    if src is None:
+        log("No source files specified!")
 
     for filename in _walk(src, log):
         with errors:
