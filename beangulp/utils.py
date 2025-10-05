@@ -123,6 +123,10 @@ def parse_amount(string: str) -> decimal.Decimal:
     else:
         sign = 1
     cstring = string.replace("-$", "$-").strip(" $").replace(",", "")
+
+    # Some places have two minus signs, e.g. Amex Savings importer.
+    cstring = re.sub(r"--(\d+)", r"\1", cstring)
+
     try:
         return Decimal(cstring) * sign
     except decimal.InvalidOperation as exc:
