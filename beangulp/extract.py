@@ -36,7 +36,7 @@ ExtractedEntry = Tuple[str, data.Entries, data.Account, "Importer"]
 
 def extract_from_file(
     importer: "Importer", filename: str, existing_entries: "data.Directives"
-) -> data.Entries:
+) -> data.Directives:
     """Import entries from a document.
 
     Args:
