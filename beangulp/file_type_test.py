@@ -68,7 +68,7 @@ class TestFileType(unittest.TestCase):
 
     def test_org(self):
         self.check_mime_type(
-            "example.org", ["text/plain", "application/vnd.lotus-organizer"]
+            "example.org", ["text/org", "text/plain", "application/vnd.lotus-organizer"]
         )
 
     def test_xml(self):
