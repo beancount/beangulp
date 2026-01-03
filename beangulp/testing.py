@@ -89,7 +89,7 @@ def run_importer(
     "-e",
     metavar="DIR",
     type=click.Path(file_okay=False, resolve_path=True),
-    help="Directory containing the expecrted output files.",
+    help="Directory containing the expected output files.",
 )
 @click.option("--verbose", "-v", count=True, help="Enable verbose output.")
 @click.option("--quiet", "-q", count=True, help="Suppress all output.")
@@ -127,7 +127,7 @@ def _test(
     "-e",
     metavar="DIR",
     type=click.Path(file_okay=False, resolve_path=True),
-    help="Directory containing the expecrted output files.",
+    help="Directory containing the expected output files.",
 )
 @click.option("--verbose", "-v", count=True, help="Enable verbose output.")
 @click.option("--quiet", "-q", count=True, help="Suppress all output.")
