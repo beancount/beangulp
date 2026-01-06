@@ -37,12 +37,14 @@ def clean_up_descriptions(extracted_entries):
     clean_entries = []
     for entry in extracted_entries:
         if isinstance(entry, data.Transaction):
-            if entry.narration and " / " in entry.narration:
-                left_part, _ = entry.narration.split(" / ")
-                entry = entry._replace(narration=left_part)
-            if entry.payee and " / " in entry.payee:
-                left_part, _ = entry.payee.split(" / ")
-                entry = entry._replace(payee=left_part)
+            if entry.narration:
+                narration, sep, _ = entry.narration.rpartition(" / ")
+                if sep:
+                    entry = entry._replace(narration=narration)
+            if entry.payee:
+                payee, sep, _ = entry.payee.rpartition(" / ")
+                if sep:
+                    entry = entry._replace(payee=payee)
         clean_entries.append(entry)
     return clean_entries
 
