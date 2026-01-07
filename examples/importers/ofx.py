@@ -36,6 +36,7 @@ from beancount.core import flags
 
 import beangulp
 from beangulp import mimetypes
+from beangulp.testing import main
 
 
 class BalanceType(enum.Enum):
@@ -322,3 +323,8 @@ def build_transaction(stmttrn, flag, account, currency):
     return data.Transaction(
         fileloc, date, flag, payee, narration, data.EMPTY_SET, data.EMPTY_SET, [posting]
     )
+
+
+if __name__ == "__main__":
+    importer = Importer("379700001111222", "Liabilities:US:CreditCard", "bofa")
+    main(importer)
