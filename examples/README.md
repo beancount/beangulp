@@ -100,10 +100,14 @@ pip install beangulp beancount
 ```
 
 Also, if you want to run the example folder fully, including pdf2text extraction, 
-install the following dependencies for pdftotext:
+install the following dependencies:
 
 ```bash
+# Contains pdf2text
 apt-get install poppler-utils
+
+# Caching lib used in the example
+pip install cachier
 ```
 
 Now run beancount with the beangulp importer:
