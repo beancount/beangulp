@@ -2,6 +2,7 @@ import datetime
 import decimal
 import re
 import unittest
+from itertools import dropwhile
 
 from beancount.core import data
 from beancount.parser import cmptest
@@ -450,6 +451,31 @@ class TestCSVReader(unittest.TestCase):
         rows = list(reader.read(filename))
         self.assertEqual(len(rows), 1)
         self.assertEqual(rows[0][0], "a")
+
+    @docfile
+    def test_custom_open(self, filename):
+        """\
+        Skip this line
+        Skip this too
+        First, Second
+        a, b
+        c, d
+        """
+
+        class Reader(CSVReader):
+            first = Column("First")
+            second = Column("Second")
+
+            def open(self, filepath):
+                """Skip lines until we find the column headers."""
+                lines = super().open(filepath)
+                return dropwhile(lambda line: "First" not in line, lines)
+
+        reader = Reader()
+        rows = list(reader.read(filename))
+        self.assertEqual(len(rows), 2)
+        self.assertEqual(rows[0].first, "a")
+        self.assertEqual(rows[1].second, "d")
 
 
 class Base(Importer):

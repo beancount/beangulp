@@ -276,6 +276,26 @@ class CSVReader(metaclass=CSVMeta):
             # warnings.warn('skiplines is deprecated, use header instead', DeprecationWarning)
             self.header = self.skiplines
 
+    def open(self, filepath):
+        """Open the CSV file for reading.
+
+        This method can be overridden in subclasses to customize raw file reading,
+        for example to pre-proceess text lines before import. Note that to skip
+        a fixed number of lines at the file beginning or end, setting the class
+        members "header" or "footer" is the easier approach.
+
+        This method uses the class member 'encoding'. Overriding this method causes
+        that member to be ignored unless the overriding method explicitly uses it.
+
+        Args:
+          filepath: Filesystem path to the input file.
+
+        Returns:
+          An iterable providing lines of CSV-formatted text.
+        """
+        with open(filepath, encoding = self.encoding) as fd:
+            yield from fd
+
     def read(self, filepath):
         """Read CSV file according to class defined columns specification.
 
@@ -292,34 +312,35 @@ class CSVReader(metaclass=CSVMeta):
 
         """
 
-        with open(filepath, encoding=self.encoding) as fd:
-            # Skip header and footer lines.
-            lines = _chomp(fd, self.header, self.footer)
+        lines = self.open(filepath)
 
-            # Filter out comment lines.
-            if self.comments:
-                lines = filter(lambda x: not x.startswith(self.comments), lines)
+        # Skip header and footer lines.
+        lines = _chomp(lines, self.header, self.footer)
 
-            reader = csv.reader(lines, dialect=self.dialect)
+        # Filter out comment lines.
+        if self.comments:
+            lines = filter(lambda x: not x.startswith(self.comments), lines)
 
-            # Map column names to column indices.
-            names = None
-            if self.names:
-                headers = next(reader, None)
-                if headers is None:
-                    raise IndexError("The input file does not contain an header line")
-                names = {name.strip(): index for index, name in enumerate(headers)}
+        reader = csv.reader(lines, dialect=self.dialect)
 
-            # Construct a class with attribute accessors for the
-            # configured columns that works similarly to a namedtuple.
-            attrs = {}
-            for name, column in self.columns.items():
-                attrs[name] = property(column.getter(names))
-            row = type("Row", (tuple,), attrs)
+        # Map column names to column indices.
+        names = None
+        if self.names:
+            headers = next(reader, None)
+            if headers is None:
+                raise IndexError("The input file does not contain an header line")
+            names = {name.strip(): index for index, name in enumerate(headers)}
 
-            # Return data rows.
-            for x in reader:
-                yield row(x)
+        # Construct a class with attribute accessors for the
+        # configured columns that works similarly to a namedtuple.
+        attrs = {}
+        for name, column in self.columns.items():
+            attrs[name] = property(column.getter(names))
+        row = type("Row", (tuple,), attrs)
+
+        # Return data rows.
+        for x in reader:
+            yield row(x)
 
 
 class Importer(beangulp.Importer, CSVReader):
