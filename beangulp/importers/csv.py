@@ -226,7 +226,7 @@ class _CSVImporterBase:
           regexps: A list of regular expression strings.
           skip_lines: Skip first x (garbage) lines of file.
           last4_map: A dict that maps last 4 digits of the card to a friendly string.
-          categorizer: A callable with two arguments (transaction, row) that can attach
+          categorizer: A callable with 3 args (transaction, row, iconfig) that can attach
             the other posting (usually expenses) to a transaction with only single posting.
           institution: An optional name of an institution to rename the files to.
           debug: Whether or not to print debug information
@@ -394,7 +394,7 @@ class _CSVImporterBase:
                     )
 
                 # Attach the other posting(s) to the transaction.
-                txn = self.call_categorizer(txn, row)
+                txn = self.call_categorizer(txn, row, iconfig)
 
                 # Add the transaction to the output list
                 entries.append(txn)
@@ -426,7 +426,7 @@ class _CSVImporterBase:
 
         return entries
 
-    def call_categorizer(self, txn, row):
+    def call_categorizer(self, txn, row, iconfig):
         if not isinstance(self.categorizer, collections.abc.Callable):
             return txn
 
@@ -435,7 +435,9 @@ class _CSVImporterBase:
         params = signature(self.categorizer).parameters
         if len(params) < 2:
             return self.categorizer(txn)
-        return self.categorizer(txn, row)
+        elif len(params) < 3:
+            return self.categorizer(txn, row)
+        return self.categorizer(txn, row, iconfig)
 
     def parse_amount(self, string):
         """The method used to create Decimal instances. You can override this."""
