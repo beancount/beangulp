@@ -1,6 +1,7 @@
 __copyright__ = "Copyright (C) 2016-2017  Martin Blais"
 __license__ = "GNU GPLv2"
 
+from collections import defaultdict
 import io
 import bisect
 import datetime
@@ -8,7 +9,7 @@ import operator
 import textwrap
 import warnings
 
-from typing import Callable
+from typing import Callable, Dict, Iterator
 from typing import TYPE_CHECKING
 from typing import Tuple
 from typing import List
@@ -199,18 +200,21 @@ def mark_duplicate_entries(
     # of each newly extracted entry requires the existing entries
     # to be sorted by date.
     existing.sort(key=operator.attrgetter("date"))
-    dates = [entry.date for entry in existing]
+    dates: Dict[type, List[data.Directive]] = defaultdict(list)
+    for entry in existing:
+        dates[type(entry)].append(entry)
 
-    def entries_date_window_iterator(date):
-        lo = bisect.bisect_left(dates, date - window)
-        hi = bisect.bisect_right(dates, date + window)
+    def entries_date_window_iterator(entry_type: type, date: datetime.date) -> Iterator[data.Directive]:
+        lo = bisect.bisect_left(dates[entry_type], date - window, key=operator.attrgetter('date'))
+        hi = bisect.bisect_right(dates[entry_type], date + window, key=operator.attrgetter('date'))
         for i in range(lo, hi):
-            yield existing[i]
+            yield dates[entry_type][i]
 
     for entry in entries:
-        for target in entries_date_window_iterator(entry.date):
-            if compare(entry, target):
-                entry.meta[DUPLICATE] = target
+        for target in entries_date_window_iterator(type(entry), entry.date):
+            if type(entry) == type(target):
+                if compare(entry, target):
+                    entry.meta[DUPLICATE] = target
 
 
 def print_extracted_entries(extracted: List[ExtractedEntry], output: io.TextIOBase) -> None:
