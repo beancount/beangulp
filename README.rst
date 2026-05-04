@@ -15,5 +15,5 @@ a good introduction and is still partially relevant to ``beangulp``.
 The rest of the Beancount documentation can be found `here`__.
 
 __ https://github.com/beancount/beangulp/tree/master/examples/
-__ https://beancount.github.io/docs/importing_external_data.html
+__ https://beancount.github.io/docs/importing_external_data/
 __ https://beancount.github.io/docs/
