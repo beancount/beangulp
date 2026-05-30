@@ -3,9 +3,11 @@
 # Test in an isolated Python environment.
 # uv python pin <version> to set the version.
 test:
-	(env -u PYTHONPATH  uv run --isolated --python 3.13  python -m pytest)
+	(env -u PYTHONPATH uv run --isolated --python 3.13 \
+		--with petl --with pytest Python -m pytest)
 
 test-all:
 	for V in 3.7 3.8 3.9 3.10 3.11 3.12 3.13 ; do \
-		(env -u PYTHONPATH  uv run --isolated --python $$V  python -m pytest) ; \
+		(env -u PYTHONPATH uv run --isolated --python $$V \
+			--with petl --with pytest Python -m pytest) \
 	done

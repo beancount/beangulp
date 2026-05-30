@@ -326,5 +326,5 @@ class Ingest:
 
         self.cli = cli
 
-    def __call__(self):
-        return self.cli()
+    def __call__(self, **kwargs):
+        return self.cli(**kwargs)
