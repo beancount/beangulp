@@ -64,7 +64,7 @@ def extract_from_file(
 def sort_extracted_entries(extracted: List[ExtractedEntry]) -> None:
     """Sort the extraxted entries.
 
-    Sort extracged entries, grouped by source document, in the order
+    Sort extracted entries, grouped by source document, in the order
     in which they will be used in deduplication and in which they will
     be serialized to file.
 
