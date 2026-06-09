@@ -254,12 +254,16 @@ def _identify(ctx: "Ingest", src: str, failfast: bool, verbose: bool):
     log = utils.logger(verbose)
     errors = exceptions.ExceptionsTrap(log)
 
+    any_importer_found = False
+
     for filename in _walk(src, log):
         with errors:
             importer = identify.identify(ctx.importers, filename)
             if not importer:
                 log("")  # Newline.
                 continue
+
+            any_importer_found = True
 
             # Signal processing of this document.
             log(" ...", nl=False)
@@ -276,6 +280,9 @@ def _identify(ctx: "Ingest", src: str, failfast: bool, verbose: bool):
 
     if errors:
         sys.exit(1)
+
+    if not any_importer_found:
+        sys.exit(100)
 
 
 def _importer(importer):
