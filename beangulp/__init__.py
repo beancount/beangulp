@@ -122,9 +122,12 @@ def _extract(
     extract.sort_extracted_entries(extracted)
 
     # Deduplicate.
+    deduplicated_new_entries = []
     for filename, entries, account, importer in extracted:
-        importer.deduplicate(entries, existing_entries)
-        existing_entries.extend(entries)
+        # We want to deduplicate not just against existing_entries
+        # but also new entries from other importers in this run
+        importer.deduplicate(entries, existing_entries + deduplicated_new_entries)
+        deduplicated_new_entries.extend(entries)
 
     # Invoke hooks.
     for func in ctx.hooks:
