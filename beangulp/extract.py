@@ -35,7 +35,10 @@ ExtractedEntry = Tuple[str, data.Entries, data.Account, "Importer"]
 
 
 def extract_from_file(
-    importer: "Importer", filename: str, existing_entries: "data.Directives"
+    importer: "Importer",
+    filename: str,
+    existing_entries: "data.Directives",
+    reverse: bool = False,
 ) -> data.Entries:
     """Import entries from a document.
 
@@ -43,6 +46,7 @@ def extract_from_file(
       importer: The importer instance to handle the document.
       filename: Filesystem path to the document.
       existing_entries: Existing entries.
+      reverse: Sort extracted entries in descending order.
 
     Returns:
       The list of imported entries.
@@ -52,7 +56,7 @@ def extract_from_file(
         return []
 
     # Sort the newly imported entries.
-    importer.sort(entries)
+    importer.sort(entries, reverse=reverse)
 
     # Ensure that the entries are typed correctly.
     for entry in entries:
