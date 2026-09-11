@@ -789,11 +789,65 @@ class TestImporter(cmptest.TestCase):
 
         importer = CSVImporter("Assets:CSV", "EUR")
         msg = re.escape(
-            f"Error processing {filename} line 3 with values ('2025-01-26', ' Test', ' invalid'"
+            f"Error processing {filename} line 2 with values ('2025-01-26', ' Test', ' invalid'"
         )
         with self.assertRaisesRegex(RuntimeError, msg) as ctx:
             importer.extract(filename, [])
         self.assertIsInstance(ctx.exception.__cause__, decimal.InvalidOperation)
+
+    @docfile
+    def test_report_exception_line_numbering(self, filename):
+        """\
+        # comment
+        date, narration, amount
+        2025-01-25, Test, -1.00
+        2025-01-26, Test, invalid
+        """
+
+        class CSVImporter(Base):
+            date = Date("date")
+            narration = Column("narration")
+            amount = Amount("amount")
+            header = 1
+
+        importer = CSVImporter("Assets:CSV", "EUR")
+
+        # The offending row is on the fourth line of the file.
+        with open(filename) as fd:
+            lines = fd.read().splitlines()
+        self.assertIn("invalid", lines[3])
+
+        msg = re.escape(f"Error processing {filename} line 4 with values")
+        with self.assertRaisesRegex(RuntimeError, msg):
+            importer.extract(filename, [])
+
+    @docfile
+    def test_report_exception_matches_metadata_lineno(self, filename):
+        """\
+        date, narration, amount
+        2025-01-25, Test, -1.00
+        2025-01-26, Test, -2.00
+        """
+
+        class CSVImporter(Base):
+            date = Date("date")
+            narration = Column("narration")
+            amount = Amount("amount")
+
+        importer = CSVImporter("Assets:CSV", "EUR")
+
+        # The line number reported for a row when it fails to parse must be
+        # the same one recorded in the metadata when it parses correctly.
+        linenos = [entry.meta["lineno"] for entry in importer.extract(filename, [])]
+
+        with open(filename) as fd:
+            content = fd.read()
+        with open(filename, "w") as fd:
+            fd.write(content.replace("-2.00", "invalid"))
+
+        msg = re.escape(f"Error processing {filename} line {linenos[-1]} with values")
+        with self.assertRaisesRegex(RuntimeError, msg):
+            importer.extract(filename, [])
 
 
 class TestChomp(unittest.TestCase):
