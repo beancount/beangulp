@@ -136,6 +136,64 @@ class TestHeuristicComparator(cmptest.TestCase):
     def setUp(self):
         self.comparator = similar.heuristic_comparator(datetime.timedelta(days=2))
 
+    @parser.parse_doc(allow_incomplete=True)
+    def test_amount_signs(self, entries, errors, _):
+        """
+        2026-09-20 * "Deposit"
+          Assets:Bank 100 AUD
+        2026-09-20 * "Withdrawal"
+          Assets:Bank -100 AUD
+        2026-09-20 * "Deposit within tolerance"
+          Assets:Bank 104 AUD
+        2026-09-20 * "Withdrawal within tolerance"
+          Assets:Bank -104 AUD
+        2026-09-20 * "Deposit outside tolerance"
+          Assets:Bank 106 AUD
+        2026-09-20 * "Withdrawal outside tolerance"
+          Assets:Bank -106 AUD
+        2026-09-20 * "Zero"
+          Assets:Bank 0 AUD
+        2026-09-20 * "Negative zero"
+          Assets:Bank -0 AUD
+        """
+        self.assertFalse(errors)
+        for left, right, expected in (
+            (0, 0, True),
+            (1, 1, True),
+            (0, 1, False),
+            (0, 2, True),
+            (1, 3, True),
+            (0, 3, False),
+            (1, 2, False),
+            (0, 4, False),
+            (1, 5, False),
+            (0, 6, False),
+            (1, 6, False),
+            (0, 7, False),
+            (1, 7, False),
+            (6, 6, True),
+            (6, 7, True),
+        ):
+            for first, second in ((left, right), (right, left)):
+                with self.subTest(first=first, second=second):
+                    self.assertEqual(
+                        expected, self.comparator(entries[first], entries[second])
+                    )
+
+    @parser.parse_doc(allow_incomplete=True)
+    def test_other_shared_account_can_match(self, entries, errors, _):
+        """
+        2026-09-20 * "First"
+          Assets:Bank 100 AUD
+          Expenses:Fee 10 AUD
+        2026-09-20 * "Second"
+          Assets:Bank -100 AUD
+          Expenses:Fee 10 AUD
+        """
+        self.assertFalse(errors)
+        self.assertTrue(self.comparator(entries[0], entries[1]))
+        self.assertTrue(self.comparator(entries[1], entries[0]))
+
     @loader.load_doc()
     def test_simple(self, entries, _, __):
         """

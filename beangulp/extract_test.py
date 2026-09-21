@@ -55,6 +55,28 @@ class TestExtract(unittest.TestCase):
 
 
 class TestDuplicates(unittest.TestCase):
+    @parser.parse_doc()
+    def test_deposit_and_withdrawal_are_not_duplicates(self, entries, errors, _):
+        """
+        2026-09-20 * "Existing deposit"
+          Assets:Bank 100 AUD
+          Equity:Transfers -100 AUD
+        2026-09-20 * "Withdrawal"
+          Assets:Bank -100 AUD
+          Equity:Transfers 100 AUD
+        2026-09-20 * "Repeated deposit"
+          Assets:Bank 100 AUD
+          Equity:Transfers -100 AUD
+        """
+        self.assertFalse(errors)
+        deposit, withdrawal, repeat = entries
+        self.assertEqual(similar.find_similar_entries([withdrawal], [deposit]), [])
+        self.assertEqual(similar.find_similar_entries([deposit], [withdrawal]), [])
+        importer = tests.utils.IdentityImporter(None, "Assets:Bank", "*")
+        importer.deduplicate([withdrawal, repeat], [deposit])
+        self.assertNotIn(extract.DUPLICATE, withdrawal.meta)
+        self.assertIs(repeat.meta[extract.DUPLICATE], deposit)
+
     def test_mark_duplicate_entries(self):
         entries, error, options = parser.parse_string(
             textwrap.dedent("""

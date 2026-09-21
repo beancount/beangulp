@@ -92,8 +92,8 @@ def heuristic_comparator(
     - their dates are within a close range of each other (e.g. 2 days), if
       specified with `max_date_delta`,
 
-    - amounts on postings corresponding to the same account are within some
-      fraction of each other (default: 5%), and
+    - at least one common account and currency has amounts with the same sign
+      and within some fraction of each other (default: 5%), and
 
     - the set of accounts of the two transactions are the same or one is a
       subset of the other.
@@ -147,7 +147,9 @@ def heuristic_comparator(
             number2 = amounts2[key]
             if number1 == ZERO and number2 == ZERO:
                 break
-            diff = abs((number1 / number2) if number2 != ZERO else (number2 / number1))
+            diff = (number1 / number2) if number2 != ZERO else (number2 / number1)
+            if diff < ZERO:
+                continue
             if diff == ZERO:
                 return False
             if diff < ONE:
