@@ -54,6 +54,7 @@ issues = 'https://github.com/beancount/beangulp/issues'
 [dependency-groups]
 test = [
     'pytest',
+    'petl',
     'pymupdf >=1.24; python_version >= "3.9"',
 ]
 
