@@ -40,6 +40,9 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+pdf = [
+    'pymupdf >=1.24; python_version >= "3.9"',
+]
 petl = [
     'petl',
 ]
@@ -51,6 +54,7 @@ issues = 'https://github.com/beancount/beangulp/issues'
 [dependency-groups]
 test = [
     'pytest',
+    'pymupdf >=1.24; python_version >= "3.9"',
 ]
 
 [tool.setuptools.packages.find]
