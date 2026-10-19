@@ -137,6 +137,23 @@ class Importer(abc.ABC):
         entry metadata field to the entry of which the entry is a
         duplicate.
 
+        Importers whose records represent separate occurrences may opt
+        into single-use matches by overriding this method, for example::
+
+            import datetime
+            from beangulp import extract
+
+            def deduplicate(self, entries, existing):
+                extract.mark_duplicate_entries(
+                    entries, existing, datetime.timedelta(days=2), self.cmp,
+                    match_once=True,
+                )
+
+        See mark_duplicate_entries() for the occurrence assumption,
+        greedy ordering and requirements for premarked entries. The
+        default remains many-to-one, which is suitable when repeated
+        records identify the same occurrence by a unique source ID.
+
         Args:
           entries: Entries extracted from the document being processed.
           existing: Entries loaded from the existing ledger.

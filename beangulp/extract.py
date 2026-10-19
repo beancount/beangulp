@@ -177,23 +177,54 @@ def mark_duplicate_entries(
     existing: data.Entries,
     window: datetime.timedelta,
     compare: Callable[[data.Directive, data.Directive], bool],
+    *,
+    match_once: bool = False,
 ) -> None:
     """Mark duplicate entries.
 
     Compare newly extracted entries to the existing entries. Only
     existing entries dated within the given time window around the
-    date of the each existing entry.
+    date of each newly extracted entry are considered.
 
     Entries that are determined to be duplicates of existing entries
     are marked setting the "__duplicate__" metadata field.
+
+    With match_once, each existing directive object can match at most
+    one unmarked new entry per call. Use this when each source record
+    represents a separate occurrence and the comparator cannot
+    distinguish otherwise identical occurrences. Repeated records
+    with the same unique source ID usually require many-to-one matching.
+
+    Matching is greedy in input order and selects the last available
+    match in stable date order. It does not find a maximum matching.
+    Existing entries with truthy duplicate metadata and self-matches
+    are excluded. Premarked new entries retain their target and reserve
+    its identity; aliases of an object share the same capacity. Allocation
+    state is reset for each call, allowing overlapping files to match
+    the same original ledger occurrences.
 
     Args:
       entries: Entries to be deduplicated.
       existing: Existing entries.
       window: Time window in which entries are compared.
       compare: Entry comparison function.
+      match_once: Allocate each eligible existing object at most once.
+        The comparator must be deterministic and have no side effects.
+
+    Raises:
+      ValueError: With match_once, a truthy duplicate marker on a new
+        entry is not a directive identifying its existing target.
 
     """
+    if match_once:
+        allocated = set()
+        for entry in entries:
+            target = entry.meta.get(DUPLICATE)
+            if target:
+                if not isinstance(target, data.ALL_DIRECTIVES):
+                    raise ValueError("match_once requires directive-valued duplicate markers")
+                allocated.add(id(target))
+
     # The use of bisection to identify the entries in the existing
     # list that have dates within a given window around the date
     # of each newly extracted entry requires the existing entries
@@ -208,9 +239,22 @@ def mark_duplicate_entries(
             yield existing[i]
 
     for entry in entries:
+        if match_once and entry.meta.get(DUPLICATE):
+            continue
+        match = None
         for target in entries_date_window_iterator(entry.date):
+            if match_once and (
+                target is entry or id(target) in allocated or target.meta.get(DUPLICATE)
+            ):
+                continue
             if compare(entry, target):
-                entry.meta[DUPLICATE] = target
+                if match_once:
+                    match = target
+                else:
+                    entry.meta[DUPLICATE] = target
+        if match_once and match is not None:
+            entry.meta[DUPLICATE] = match
+            allocated.add(id(match))
 
 
 def print_extracted_entries(extracted: List[ExtractedEntry], output: io.TextIOBase) -> None:
