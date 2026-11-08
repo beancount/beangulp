@@ -63,12 +63,15 @@ class TestDuplicates(unittest.TestCase):
 
           1970-01-02 * "Test"
             Assets:Tests  20.00 USD
+          1970-01-03 balance Assets:Tests 20.00 USD
         """)
         )
         compare = similar.heuristic_comparator()
         extract.mark_duplicate_entries(entries, entries[:1], timedelta(days=2), compare)
         self.assertTrue(entries[0].meta[extract.DUPLICATE])
         self.assertNotIn(extract.DUPLICATE, entries[1].meta)
+
+        self.assertFalse(extract.DUPLICATE in entries[2].meta)
 
 
 class TestPrint(unittest.TestCase):
