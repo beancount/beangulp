@@ -421,7 +421,7 @@ class Importer(beangulp.Importer, CSVReader):
                 # use Exception.add_note() instead, but this is available only
                 # with Python 3.11 and later.
                 raise RuntimeError(
-                    f"Error processing {filepath} line {lineno + 1} with values {row!r}"
+                    f"Error processing {filepath} line {lineno} with values {row!r}"
                 ) from ex
 
             # Allow finalize() to reject the row extracted from the current row.
