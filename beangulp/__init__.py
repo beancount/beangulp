@@ -61,7 +61,13 @@ def _walk(file_or_dirs, log):
 
 @click.command("extract")
 @click.argument("src", nargs=-1, type=click.Path(exists=True, resolve_path=True))
-@click.option("--output", "-o", type=click.File("w"), default="-", help="Output file.")
+@click.option(
+    "--output",
+    "-o",
+    type=click.File("w", encoding="utf-8"),
+    default="-",
+    help="Output file.",
+)
 @click.option(
     "--existing",
     "-e",
