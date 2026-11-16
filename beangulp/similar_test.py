@@ -162,6 +162,11 @@ class TestHeuristicComparator(cmptest.TestCase):
           Expenses:Alcohol     20.00 USD
           Expenses:Tips         1.03 USD
           Assets:SomethingElse
+
+        2016-01-04 * "Refund" ^refund
+          Expenses:Alcohol    -20.00 USD
+          Expenses:Tips        -1.03 USD
+          Assets:Other
         """
         txns = list(data.filter_txns(entries))
 
@@ -179,6 +184,8 @@ class TestHeuristicComparator(cmptest.TestCase):
         compare(False, "base", "out-bounds")
         compare(False, "base", "too-late")
         compare(False, "base", "non-accounts")
+        compare(False, "base", "refund")
+        compare(False, "refund", "base")
 
 
 class TestSamelinkComparator(cmptest.TestCase):

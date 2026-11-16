@@ -147,7 +147,10 @@ def heuristic_comparator(
             number2 = amounts2[key]
             if number1 == ZERO and number2 == ZERO:
                 break
-            diff = abs((number1 / number2) if number2 != ZERO else (number2 / number1))
+            diff = (number1 / number2) if number2 != ZERO else (number2 / number1)
+            if diff < ZERO:
+                # Opposite signs, e.g. a refund of the same amount.
+                continue
             if diff == ZERO:
                 return False
             if diff < ONE:
