@@ -109,7 +109,12 @@ def _extract(
             log(" ...", nl=False)
 
             # Extract entries.
-            entries = extract.extract_from_file(importer, filename, existing_entries)
+            entries = extract.extract_from_file(
+                importer,
+                filename,
+                existing_entries,
+                reverse=reverse,
+            )
             account = importer.account(filename)
 
             extracted.append((filename, entries, account, importer))
