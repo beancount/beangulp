@@ -211,6 +211,10 @@ class CreditOrDebit(Column):
         self.subs = subs if subs is not None else {}
 
     def parse(self, credit, debit):
+        for pattern, replacement in self.subs.items():
+            credit = re.sub(pattern, replacement, credit)
+        for pattern, replacement in self.subs.items():
+            debit = re.sub(pattern, replacement, debit)
         if credit and debit:
             raise ValueError(
                 "The credit and debit fields cannot be populated at the same time"
@@ -218,8 +222,6 @@ class CreditOrDebit(Column):
         if not credit and not debit:
             raise ValueError("Neither credit or debit fields are populated")
         value = credit if credit else debit
-        for pattern, replacement in self.subs.items():
-            value = re.sub(pattern, replacement, value)
         parsed = decimal.Decimal(value)
         return parsed if credit else -parsed
 
